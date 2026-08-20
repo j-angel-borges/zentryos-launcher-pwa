@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Sparkles } from 'lucide-react';
+import { Send, Sparkles, Trash2, RotateCcw } from 'lucide-react';
 import type { ChatMessage } from '../../types/zentry';
 import { ZentrySubPageScaffold } from '../shell/ZentrySubPageScaffold';
 import { sounds } from '../../services/soundEffects';
@@ -11,17 +11,30 @@ interface Props {
 }
 
 export const ZentryAiScreen: React.FC<Props> = ({ onBack, isDark }) => {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: '1',
-      text: '¡Hola! Soy Zentry. ¿Qué te gustaría descubrir o resolver hoy? ✨',
-      isUser: false,
-      timestamp: 'Ahora'
-    }
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    try {
+      const saved = localStorage.getItem('zentry_ai_chat_messages');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [
+      {
+        id: '1',
+        text: '¡Hola! Soy Zentry. ¿Qué te gustaría descubrir o resolver hoy? ✨',
+        isUser: false,
+        timestamp: 'Ahora'
+      }
+    ];
+  });
+
   const [input, setInput] = useState('');
   const [isThinking, setIsThinking] = useState(false);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('zentry_ai_chat_messages', JSON.stringify(messages));
+    } catch {}
+  }, [messages]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -66,12 +79,29 @@ export const ZentryAiScreen: React.FC<Props> = ({ onBack, isDark }) => {
     }
   };
 
+  const handleClearChat = () => {
+    sounds.playTap();
+    if (window.confirm('¿Deseas reiniciar la conversación y borrar el chat?')) {
+      const initial: ChatMessage[] = [
+        {
+          id: Date.now().toString(),
+          text: '¡Hola de nuevo! ¿Qué nuevo reto o pregunta exploramos? ✨',
+          isUser: false,
+          timestamp: 'Ahora'
+        }
+      ];
+      setMessages(initial);
+      localStorage.removeItem('zentry_ai_chat_messages');
+    }
+  };
+
   return (
     <ZentrySubPageScaffold title="Zentry AI" kicker="TUTOR INTELIGENTE" onBack={onBack} isDark={isDark}>
-      <div className="flex flex-col h-full space-y-4 max-w-xl mx-auto w-full">
-        {/* Interactive Avatar Bar */}
-        <div className="flex items-center justify-center py-2">
-          <div className="relative w-16 h-16 rounded-full bg-gradient-to-b from-[#533B87] to-[#3B2E63] border-2 border-white/40 shadow-xl flex items-center justify-center">
+      <div className="flex flex-col h-full space-y-3 max-w-xl mx-auto w-full">
+        {/* Top Control Bar: Avatar + Clear Chat Button */}
+        <div className="flex items-center justify-between px-1 py-1">
+          <div className="w-8" />
+          <div className="relative w-14 h-14 rounded-full bg-gradient-to-b from-[#533B87] to-[#3B2E63] border-2 border-white/40 shadow-xl flex items-center justify-center">
             <div className="flex items-center gap-2">
               <div className="w-2 h-3 rounded-full bg-[#C2F4E7] animate-pulse" />
               <div className="w-2 h-3 rounded-full bg-[#C2F4E7] animate-pulse" />
@@ -80,6 +110,15 @@ export const ZentryAiScreen: React.FC<Props> = ({ onBack, isDark }) => {
               <div className="absolute -inset-1.5 rounded-full border-2 border-[#D6C8FA] animate-spin" />
             )}
           </div>
+
+          <button
+            onClick={handleClearChat}
+            title="Borrar historial de chat"
+            className={(isDark ? 'bg-white/10 hover:bg-red-500/20 text-slate-300 hover:text-red-400 ' : 'bg-white/80 hover:bg-red-50 text-slate-600 hover:text-red-500 ') + 'p-2 rounded-full border border-white/20 transition-all zentry-press cursor-pointer flex items-center gap-1 text-[11px] font-semibold'}
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Limpiar</span>
+          </button>
         </div>
 
         {/* Chat Messages */}
