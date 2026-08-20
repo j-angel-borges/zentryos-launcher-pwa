@@ -4,7 +4,8 @@ import type {
   WallpaperId, 
   WallpaperConfig, 
   CircadianPhase, 
-  DeviceFirestoreState 
+  DeviceFirestoreState,
+  WorkspaceAppInfo
 } from './types/zentry';
 import { ZentryWallpaper } from './components/wallpaper/ZentryWallpaper';
 import { ZentryStatusBar } from './components/shell/ZentryStatusBar';
@@ -32,6 +33,7 @@ import { ZentryWorldGeneratorScreen } from './components/screens/ZentryWorldGene
 import { ZentryStudyAssistantScreen } from './components/screens/ZentryStudyAssistantScreen';
 import { ZentryResearchScreen } from './components/screens/ZentryResearchScreen';
 import { ZentryRedactorScreen } from './components/screens/ZentryRedactorScreen';
+import { ZentryEmbeddedAppScreen } from './components/screens/ZentryEmbeddedAppScreen';
 
 import { subscribeToDeviceState, simulateDeviceState } from './services/firebase';
 
@@ -82,6 +84,7 @@ export const App: React.FC = () => {
   // Navigation & History State
   const [currentScreen, setCurrentScreen] = useState<ScreenId>('launcher');
   const [history, setHistory] = useState<ScreenId[]>([]);
+  const [selectedWorkspaceApp, setSelectedWorkspaceApp] = useState<WorkspaceAppInfo | null>(null);
 
   // Wallpaper & Preferences
   const [wallpaperId, setWallpaperId] = useState<WallpaperId>(() => {
@@ -94,7 +97,7 @@ export const App: React.FC = () => {
     return localStorage.getItem('zentry_show_calendar') !== 'false';
   });
 
-  // Circadian Phase State (Morning 6-11, Afternoon 12-17, Night 18+)
+  // Circadian Phase State
   const [circadianPhase, setCircadianPhase] = useState<CircadianPhase>(() => {
     const hour = new Date().getHours();
     if (hour >= 6 && hour < 12) {
@@ -146,6 +149,11 @@ export const App: React.FC = () => {
   const navigateTo = (screen: ScreenId) => {
     setHistory((prev) => [...prev, currentScreen]);
     setCurrentScreen(screen);
+  };
+
+  const handleOpenWorkspaceApp = (app: WorkspaceAppInfo) => {
+    setSelectedWorkspaceApp(app);
+    navigateTo('workspace_app');
   };
 
   const handleBack = () => {
@@ -206,7 +214,7 @@ export const App: React.FC = () => {
         isDark={currentWallpaper.isDark}
       />
 
-      {/* 3. Screen Viewport (Fluid Pure CSS Edge-to-Edge Responsiveness) */}
+      {/* 3. Screen Viewport */}
       <div className="flex-1 w-full h-full relative overflow-hidden flex flex-col items-center justify-center">
         {currentScreen === 'launcher' && (
           <ZentryHomeScreen
@@ -216,6 +224,7 @@ export const App: React.FC = () => {
             showClock={showClock}
             showCalendar={showCalendar}
             onNavigate={navigateTo}
+            onOpenWorkspaceApp={handleOpenWorkspaceApp}
             onSearch={(query) => {
               navigateTo('safe_search');
             }}
@@ -298,6 +307,14 @@ export const App: React.FC = () => {
 
         {currentScreen === 'redactor' && (
           <ZentryRedactorScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
+        )}
+
+        {currentScreen === 'workspace_app' && selectedWorkspaceApp && (
+          <ZentryEmbeddedAppScreen
+            appInfo={selectedWorkspaceApp}
+            onBack={handleBack}
+            isDark={currentWallpaper.isDark}
+          />
         )}
       </div>
 

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import type { ScreenId, WallpaperConfig, CircadianPhase } from '../../types/zentry';
+import type { ScreenId, WallpaperConfig, CircadianPhase, WorkspaceAppInfo } from '../../types/zentry';
 import { ZentryLiquidButton } from './ZentryLiquidButton';
 import { OSSearchBar } from './OSSearchBar';
 import { LiveClockWidget } from './LiveClockWidget';
@@ -17,6 +17,7 @@ interface Props {
   showClock: boolean;
   showCalendar: boolean;
   onNavigate: (screen: ScreenId) => void;
+  onOpenWorkspaceApp?: (app: WorkspaceAppInfo) => void;
   onSearch: (query: string) => void;
   onOpenCommandSheet: () => void;
 }
@@ -28,6 +29,7 @@ export const ZentryHomeScreen: React.FC<Props> = ({
   showClock,
   showCalendar,
   onNavigate,
+  onOpenWorkspaceApp,
   onSearch,
   onOpenCommandSheet
 }) => {
@@ -81,7 +83,7 @@ export const ZentryHomeScreen: React.FC<Props> = ({
             {showCalendar && <CalendarWidget isDark={wallpaper.isDark} onClick={() => onNavigate('calendar')} />}
             <OSAppGrid isDark={wallpaper.isDark} onNavigate={onNavigate} />
             <OSSecondaryCards isDark={wallpaper.isDark} onNavigate={onNavigate} />
-            <WorkspacePage isDark={wallpaper.isDark} onNavigate={onNavigate} />
+            <WorkspacePage isDark={wallpaper.isDark} onNavigate={onNavigate} onOpenWorkspaceApp={onOpenWorkspaceApp} />
           </div>
         </div>
 
@@ -109,7 +111,7 @@ export const ZentryHomeScreen: React.FC<Props> = ({
 
             {/* Page 1: Google Workspace Apps */}
             <div className="w-full shrink-0 h-full snap-center overflow-y-auto px-1 flex flex-col items-center">
-              <WorkspacePage isDark={wallpaper.isDark} onNavigate={onNavigate} />
+              <WorkspacePage isDark={wallpaper.isDark} onNavigate={onNavigate} onOpenWorkspaceApp={onOpenWorkspaceApp} />
             </div>
           </div>
 

@@ -15,7 +15,8 @@ export type ScreenId =
   | 'world_generator'
   | 'study_assistant'
   | 'deep_research'
-  | 'redactor';
+  | 'redactor'
+  | 'workspace_app';
 
 export type WallpaperId = 'Glacial' | 'Lila' | 'Aura' | 'Brisa' | 'Espacio';
 
@@ -61,4 +62,11 @@ export interface VoiceCommandResult {
   targetApp: string;
   aiResponse: string;
   executedSuccessfully: boolean;
+}
+
+export interface WorkspaceAppInfo {
+  name: string;
+  url: string;
+  iconName: string;
+  type: 'docs' | 'sheets' | 'slides' | 'drive' | 'gmail' | 'meet' | 'classroom' | 'notebooklm' | 'calendar' | 'maps' | 'youtube';
 }
