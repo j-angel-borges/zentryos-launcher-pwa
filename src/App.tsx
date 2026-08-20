@@ -33,6 +33,10 @@ import { ZentryStudyAssistantScreen } from './components/screens/ZentryStudyAssi
 import { ZentryResearchScreen } from './components/screens/ZentryResearchScreen';
 import { ZentryRedactorScreen } from './components/screens/ZentryRedactorScreen';
 import { ZentryEmbeddedAppScreen } from './components/screens/ZentryEmbeddedAppScreen';
+import { ZentryEntertainmentHubScreen } from './components/screens/ZentryEntertainmentHubScreen';
+import { ZentryTubeScreen } from './components/screens/ZentryTubeScreen';
+import { ZentryTokScreen } from './components/screens/ZentryTokScreen';
+import { ZentryGramScreen } from './components/screens/ZentryGramScreen';
 
 import { subscribeToDeviceState, simulateDeviceState } from './services/firebase';
 import { sounds } from './services/soundEffects';
@@ -348,6 +352,26 @@ export const App: React.FC = () => {
             onBack={handleBack}
             isDark={currentWallpaper.isDark}
           />
+        )}
+
+        {currentScreen === 'entertainment_hub' && (
+          <ZentryEntertainmentHubScreen
+            onBack={handleBack}
+            onNavigate={navigateTo}
+            isDark={currentWallpaper.isDark}
+          />
+        )}
+
+        {currentScreen === 'zentry_tube' && (
+          <ZentryTubeScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
+        )}
+
+        {currentScreen === 'zentry_tok' && (
+          <ZentryTokScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
+        )}
+
+        {currentScreen === 'zentry_gram' && (
+          <ZentryGramScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
         )}
       </div>
 
