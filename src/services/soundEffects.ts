@@ -1,6 +1,15 @@
 // Web Audio API Synthesizer for Native OS sounds & haptics
 class SoundEffectsService {
   private ctx: AudioContext | null = null;
+  private volume: number = 0.7;
+
+  public setVolume(vol: number) {
+    this.volume = Math.max(0, Math.min(1, vol / 100));
+  }
+
+  public getVolume(): number {
+    return Math.round(this.volume * 100);
+  }
 
   private getContext() {
     if (!this.ctx && typeof window !== 'undefined') {
@@ -14,6 +23,7 @@ class SoundEffectsService {
   }
 
   public playAppOpen() {
+    if (this.volume <= 0.01) return;
     const ctx = this.getContext();
     if (!ctx) return;
     const osc = ctx.createOscillator();
@@ -23,7 +33,7 @@ class SoundEffectsService {
     osc.frequency.setValueAtTime(440, ctx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12);
 
-    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+    gain.gain.setValueAtTime(0.08 * this.volume, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
 
     osc.connect(gain);
@@ -34,6 +44,7 @@ class SoundEffectsService {
   }
 
   public playTap() {
+    if (this.volume <= 0.01) return;
     const ctx = this.getContext();
     if (!ctx) return;
     const osc = ctx.createOscillator();
@@ -43,7 +54,7 @@ class SoundEffectsService {
     osc.frequency.setValueAtTime(800, ctx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.04);
 
-    gain.gain.setValueAtTime(0.05, ctx.currentTime);
+    gain.gain.setValueAtTime(0.05 * this.volume, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
 
     osc.connect(gain);
@@ -54,6 +65,7 @@ class SoundEffectsService {
   }
 
   public playInterventionShield() {
+    if (this.volume <= 0.01) return;
     const ctx = this.getContext();
     if (!ctx) return;
     const now = ctx.currentTime;
@@ -66,7 +78,7 @@ class SoundEffectsService {
       osc.type = 'sine';
       osc.frequency.setValueAtTime(freq, now + i * 0.04);
 
-      gain.gain.setValueAtTime(0.06, now + i * 0.04);
+      gain.gain.setValueAtTime(0.06 * this.volume, now + i * 0.04);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.04 + 0.35);
 
       osc.connect(gain);
@@ -78,6 +90,7 @@ class SoundEffectsService {
   }
 
   public playSuccess() {
+    if (this.volume <= 0.01) return;
     const ctx = this.getContext();
     if (!ctx) return;
     const now = ctx.currentTime;
@@ -89,7 +102,7 @@ class SoundEffectsService {
       osc.type = 'sine';
       osc.frequency.setValueAtTime(freq, now + idx * 0.06);
 
-      gain.gain.setValueAtTime(0.07, now + idx * 0.06);
+      gain.gain.setValueAtTime(0.07 * this.volume, now + idx * 0.06);
       gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.25);
 
       osc.connect(gain);

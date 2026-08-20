@@ -35,6 +35,7 @@ import { ZentryRedactorScreen } from './components/screens/ZentryRedactorScreen'
 import { ZentryEmbeddedAppScreen } from './components/screens/ZentryEmbeddedAppScreen';
 
 import { subscribeToDeviceState, simulateDeviceState } from './services/firebase';
+import { sounds } from './services/soundEffects';
 
 const WALLPAPERS: Record<WallpaperId, WallpaperConfig> = {
   Glacial: {
@@ -84,6 +85,11 @@ export const App: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<ScreenId>('launcher');
   const [history, setHistory] = useState<ScreenId[]>([]);
   const [selectedWorkspaceApp, setSelectedWorkspaceApp] = useState<WorkspaceAppInfo | null>(null);
+
+  // Hardware controls state
+  const [systemBrightness, setSystemBrightness] = useState<number>(85);
+  const [systemVolume, setSystemVolume] = useState<number>(75);
+  const [torchActive, setTorchActive] = useState<boolean>(false);
 
   // Wallpaper & Preferences
   const [wallpaperId, setWallpaperId] = useState<WallpaperId>(() => {
@@ -190,10 +196,39 @@ export const App: React.FC = () => {
     });
   };
 
+  const handleBrightnessChange = (val: number) => {
+    setSystemBrightness(val);
+  };
+
+  const handleVolumeChange = (val: number) => {
+    setSystemVolume(val);
+    sounds.setVolume(val);
+  };
+
   const currentWallpaper = WALLPAPERS[wallpaperId] || WALLPAPERS.Glacial;
 
   return (
-    <main className="w-screen h-screen min-h-screen overflow-hidden select-none relative flex flex-col justify-between">
+    <main 
+      className="w-screen h-screen min-h-screen overflow-hidden select-none relative flex flex-col justify-between"
+      style={{ WebkitTapHighlightColor: 'transparent' }}
+    >
+      {/* Dynamic Brightness Filter Overlay */}
+      <div 
+        className="fixed inset-0 pointer-events-none z-30 transition-opacity duration-150 bg-black"
+        style={{ opacity: Math.max(0, (100 - systemBrightness) * 0.0075) }}
+      />
+
+      {/* Screen Torch Flashlight Overlay */}
+      {torchActive && (
+        <div 
+          onClick={() => setTorchActive(false)}
+          className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center cursor-pointer p-6 animate-in fade-in"
+        >
+          <div className="text-black font-black text-lg">💡 Linterna de Pantalla Encendida</div>
+          <div className="text-slate-600 text-xs mt-1">Toca en cualquier parte para apagar</div>
+        </div>
+      )}
+
       {/* 1. Live Circadian Organic Mesh Wallpaper */}
       <ZentryWallpaper
         wallpaper={currentWallpaper}
@@ -329,8 +364,14 @@ export const App: React.FC = () => {
       <ZentryTopPanels
         isOpen={isQuickPanelOpen}
         initialTab={quickPanelTab}
+        brightness={systemBrightness}
+        onBrightnessChange={handleBrightnessChange}
+        volume={systemVolume}
+        onVolumeChange={handleVolumeChange}
         onClose={() => setIsQuickPanelOpen(false)}
         isDark={currentWallpaper.isDark}
+        torchActive={torchActive}
+        onToggleTorch={() => setTorchActive((t) => !t)}
       />
 
       <CustomizationPanel
