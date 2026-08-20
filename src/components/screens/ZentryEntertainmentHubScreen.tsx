@@ -1,20 +1,17 @@
 import React from 'react';
 import { 
-  Play, 
   Tv, 
   Sparkles, 
   ShieldCheck, 
   ChevronRight, 
   Flame, 
-  Compass, 
   Image as ImageIcon,
-  Clock,
-  Heart
+  Radio
 } from 'lucide-react';
 import { ZentrySubPageScaffold } from '../shell/ZentrySubPageScaffold';
 import { sounds } from '../../services/soundEffects';
 import type { ScreenId } from '../../types/zentry';
-import { YOUTUBE_VIDEOS, TIKTOK_SHORTS, INSTAGRAM_POSTS } from '../../services/entertainmentData';
+import { YOUTUBE_VIDEOS, TIKTOK_SHORTS, INSTAGRAM_POSTS, TWITCH_STREAMS } from '../../services/entertainmentData';
 
 interface Props {
   onBack: () => void;
@@ -42,7 +39,7 @@ export const ZentryEntertainmentHubScreen: React.FC<Props> = ({ onBack, onNaviga
       color: 'from-cyan-500 via-purple-600 to-pink-500',
       badge: 'TikTok Guard',
       icon: Flame,
-      description: 'Formato vertical dinámico con trucos matemáticos, experimentos rápidos y astrofísica en 60 segundos.'
+      description: 'Formato vertical 9:16 con trucos matemáticos, experimentos rápidos y astrofísica en 60 segundos.'
     },
     {
       id: 'zentry_gram' as ScreenId,
@@ -53,6 +50,16 @@ export const ZentryEntertainmentHubScreen: React.FC<Props> = ({ onBack, onNaviga
       badge: 'Instagram Guard',
       icon: ImageIcon,
       description: 'Feed visual con fotografías de la NASA, National Geographic, esquemas biológicos y mapas históricos.'
+    },
+    {
+      id: 'zentry_stream' as ScreenId,
+      name: 'ZentryStream',
+      subtitle: 'Transmisiones en Directo',
+      count: `${TWITCH_STREAMS.length} streams en vivo`,
+      color: 'from-purple-600 to-indigo-700',
+      badge: 'Twitch Guard',
+      icon: Radio,
+      description: 'Emisiones en tiempo real de programación, ajedrez, robótica y exploración espacial desde la ISS.'
     }
   ];
 
@@ -68,7 +75,7 @@ export const ZentryEntertainmentHubScreen: React.FC<Props> = ({ onBack, onNaviga
             <div>
               <div className="text-xs md:text-sm font-bold text-white">Escudo Zentry de Medios Activo</div>
               <div className="text-[11px] text-slate-300">
-                Redes sociales replicadas con más de 150 contenidos curados en ciencias, arte y tecnología.
+                4 Plataformas oficiales supervisadas con 200 contenidos curados en ciencias, arte y tecnología.
               </div>
             </div>
           </div>
@@ -78,10 +85,10 @@ export const ZentryEntertainmentHubScreen: React.FC<Props> = ({ onBack, onNaviga
           </div>
         </div>
 
-        {/* 3 Main Curated Apps Grid */}
+        {/* 4 Main Curated Apps Grid */}
         <div className="space-y-3">
           <div className="text-xs font-bold text-slate-400 px-1">
-            Aplicaciones de Entretenimiento Curado
+            Aplicaciones de Entretenimiento Curado (50 Contenidos c/u)
           </div>
 
           <div className="grid grid-cols-1 gap-3">

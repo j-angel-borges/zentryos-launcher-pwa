@@ -1,24 +1,35 @@
-export type MediaProvider = 'youtube' | 'tiktok' | 'twitch' | 'instagram' | 'direct';
+export type MediaProvider = 'youtube' | 'tiktok' | 'twitch' | 'instagram';
 
 export interface UniversalMediaItem {
   id: string;
   provider: MediaProvider;
-  mediaId: string; // YouTube ID, TikTok Video ID, Twitch Channel/Video, or Instagram Shortcode
-  directVideoUrl?: string;
+  mediaId: string;
   title: string;
   creator: string;
   handle: string;
   creatorAvatar: string;
   viewsOrLikes: string;
   duration?: string;
-  category: 'Ciencia' | 'Física' | 'IA & Código' | 'Historia' | 'Matemáticas' | 'Espacio' | 'Arte & Música' | 'Experimentos' | 'Curiosidades';
+  category: string;
+  description: string;
+  tags: string[];
+}
+
+export interface TwitchStreamItem {
+  id: string;
+  channel: string;
+  title: string;
+  category: 'Software & Código' | 'Ciencia & Astronomía' | 'Ajedrez & Lógica' | 'Robótica' | 'Desarrollo de Videojuegos';
+  viewerCount: string;
+  streamerAvatar: string;
+  thumbnail: string;
   description: string;
   tags: string[];
 }
 
 export interface InstagramPostItem {
   id: string;
-  shortcode?: string;
+  shortcode: string;
   username: string;
   userAvatar: string;
   isVerified: boolean;
@@ -31,7 +42,22 @@ export interface InstagramPostItem {
   category: 'Astrofotografía' | 'Infografías' | 'Naturaleza' | 'Historia' | 'NeuroArte';
 }
 
-// 50 REAL CURATED EDUCATIONAL YOUTUBE & TWITCH VIDEOS (ZentryTube)
+const VERIFIED_YOUTUBE_IDS = [
+  'aircAruvnKk', // 3Blue1Brown - Neural Networks
+  'IHZwWFHWa-w', // 3Blue1Brown - Gradient Descent
+  'Ilg3gGewQ5U', // 3Blue1Brown - Backpropagation
+  'fNk_zzaMoSs', // 3Blue1Brown - Vectors & Linear Algebra
+  'Ks-_Mh1QhMc', // TED - Body Language
+  '8jPQjjsBbIc', // TED - Staying Calm Under Pressure
+  '6Af6b_wyiwI', // TED - Innovation & Global Science
+  'M7lc1UVf-VE', // Google Developers Multimedia
+  'fLeJJPxua3E', // Motiversity - Focus & Deep Learning
+  'jNQXAC9IVRw', // History of Web Video
+  'fJ9rUzIMcZQ', // Queen - Acoustic Harmony
+  '2Vv-BfVoq4g'  // Music Theory & Composition
+];
+
+// 1. 50 CURATED YOUTUBE EDUCATIONAL VIDEOS
 export const YOUTUBE_VIDEOS: UniversalMediaItem[] = [
   {
     id: 'yt_01',
@@ -58,7 +84,7 @@ export const YOUTUBE_VIDEOS: UniversalMediaItem[] = [
     viewsOrLikes: '6.8 M de vistas',
     duration: '21:01',
     category: 'IA & Código',
-    description: 'Una analogía visual en 3D para entender cómo un modelo de IA minimiza sus errores a través del cálculo.',
+    description: 'Una analogía visual en 3D para entender cómo un modelo de IA minimiza sus errores.',
     tags: ['#MachineLearning', '#Algoritmos']
   },
   {
@@ -72,102 +98,24 @@ export const YOUTUBE_VIDEOS: UniversalMediaItem[] = [
     viewsOrLikes: '4.1 M de vistas',
     duration: '09:52',
     category: 'Matemáticas',
-    description: 'Transformaciones lineales, matrices de rotación y su aplicación en la física cuántica y videojuegos.',
+    description: 'Transformaciones lineales, matrices de rotación y su aplicación en la física cuántica.',
     tags: ['#Matemáticas', '#Geometría', '#Física']
   },
-  {
-    id: 'yt_04',
-    provider: 'youtube',
-    mediaId: 'Ks-_Mh1QhMc',
-    title: 'El Lenguaje Corporal y la Neurociencia del Enfoque Mental',
-    creator: 'TED Talks Ciencia',
-    handle: '@ted_espanol',
-    creatorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=150&auto=format&fit=crop',
-    viewsOrLikes: '22.5 M de vistas',
-    duration: '21:02',
-    category: 'Ciencia',
-    description: 'Cómo nuestra postura y hábitos fisiológicos alteran los niveles de cortisol y dopamina en el cerebro.',
-    tags: ['#Neurociencia', '#Psicología', '#Enfoque']
-  },
-  {
-    id: 'yt_05',
-    provider: 'youtube',
-    mediaId: '8jPQjjsBbIc',
-    title: 'Neurociencia: Cómo Mantener la Claridad en Situaciones de Alta Presión',
-    creator: 'TED Educación',
-    handle: '@ted_edu',
-    creatorAvatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?q=80&w=150&auto=format&fit=crop',
-    viewsOrLikes: '3.9 M de vistas',
-    duration: '12:20',
-    category: 'Ciencia',
-    description: 'Estrategias cognitivas para evitar bloqueos mentales durante exámenes y proyectos escolares.',
-    tags: ['#Educación', '#Cerebro', '#Estudio']
-  },
-  {
-    id: 'yt_06',
-    provider: 'youtube',
-    mediaId: 'M7lc1UVf-VE',
-    title: 'Arquitectura de Sistemas Web y Transmisión Multimedia Digital',
-    creator: 'Google for Developers',
-    handle: '@google_devs',
-    creatorAvatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=150&auto=format&fit=crop',
-    viewsOrLikes: '1.2 M de vistas',
-    duration: '15:10',
-    category: 'IA & Código',
-    description: 'Cómo se empaquetan y distribuyen los flujos de datos a través de la infraestructura global.',
-    tags: ['#WebDev', '#Google', '#Código']
-  },
-  {
-    id: 'yt_07',
-    provider: 'youtube',
-    mediaId: 'jNQXAC9IVRw',
-    title: 'Historia de la Web: El Primer Registro en Video de la Humanidad Digital',
-    creator: 'Archivos de la Red',
-    handle: '@internet_history',
-    creatorAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150&auto=format&fit=crop',
-    viewsOrLikes: '310 M de vistas',
-    duration: '00:19',
-    category: 'Historia',
-    description: 'Grabación histórica que dio inicio a la era de la transmisión de conocimiento en línea.',
-    tags: ['#Historia', '#Internet']
-  },
-  {
-    id: 'yt_08',
-    provider: 'youtube',
-    mediaId: 'fJ9rUzIMcZQ',
-    title: 'Análisis Acústico y Armonía Musical de una Obra Clásica del Rock',
-    creator: 'Acústica & Arte Zentry',
-    handle: '@acustica_latam',
-    creatorAvatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?q=80&w=150&auto=format&fit=crop',
-    viewsOrLikes: '8.7 M de vistas',
-    duration: '05:55',
-    category: 'Arte & Música',
-    description: 'Desglose sinfónico de las escalas polifónicas, timbres y frecuencia de resonancia.',
-    tags: ['#Música', '#Física', '#Armonía']
-  },
-  // Adding remaining to complete 50 items
-  ...Array.from({ length: 42 }).map((_, i) => {
-    const verifiedIds = [
-      'aircAruvnKk', 'IHZwWFHWa-w', 'fNk_zzaMoSs', 'Ks-_Mh1QhMc',
-      '8jPQjjsBbIc', 'M7lc1UVf-VE', 'jNQXAC9IVRw', 'fJ9rUzIMcZQ',
-      'fLeJJPxua3E', '2Vv-BfVoq4g'
-    ];
-    const cats: ('Ciencia' | 'Física' | 'IA & Código' | 'Historia' | 'Matemáticas' | 'Espacio' | 'Arte & Música')[] = [
-      'Ciencia', 'Física', 'IA & Código', 'Historia', 'Matemáticas', 'Espacio', 'Arte & Música'
-    ];
+  ...Array.from({ length: 47 }).map((_, i) => {
+    const cats = ['Ciencia', 'Física', 'IA & Código', 'Historia', 'Matemáticas', 'Espacio', 'Arte & Música'];
     const titles = [
-      `Física Cuántica y Ondas Electromagnéticas (Clase ${i + 1})`,
-      `Estructuras de Datos y Complejidad Algorítmica con Python`,
-      `El Telescopio James Webb y la Formación de Galaxias Tempranas`,
-      `Teoremas de la Geometría No Euclidiana y Curvatura del Espacio`,
+      `Física Cuántica y Ondas Electromagnéticas (Módulo ${i + 1})`,
+      `Fundamentos de Algoritmos y Complejidad en Python`,
+      `El Telescopio James Webb y la Formación de Galaxias`,
+      `Teoremas de la Geometría No Euclidiana y Curvatura`,
       `Ingeniería Hidráulica Prehispánica y Canales Andinos`,
       `Neuroplasticidad y Aprendizaje Acelerado en el Cerebro`,
-      `Biología Celular: La Maquinaria Energética de la Mitocondria`
+      `Biología Celular: La Maquinaria Energética Mitocondrial`
     ];
     return {
-      id: `yt_feed_${i + 9}`,
+      id: `yt_feed_${i + 4}`,
       provider: 'youtube' as MediaProvider,
-      mediaId: verifiedIds[i % verifiedIds.length],
+      mediaId: VERIFIED_YOUTUBE_IDS[i % VERIFIED_YOUTUBE_IDS.length],
       title: titles[i % titles.length],
       creator: i % 2 === 0 ? '3Blue1Brown en Español' : 'TED Educación & Ciencia',
       handle: i % 2 === 0 ? '@3blue1brown_es' : '@ted_ciencia',
@@ -175,17 +123,17 @@ export const YOUTUBE_VIDEOS: UniversalMediaItem[] = [
       viewsOrLikes: `${(Math.random() * 4 + 1.2).toFixed(1)} M de vistas`,
       duration: `1${i % 8}:${(i * 9) % 60 < 10 ? '0' : ''}${(i * 9) % 60}`,
       category: cats[i % cats.length],
-      description: `Lección magistral interactiva y verificada bajo el currículo de ciencias y tecnología de ZentryOS.`,
+      description: 'Lección magistral interactiva y verificada bajo el currículo de ciencias de ZentryOS.',
       tags: ['#Ciencia', '#ZentryTube', '#Educación']
     };
   })
 ];
 
-// 50 REAL CURATED VERTICAL EDUCATIONAL SHORTS & TIKTOKS (ZentryTok)
+// 2. 50 CURATED TIKTOK EDUCATIONAL SHORTS
 export const TIKTOK_SHORTS: UniversalMediaItem[] = [
   {
     id: 'tok_01',
-    provider: 'youtube', // Guaranteed responsive vertical player stream
+    provider: 'tiktok',
     mediaId: 'fLeJJPxua3E',
     title: 'El Secreto del Enfoque Profundo y la Memoria de Trabajo 🧠⚡',
     creator: 'Neurociencia Escolar',
@@ -198,7 +146,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
   },
   {
     id: 'tok_02',
-    provider: 'youtube',
+    provider: 'tiktok',
     mediaId: 'aircAruvnKk',
     title: '¿Cómo reconoce dígitos una Red Neuronal? (Animación 3D) 🤖💻',
     creator: 'Profe Código',
@@ -211,7 +159,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
   },
   {
     id: 'tok_03',
-    provider: 'youtube',
+    provider: 'tiktok',
     mediaId: 'IHZwWFHWa-w',
     title: 'El truco matemático del Descenso del Gradiente en 60 segundos 📐✨',
     creator: 'Mates al Toque',
@@ -223,13 +171,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#Matemáticas', '#Hacks', '#Cálculo']
   },
   ...Array.from({ length: 47 }).map((_, i) => {
-    const verifiedIds = [
-      'fLeJJPxua3E', 'aircAruvnKk', 'IHZwWFHWa-w', 'fNk_zzaMoSs',
-      '8jPQjjsBbIc', 'Ks-_Mh1QhMc', 'jNQXAC9IVRw', 'M7lc1UVf-VE'
-    ];
-    const cats: ('Experimentos' | 'Curiosidades' | 'Física' | 'Matemáticas' | 'IA & Código')[] = [
-      'Experimentos', 'Curiosidades', 'Física', 'Matemáticas', 'IA & Código'
-    ];
+    const cats = ['Experimentos', 'Curiosidades', 'Física', 'Matemáticas', 'IA & Código'];
     const titles = [
       '¿Por qué el hielo flota en el agua? La anomalía de densidad 🧊',
       'El secreto de la secuencia de Fibonacci en los girasoles 🌻',
@@ -239,25 +181,25 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     ];
     return {
       id: `tok_feed_${i + 4}`,
-      provider: 'youtube' as MediaProvider,
-      mediaId: verifiedIds[i % verifiedIds.length],
+      provider: 'tiktok' as MediaProvider,
+      mediaId: VERIFIED_YOUTUBE_IDS[i % VERIFIED_YOUTUBE_IDS.length],
       title: titles[i % titles.length],
-      creator: `Educador Zentry ${i + 1}`,
+      creator: `Educador TikTok ${i + 1}`,
       handle: `@zentry_edu_${i + 1}`,
       creatorAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150&auto=format&fit=crop',
       viewsOrLikes: `${(Math.random() * 800 + 100).toFixed(0)}K`,
-      category: cats[i % cats.length] as any,
+      category: cats[i % cats.length],
       description: 'Micro-cápsula educativa de alto impacto con explicación socrática integrada.',
-      tags: ['#AprendeConZentry', '#Ciencia', '#Escuela']
+      tags: ['#AprendeConZentry', '#TikTokEdu', '#Escuela']
     };
   })
 ];
 
-// 50 REAL CURATED INSTAGRAM VISUAL POSTS (ZentryGram)
+// 3. 50 CURATED INSTAGRAM POSTS & REELS
 export const INSTAGRAM_POSTS: InstagramPostItem[] = [
   {
     id: 'gram_01',
-    shortcode: 'Cx9_Example',
+    shortcode: 'C3X_Example1',
     username: 'nasa_espanol',
     userAvatar: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=150&auto=format&fit=crop',
     isVerified: true,
@@ -267,14 +209,14 @@ export const INSTAGRAM_POSTS: InstagramPostItem[] = [
       'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=800&auto=format&fit=crop'
     ],
     likes: 34820,
-    caption: '🔭 La Nebulosa de la Tarántula capturada en longitud de onda infrarroja media. A 161,000 años luz de distancia, esta región estelar alberga las estrellas más masivas jamás observadas por la humanidad.',
+    caption: '🔭 La Nebulosa de la Tarántula capturada en longitud de onda infrarroja media. A 161,000 años luz de distancia, esta región estelar alberga las estrellas más masivas jamás observadas.',
     tags: ['#NASA', '#JamesWebb', '#Astronomía', '#Ciencia'],
     timeAgo: 'hace 2 horas',
     category: 'Astrofotografía'
   },
   {
     id: 'gram_02',
-    shortcode: 'Cx8_Example',
+    shortcode: 'C3X_Example2',
     username: 'natgeo_ciencia',
     userAvatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=150&auto=format&fit=crop',
     isVerified: true,
@@ -290,7 +232,7 @@ export const INSTAGRAM_POSTS: InstagramPostItem[] = [
   },
   {
     id: 'gram_03',
-    shortcode: 'Cx7_Example',
+    shortcode: 'C3X_Example3',
     username: 'infografias_cientificas',
     userAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150&auto=format&fit=crop',
     isVerified: true,
@@ -323,7 +265,7 @@ export const INSTAGRAM_POSTS: InstagramPostItem[] = [
     ];
     return {
       id: `gram_feed_${i + 4}`,
-      shortcode: `Cx${i + 4}_Example`,
+      shortcode: `C3X_Post_${i + 4}`,
       username: `zentry_creator_${i + 1}`,
       userAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150&auto=format&fit=crop',
       isVerified: i % 2 === 0,
@@ -334,6 +276,67 @@ export const INSTAGRAM_POSTS: InstagramPostItem[] = [
       tags: ['#ZentryGram', '#EducacionVisual', '#Aprender'],
       timeAgo: `hace ${((i % 12) + 1)} horas`,
       category: cats[i % cats.length]
+    };
+  })
+];
+
+// 4. 50 CURATED TWITCH EDUCATIONAL & CODING STREAMS
+export const TWITCH_STREAMS: TwitchStreamItem[] = [
+  {
+    id: 'tw_01',
+    channel: 'nasa',
+    title: 'Transmisión en Vivo desde la Estación Espacial Internacional (ISS)',
+    category: 'Ciencia & Astronomía',
+    viewerCount: '12.4K espectadores',
+    streamerAvatar: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=150&auto=format&fit=crop',
+    thumbnail: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=600&auto=format&fit=crop',
+    description: 'Vistas en tiempo real de la Tierra en alta definición desde la cúpula de la Estación Espacial Internacional.',
+    tags: ['#NASA', '#Espacio', '#EnVivo']
+  },
+  {
+    id: 'tw_02',
+    channel: 'midudev',
+    title: 'Construyendo Aplicaciones Web con IA y TypeScript en Vivo',
+    category: 'Software & Código',
+    viewerCount: '4.8K espectadores',
+    streamerAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150&auto=format&fit=crop',
+    thumbnail: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?q=80&w=600&auto=format&fit=crop',
+    description: 'Programación en directo, resolución de bugs y mejores prácticas de arquitectura de software para estudiantes.',
+    tags: ['#Programación', '#TypeScript', '#React']
+  },
+  {
+    id: 'tw_03',
+    channel: 'chess',
+    title: 'Campeonato de Maestros: Estrategia y Análisis Táctico de Partidas',
+    category: 'Ajedrez & Lógica',
+    viewerCount: '8.1K espectadores',
+    streamerAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=150&auto=format&fit=crop',
+    thumbnail: 'https://images.unsplash.com/photo-1529699211952-734e80c4d42b?q=80&w=600&auto=format&fit=crop',
+    description: 'Aperturas clásicas, cálculo de variantes y resolución de problemas tácticos para agilidad mental.',
+    tags: ['#Ajedrez', '#Estrategia', '#Lógica']
+  },
+  ...Array.from({ length: 47 }).map((_, i) => {
+    const channels = ['nasa', 'midudev', 'chess', 'gamedev', 'science', 'robotics'];
+    const cats: ('Software & Código' | 'Ciencia & Astronomía' | 'Ajedrez & Lógica' | 'Robótica' | 'Desarrollo de Videojuegos')[] = [
+      'Software & Código', 'Ciencia & Astronomía', 'Ajedrez & Lógica', 'Robótica', 'Desarrollo de Videojuegos'
+    ];
+    const titles = [
+      `Desarrollo de Motores de Física 2D y Shaders en Vivo (Sesión ${i + 1})`,
+      `Observatorio Astronómico: Seguimiento de Exoplanetas y Cometas`,
+      `Torneo Escolar de Ajedrez Rápido: Análisis de Aperturas Sicilianas`,
+      `Programación de Sensores y Servomotores para Brazos Robóticos`,
+      `Creación de un Juego de Aventura Pixel Art desde Cero con Godot`
+    ];
+    return {
+      id: `tw_feed_${i + 4}`,
+      channel: channels[i % channels.length],
+      title: titles[i % titles.length],
+      category: cats[i % cats.length],
+      viewerCount: `${(Math.random() * 5 + 1).toFixed(1)}K espectadores`,
+      streamerAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=150&auto=format&fit=crop',
+      thumbnail: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?q=80&w=600&auto=format&fit=crop',
+      description: 'Transmisión interactiva en directo auditada bajo el escudo de aprendizaje ZentryOS.',
+      tags: ['#EnVivo', '#ZentryStream', '#Educación']
     };
   })
 ];

@@ -37,6 +37,7 @@ import { ZentryEntertainmentHubScreen } from './components/screens/ZentryEnterta
 import { ZentryTubeScreen } from './components/screens/ZentryTubeScreen';
 import { ZentryTokScreen } from './components/screens/ZentryTokScreen';
 import { ZentryGramScreen } from './components/screens/ZentryGramScreen';
+import { ZentryStreamScreen } from './components/screens/ZentryStreamScreen';
 
 import { subscribeToDeviceState, simulateDeviceState } from './services/firebase';
 import { sounds } from './services/soundEffects';
@@ -372,6 +373,10 @@ export const App: React.FC = () => {
 
         {currentScreen === 'zentry_gram' && (
           <ZentryGramScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
+        )}
+
+        {currentScreen === 'zentry_stream' && (
+          <ZentryStreamScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
         )}
       </div>
 

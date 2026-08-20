@@ -20,7 +20,8 @@ export type ScreenId =
   | 'entertainment_hub'
   | 'zentry_tube'
   | 'zentry_tok'
-  | 'zentry_gram';
+  | 'zentry_gram'
+  | 'zentry_stream';
 
 export type WallpaperId = 'Glacial' | 'Lila' | 'Aura' | 'Brisa' | 'Espacio';
 
