@@ -91,6 +91,14 @@
 }
 
 /* Custom Scrollbar for inner views */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 ::-webkit-scrollbar {
   width: 4px;
   height: 4px;

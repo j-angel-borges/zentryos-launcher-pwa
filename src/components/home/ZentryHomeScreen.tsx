@@ -1,5 +1,4 @@
 import React, { useState, useRef } from 'react';
-import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import type { ScreenId, WallpaperConfig, CircadianPhase } from '../../types/zentry';
 import { ZentryLiquidButton } from './ZentryLiquidButton';
 import { OSSearchBar } from './OSSearchBar';
@@ -33,29 +32,33 @@ export const ZentryHomeScreen: React.FC<Props> = ({
   onOpenCommandSheet
 }) => {
   const [page, setPage] = useState<0 | 1>(0);
-  const containerRef = useRef<HTMLDivElement | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
-  // Swipe gesture handler
-  const handleDragEnd = (_e: any, info: { offset: { x: number }; velocity: { x: number } }) => {
-    const swipeThreshold = 50;
-    const swipeVelocity = 0.2;
+  // Handle continuous horizontal scroll / swipe
+  const handleScroll = () => {
+    if (!scrollContainerRef.current) return;
+    const { scrollLeft, clientWidth } = scrollContainerRef.current;
+    const currentPage = Math.round(scrollLeft / clientWidth) as 0 | 1;
+    if (currentPage !== page && (currentPage === 0 || currentPage === 1)) {
+      setPage(currentPage);
+    }
+  };
 
-    if (info.offset.x < -swipeThreshold || info.velocity.x < -swipeVelocity) {
-      if (page === 0) {
-        sounds.playTap();
-        setPage(1);
-      }
-    } else if (info.offset.x > swipeThreshold || info.velocity.x > swipeVelocity) {
-      if (page === 1) {
-        sounds.playTap();
-        setPage(0);
-      }
+  const scrollToPage = (targetPage: 0 | 1) => {
+    sounds.playTap();
+    setPage(targetPage);
+    if (scrollContainerRef.current) {
+      const width = scrollContainerRef.current.clientWidth;
+      scrollContainerRef.current.scrollTo({
+        left: targetPage * width,
+        behavior: 'smooth'
+      });
     }
   };
 
   return (
-    <div className="w-full h-full flex flex-col justify-between p-4 md:p-6 overflow-hidden z-10 select-none">
-      {/* Top Main Area */}
+    <div className="w-full h-full flex flex-col justify-between p-3 md:p-6 overflow-hidden z-10 select-none">
+      {/* Top Main Viewport */}
       <div className="flex-1 w-full max-w-4xl mx-auto flex flex-col justify-between gap-3 overflow-hidden">
         {/* Landscape Grid (Split View for Tablets / Desktop) */}
         <div className="hidden md:grid md:grid-cols-2 md:gap-8 w-full items-start overflow-y-auto pr-1">
@@ -82,57 +85,42 @@ export const ZentryHomeScreen: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Portrait Layout with Full Native Touch Swipe Pager */}
+        {/* Portrait Layout with Native 120Hz Hardware Scroll Snap Pager */}
         <div className="flex md:hidden flex-col items-center justify-between h-full w-full overflow-hidden">
-          {/* Draggable Pager Container */}
+          {/* Snap Pager Container */}
           <div
-            ref={containerRef}
-            className="flex-1 w-full overflow-y-auto overflow-x-hidden touch-pan-y relative"
+            ref={scrollContainerRef}
+            onScroll={handleScroll}
+            className="flex-1 w-full flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory scroll-smooth no-scrollbar touch-pan-x"
           >
-            <motion.div
-              drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={0.2}
-              onDragEnd={handleDragEnd}
-              animate={{ x: page === 0 ? '0%' : '-100%' }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="flex w-[200%] h-full"
-            >
-              {/* Page 0: Main Launcher & Widgets */}
-              <div className="w-1/2 h-full flex flex-col items-center gap-3 px-1">
-                <ZentryLiquidButton
-                  onTap={() => onNavigate('ai')}
-                  onDoubleTap={onOpenCommandSheet}
-                  isDark={wallpaper.isDark}
-                />
-                {showClock && <LiveClockWidget isDark={wallpaper.isDark} onClick={() => onNavigate('reloj')} />}
-                {showCalendar && <CalendarWidget isDark={wallpaper.isDark} onClick={() => onNavigate('calendar')} />}
-                <OSSearchBar onSearch={onSearch} isDark={wallpaper.isDark} />
-                <OSAppGrid isDark={wallpaper.isDark} onNavigate={onNavigate} />
-                <OSSecondaryCards isDark={wallpaper.isDark} onNavigate={onNavigate} />
-              </div>
+            {/* Page 0: Main Launcher & Widgets */}
+            <div className="w-full shrink-0 h-full snap-center overflow-y-auto px-1 flex flex-col items-center gap-3">
+              <ZentryLiquidButton
+                onTap={() => onNavigate('ai')}
+                onDoubleTap={onOpenCommandSheet}
+                isDark={wallpaper.isDark}
+              />
+              {showClock && <LiveClockWidget isDark={wallpaper.isDark} onClick={() => onNavigate('reloj')} />}
+              {showCalendar && <CalendarWidget isDark={wallpaper.isDark} onClick={() => onNavigate('calendar')} />}
+              <OSSearchBar onSearch={onSearch} isDark={wallpaper.isDark} />
+              <OSAppGrid isDark={wallpaper.isDark} onNavigate={onNavigate} />
+              <OSSecondaryCards isDark={wallpaper.isDark} onNavigate={onNavigate} />
+            </div>
 
-              {/* Page 1: Google Workspace Apps */}
-              <div className="w-1/2 h-full flex flex-col items-center px-1">
-                <WorkspacePage isDark={wallpaper.isDark} onNavigate={onNavigate} />
-              </div>
-            </motion.div>
+            {/* Page 1: Google Workspace Apps */}
+            <div className="w-full shrink-0 h-full snap-center overflow-y-auto px-1 flex flex-col items-center">
+              <WorkspacePage isDark={wallpaper.isDark} onNavigate={onNavigate} />
+            </div>
           </div>
 
-          {/* Swipe Indicator Dots */}
+          {/* Pager Indicator Dots */}
           <div className="flex items-center gap-2 py-1.5 z-20">
             <button
-              onClick={() => {
-                sounds.playTap();
-                setPage(0);
-              }}
+              onClick={() => scrollToPage(0)}
               className={(page === 0 ? 'w-5 h-2 bg-white/90 shadow-md ' : 'w-2 h-2 bg-white/30 ') + 'rounded-full transition-all cursor-pointer'}
             />
             <button
-              onClick={() => {
-                sounds.playTap();
-                setPage(1);
-              }}
+              onClick={() => scrollToPage(1)}
               className={(page === 1 ? 'w-5 h-2 bg-white/90 shadow-md ' : 'w-2 h-2 bg-white/30 ') + 'rounded-full transition-all cursor-pointer'}
             />
           </div>
