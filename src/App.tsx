@@ -1,285 +1,350 @@
 import React, { useState, useEffect } from 'react';
 import type { 
-  CircadianRhythm, 
-  ActiveAppId, 
-  QuickSettingsState, 
-  DeviceFirestoreState, 
-  DeviceFrameType,
-  VoiceCommandResult 
+  ScreenId, 
+  WallpaperId, 
+  WallpaperConfig, 
+  CircadianPhase, 
+  DeviceFirestoreState 
 } from './types/zentry';
-import { launcherSync, DEFAULT_DEVICE_ID } from './services/firebase';
-import { voiceService } from './services/voiceSpeech';
-import { sounds } from './services/soundEffects';
+import { ZentryWallpaper } from './components/wallpaper/ZentryWallpaper';
+import { ZentryStatusBar } from './components/shell/ZentryStatusBar';
+import { ZentryNavBar } from './components/shell/ZentryNavBar';
+import { ZentryTopPanels } from './components/shell/ZentryTopPanels';
+import { ZentryCommandSheet } from './components/shell/ZentryCommandSheet';
+import { ZentryLockModal } from './components/shell/ZentryLockModal';
+import { ZentryHomeScreen } from './components/home/ZentryHomeScreen';
+import { CustomizationPanel } from './components/home/CustomizationPanel';
 
-import { DeviceFrame } from './components/shell/DeviceFrame';
-import { CircadianWallpaper } from './components/shell/CircadianWallpaper';
-import { StatusBar } from './components/shell/StatusBar';
-import { QuickSettingsPanel } from './components/shell/QuickSettingsPanel';
-import { NavigationBar } from './components/shell/NavigationBar';
-import { VoiceCommandBar } from './components/shell/VoiceCommandBar';
-import { LockScreenModal } from './components/shell/LockScreenModal';
+// Screen Imports
+import { ZentryAiScreen } from './components/screens/ZentryAiScreen';
+import { ZentryCreationScreen } from './components/screens/ZentryCreationScreen';
+import { ZentryTutorHubScreen } from './components/screens/ZentryTutorHubScreen';
+import { ZentrySafeBrowserScreen } from './components/screens/ZentrySafeBrowserScreen';
+import { ZentryCalculatorScreen } from './components/screens/ZentryCalculatorScreen';
+import { ZentryCameraScreen } from './components/screens/ZentryCameraScreen';
+import { ZentryClockScreen } from './components/screens/ZentryClockScreen';
+import { ZentryCalendarScreen } from './components/screens/ZentryCalendarScreen';
+import { ZentryFilesScreen } from './components/screens/ZentryFilesScreen';
+import { ZentryPhoneScreen } from './components/screens/ZentryPhoneScreen';
+import { ZentrySettingsScreen } from './components/screens/ZentrySettingsScreen';
+import { ZentryNeuroArtScreen } from './components/screens/ZentryNeuroArtScreen';
+import { ZentryWorldGeneratorScreen } from './components/screens/ZentryWorldGeneratorScreen';
+import { ZentryStudyAssistantScreen } from './components/screens/ZentryStudyAssistantScreen';
+import { ZentryResearchScreen } from './components/screens/ZentryResearchScreen';
+import { ZentryRedactorScreen } from './components/screens/ZentryRedactorScreen';
 
-import { HomeScreen } from './components/home/HomeScreen';
-import { AppDrawer } from './components/home/AppDrawer';
+import { subscribeToDeviceState, simulateDeviceState } from './services/firebase';
 
-import { SafeYouTubeIntervention } from './components/microapps/SafeYouTubeIntervention';
-import { StudyAssistantMinedu } from './components/microapps/StudyAssistantMinedu';
-import { MultimodalCameraTutor } from './components/microapps/MultimodalCameraTutor';
-import { NeuroArtStudio } from './components/microapps/NeuroArtStudio';
-import { WorldGenerator } from './components/microapps/WorldGenerator';
-import { SmartCalculator } from './components/microapps/SmartCalculator';
-import { DigitalPassport } from './components/microapps/DigitalPassport';
+const WALLPAPERS: Record<WallpaperId, WallpaperConfig> = {
+  Glacial: {
+    id: 'Glacial',
+    name: 'Glacial',
+    hex: '#F1F5F9',
+    base: '#F1F5F9',
+    orbs: ['#D4E8FF', '#C2F4E7', '#E0C3FC'],
+    isDark: false
+  },
+  Lila: {
+    id: 'Lila',
+    name: 'Lila',
+    hex: '#E9E3FF',
+    base: '#E9E3FF',
+    orbs: ['#C8B6FF', '#E0C3FC', '#FFD6EC'],
+    isDark: false
+  },
+  Aura: {
+    id: 'Aura',
+    name: 'Aura',
+    hex: '#FFE8E8',
+    base: '#FFE8E8',
+    orbs: ['#FFC2D1', '#FFDFC2', '#E0C3FC'],
+    isDark: false
+  },
+  Brisa: {
+    id: 'Brisa',
+    name: 'Brisa',
+    hex: '#E3F2FD',
+    base: '#E3F2FD',
+    orbs: ['#B3E5FC', '#C2F4E7', '#D6C8FA'],
+    isDark: false
+  },
+  Espacio: {
+    id: 'Espacio',
+    name: 'Espacio',
+    hex: '#26262B',
+    base: '#1E1E28',
+    orbs: ['#4A306D', '#2E4057', '#533B87'],
+    isDark: true
+  }
+};
 
 export const App: React.FC = () => {
-  // Device Frame Mode (Tablet / Phone / Fullscreen)
-  const [frameType, setFrameType] = useState<DeviceFrameType>('tablet');
+  // Navigation & History State
+  const [currentScreen, setCurrentScreen] = useState<ScreenId>('launcher');
+  const [history, setHistory] = useState<ScreenId[]>([]);
 
-  // App Navigation Stack
-  const [activeApp, setActiveApp] = useState<ActiveAppId>('home');
-  const [navHistory, setNavHistory] = useState<ActiveAppId[]>([]);
-  const [isAppDrawerOpen, setIsAppDrawerOpen] = useState<boolean>(false);
-  const [isQuickSettingsOpen, setIsQuickSettingsOpen] = useState<boolean>(false);
-
-  // Circadian Rhythm state
-  const [circadian, setCircadian] = useState<CircadianRhythm>({
-    period: 'day',
-    name: 'Ventana de Máximo Enfoque',
-    focusMinutesRemaining: 45,
-    totalDailyBudgetMinutes: 90,
-    circadianRatio: 0.5,
-    energyLevel: 'peak'
+  // Wallpaper & Preferences
+  const [wallpaperId, setWallpaperId] = useState<WallpaperId>(() => {
+    return (localStorage.getItem('zentry_wallpaper') as WallpaperId) || 'Glacial';
+  });
+  const [showClock, setShowClock] = useState<boolean>(() => {
+    return localStorage.getItem('zentry_show_clock') !== 'false';
+  });
+  const [showCalendar, setShowCalendar] = useState<boolean>(() => {
+    return localStorage.getItem('zentry_show_calendar') !== 'false';
   });
 
-  // Quick Settings Toggles
-  const [quickState, setQuickState] = useState<QuickSettingsState>({
-    wifi: true,
-    bluetooth: true,
-    cellularData: true,
-    flashlight: false,
-    focusShield: true,
-    monkMode: false,
-    brightness: 85,
-    volume: 70
+  // Circadian Phase State (Morning 6-11, Afternoon 12-17, Night 18+)
+  const [circadianPhase, setCircadianPhase] = useState<CircadianPhase>(() => {
+    const hour = new Date().getHours();
+    if (hour >= 6 && hour < 12) {
+      return {
+        name: 'MORNING',
+        title: 'Fase Matutina',
+        description: 'Ventana de Máxima Concentración y Claridad',
+        startColor: '#C2F4E7',
+        endColor: '#D4E8FF',
+        textColor: '#333333'
+      };
+    } else if (hour >= 12 && hour < 18) {
+      return {
+        name: 'AFTERNOON',
+        title: 'Fase Vespertina',
+        description: 'Ventana Creativa y Retos de Aprendizaje',
+        startColor: '#FCE38A',
+        endColor: '#D6C8FA',
+        textColor: '#4A306D'
+      };
+    } else {
+      return {
+        name: 'NIGHT',
+        title: 'Fase Nocturna',
+        description: 'Filtro de Luz Azul y Preparación para el Descanso',
+        startColor: '#FF9E9E',
+        endColor: '#533B87',
+        textColor: '#FFFFFF'
+      };
+    }
   });
 
-  // Live Firestore Device Sync
-  const [deviceState, setDeviceState] = useState<DeviceFirestoreState>({
-    deviceId: DEFAULT_DEVICE_ID,
-    isLocked: false,
-    lockReason: null,
-    batteryLevel: 88,
-    networkStatus: 'online',
-    lastSeenAt: new Date().toISOString()
-  });
+  // Shell modals state
+  const [isCustomizationOpen, setIsCustomizationOpen] = useState(false);
+  const [isQuickPanelOpen, setIsQuickPanelOpen] = useState(false);
+  const [quickPanelTab, setQuickPanelTab] = useState<'quick' | 'notices'>('quick');
+  const [isCommandSheetOpen, setIsCommandSheetOpen] = useState(false);
 
-  // Voice Assistant state
-  const [isVoiceActive, setIsVoiceActive] = useState(false);
-  const [voiceResult, setVoiceResult] = useState<VoiceCommandResult | null>(null);
-  const [voiceStatusText, setVoiceStatusText] = useState('Escuchando tu comando...');
+  // Firestore C&C State
+  const [deviceState, setDeviceState] = useState<DeviceFirestoreState>(simulateDeviceState);
 
-  // Initialize Real-time Firestore Sync
   useEffect(() => {
-    launcherSync.init(DEFAULT_DEVICE_ID, (updatedState) => {
-      setDeviceState(updatedState);
-      if (updatedState.isLocked) {
-        sounds.playInterventionShield();
-      }
+    const unsub = subscribeToDeviceState((state) => {
+      setDeviceState(state);
     });
-
-    return () => launcherSync.cleanup();
+    return () => unsub();
   }, []);
 
-  // Circadian Rhythm Calculator based on hour of day
-  useEffect(() => {
-    const calcCircadian = () => {
-      const hour = new Date().getHours();
-      if (hour >= 6 && hour < 12) {
-        setCircadian(prev => ({
-          ...prev,
-          period: 'morning',
-          name: 'Despertar & Concentración Matutina',
-          energyLevel: 'high'
-        }));
-      } else if (hour >= 12 && hour < 18) {
-        setCircadian(prev => ({
-          ...prev,
-          period: 'day',
-          name: 'Ventana de Alto Enfoque Cognitivo',
-          energyLevel: 'peak'
-        }));
-      } else if (hour >= 18 && hour < 21) {
-        setCircadian(prev => ({
-          ...prev,
-          period: 'evening',
-          name: 'Consolidación de Aprendizaje & Creatividad',
-          energyLevel: 'winding_down'
-        }));
-      } else {
-        setCircadian(prev => ({
-          ...prev,
-          period: 'night',
-          name: 'Modo Sueño & Cierre Circadiano',
-          energyLevel: 'sleep_prep'
-        }));
-      }
-    };
-    calcCircadian();
-  }, []);
-
-  // Navigation Handlers
-  const handleOpenApp = (appId: ActiveAppId) => {
-    if (appId === activeApp) return;
-    setNavHistory(prev => [...prev, activeApp]);
-    setActiveApp(appId);
-    setIsAppDrawerOpen(false);
-    setIsQuickSettingsOpen(false);
+  const navigateTo = (screen: ScreenId) => {
+    setHistory((prev) => [...prev, currentScreen]);
+    setCurrentScreen(screen);
   };
 
   const handleBack = () => {
-    if (isAppDrawerOpen) {
-      setIsAppDrawerOpen(false);
-      return;
-    }
-    if (isQuickSettingsOpen) {
-      setIsQuickSettingsOpen(false);
-      return;
-    }
-    if (navHistory.length > 0) {
-      const prev = navHistory[navHistory.length - 1];
-      setNavHistory(h => h.slice(0, -1));
-      setActiveApp(prev);
+    if (history.length > 0) {
+      const prev = history[history.length - 1];
+      setHistory((old) => old.slice(0, -1));
+      setCurrentScreen(prev);
     } else {
-      setActiveApp('home');
+      setCurrentScreen('launcher');
     }
   };
 
   const handleHome = () => {
-    setIsAppDrawerOpen(false);
-    setIsQuickSettingsOpen(false);
-    if (activeApp !== 'home') {
-      setNavHistory(prev => [...prev, activeApp]);
-      setActiveApp('home');
-    }
+    setHistory([]);
+    setCurrentScreen('launcher');
   };
 
-  // Voice Assistant Trigger
-  const handleTriggerVoice = () => {
-    if (isVoiceActive) {
-      voiceService.stopListening();
-      setIsVoiceActive(false);
-      return;
-    }
-
-    setIsVoiceActive(true);
-    setVoiceResult(null);
-    setVoiceStatusText('Te escucho... Pídeme abrir una materia o tarea');
-
-    if (!voiceService.isSupported()) {
-      // Mock voice response for browsers without Web Speech API
-      setTimeout(() => {
-        const mockRes = voiceService.parseVoiceCommand('Abre mi tutor de ciencias para la tarea');
-        setVoiceResult(mockRes);
-        setIsVoiceActive(false);
-        if (mockRes.targetApp) {
-          handleOpenApp(mockRes.targetApp);
-        }
-      }, 1500);
-      return;
-    }
-
-    voiceService.startListening(
-      (result) => {
-        setIsVoiceActive(false);
-        setVoiceResult(result);
-        if (result.targetApp && result.targetApp !== activeApp) {
-          setTimeout(() => handleOpenApp(result.targetApp!), 700);
-        }
-      },
-      (err) => {
-        setIsVoiceActive(false);
-        setVoiceStatusText(`Audio: ${err}`);
-      }
-    );
+  const handleSelectWallpaper = (id: WallpaperId) => {
+    setWallpaperId(id);
+    localStorage.setItem('zentry_wallpaper', id);
   };
+
+  const handleToggleClock = () => {
+    setShowClock((v) => {
+      const next = !v;
+      localStorage.setItem('zentry_show_clock', String(next));
+      return next;
+    });
+  };
+
+  const handleToggleCalendar = () => {
+    setShowCalendar((v) => {
+      const next = !v;
+      localStorage.setItem('zentry_show_calendar', String(next));
+      return next;
+    });
+  };
+
+  const currentWallpaper = WALLPAPERS[wallpaperId] || WALLPAPERS.Glacial;
 
   return (
-    <DeviceFrame frameType={frameType} onChangeFrame={setFrameType}>
-      <div className="relative w-full h-full flex flex-col bg-[#080d1a] overflow-hidden select-none">
-        {/* Dynamic Circadian Background Wallpaper */}
-        <CircadianWallpaper circadian={circadian} />
+    <main className="w-screen h-screen min-h-screen overflow-hidden select-none relative flex flex-col justify-between">
+      {/* 1. Live Circadian Organic Mesh Wallpaper */}
+      <ZentryWallpaper
+        wallpaper={currentWallpaper}
+        phase={circadianPhase}
+        focusActive={false}
+      />
 
-        {/* Top Status Bar */}
-        <StatusBar
-          circadian={circadian}
-          deviceState={deviceState}
-          onOpenQuickSettings={() => setIsQuickSettingsOpen(prev => !prev)}
-          isQuickSettingsOpen={isQuickSettingsOpen}
-        />
+      {/* 2. Top System Status Bar */}
+      <ZentryStatusBar
+        phase={circadianPhase}
+        deviceState={deviceState}
+        onOpenQuickPanel={(tab) => {
+          setQuickPanelTab(tab || 'quick');
+          setIsQuickPanelOpen(true);
+        }}
+        isDark={currentWallpaper.isDark}
+      />
 
-        {/* Top Pull-Down Quick Settings Panel */}
-        <QuickSettingsPanel
-          isOpen={isQuickSettingsOpen}
-          onClose={() => setIsQuickSettingsOpen(false)}
-          quickState={quickState}
-          onUpdateState={(patch) => setQuickState(prev => ({ ...prev, ...patch }))}
-          circadian={circadian}
-        />
+      {/* 3. Screen Viewport (Fluid Pure CSS Edge-to-Edge Responsiveness) */}
+      <div className="flex-1 w-full h-full relative overflow-hidden flex flex-col items-center justify-center">
+        {currentScreen === 'launcher' && (
+          <ZentryHomeScreen
+            wallpaper={currentWallpaper}
+            phase={circadianPhase}
+            focusActive={false}
+            showClock={showClock}
+            showCalendar={showCalendar}
+            onNavigate={navigateTo}
+            onSearch={(query) => {
+              navigateTo('safe_search');
+            }}
+            onOpenCommandSheet={() => setIsCommandSheetOpen(true)}
+          />
+        )}
 
-        {/* Main Content Router */}
-        <main className="relative flex-1 flex flex-col overflow-hidden z-10">
-          {activeApp === 'home' && (
-            <HomeScreen
-              circadian={circadian}
-              activeApp={activeApp}
-              onOpenApp={handleOpenApp}
-              onTriggerVoice={handleTriggerVoice}
-            />
-          )}
+        {currentScreen === 'ai' && (
+          <ZentryAiScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
+        )}
 
-          {activeApp === 'youtube_guard' && <SafeYouTubeIntervention />}
-          {activeApp === 'study_assistant' && <StudyAssistantMinedu />}
-          {activeApp === 'camera_tutor' && <MultimodalCameraTutor />}
-          {activeApp === 'neuro_art' && <NeuroArtStudio />}
-          {activeApp === 'world_generator' && <WorldGenerator />}
-          {activeApp === 'calculator' && <SmartCalculator />}
-          {activeApp === 'passport' && <DigitalPassport />}
-        </main>
+        {currentScreen === 'creation' && (
+          <ZentryCreationScreen
+            onBack={handleBack}
+            onNavigate={navigateTo}
+            isDark={currentWallpaper.isDark}
+          />
+        )}
 
-        {/* Full App Drawer Modal */}
-        <AppDrawer
-          isOpen={isAppDrawerOpen}
-          onClose={() => setIsAppDrawerOpen(false)}
-          onOpenApp={handleOpenApp}
-        />
+        {currentScreen === 'tutor_hub' && (
+          <ZentryTutorHubScreen
+            onBack={handleBack}
+            onNavigate={navigateTo}
+            isDark={currentWallpaper.isDark}
+          />
+        )}
 
-        {/* Floating Voice Assistant Bar */}
-        <VoiceCommandBar
-          isActive={isVoiceActive}
-          onClose={() => {
-            setIsVoiceActive(false);
-            setVoiceResult(null);
-          }}
-          lastResult={voiceResult}
-          statusText={voiceStatusText}
-        />
+        {currentScreen === 'safe_search' && (
+          <ZentrySafeBrowserScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
+        )}
 
-        {/* Bottom Navigation Gesture Bar */}
-        <NavigationBar
-          onBack={handleBack}
-          onHome={handleHome}
-          onToggleDrawer={() => setIsAppDrawerOpen(prev => !prev)}
-          onTriggerVoice={handleTriggerVoice}
-          canGoBack={activeApp !== 'home' || isAppDrawerOpen || isQuickSettingsOpen}
-          isVoiceActive={isVoiceActive}
-        />
+        {currentScreen === 'calculator' && (
+          <ZentryCalculatorScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
+        )}
 
-        {/* Remote Lock Modal (Triggered in real-time from Parent Dashboard) */}
-        <LockScreenModal
-          deviceState={deviceState}
-          onSimulateUnlock={() => setDeviceState(prev => ({ ...prev, isLocked: false }))}
-        />
+        {currentScreen === 'camera' && (
+          <ZentryCameraScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
+        )}
+
+        {currentScreen === 'reloj' && (
+          <ZentryClockScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
+        )}
+
+        {currentScreen === 'calendar' && (
+          <ZentryCalendarScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
+        )}
+
+        {currentScreen === 'files' && (
+          <ZentryFilesScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
+        )}
+
+        {currentScreen === 'phone' && (
+          <ZentryPhoneScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
+        )}
+
+        {currentScreen === 'settings' && (
+          <ZentrySettingsScreen
+            onBack={handleBack}
+            currentWallpaper={wallpaperId}
+            onSelectWallpaper={handleSelectWallpaper}
+            isDark={currentWallpaper.isDark}
+          />
+        )}
+
+        {currentScreen === 'neuro_art' && (
+          <ZentryNeuroArtScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
+        )}
+
+        {currentScreen === 'world_generator' && (
+          <ZentryWorldGeneratorScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
+        )}
+
+        {currentScreen === 'study_assistant' && (
+          <ZentryStudyAssistantScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
+        )}
+
+        {currentScreen === 'deep_research' && (
+          <ZentryResearchScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
+        )}
+
+        {currentScreen === 'redactor' && (
+          <ZentryRedactorScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
+        )}
       </div>
-    </DeviceFrame>
+
+      {/* 4. Bottom System Navigation Gesture Bar */}
+      <ZentryNavBar
+        currentScreen={currentScreen}
+        onBack={handleBack}
+        onHome={handleHome}
+        onOpenCommand={() => setIsCommandSheetOpen(true)}
+        isDark={currentWallpaper.isDark}
+      />
+
+      {/* 5. Modals and Overlays */}
+      <ZentryTopPanels
+        isOpen={isQuickPanelOpen}
+        initialTab={quickPanelTab}
+        onClose={() => setIsQuickPanelOpen(false)}
+        isDark={currentWallpaper.isDark}
+      />
+
+      <ZentryCommandSheet
+        isOpen={isCommandSheetOpen}
+        onClose={() => setIsCommandSheetOpen(false)}
+        onNavigate={navigateTo}
+        onSearch={(query) => {
+          navigateTo('safe_search');
+        }}
+      />
+
+      <CustomizationPanel
+        isOpen={isCustomizationOpen}
+        onClose={() => setIsCustomizationOpen(false)}
+        currentWallpaper={wallpaperId}
+        onSelectWallpaper={handleSelectWallpaper}
+        showClock={showClock}
+        onToggleClock={handleToggleClock}
+        showCalendar={showCalendar}
+        onToggleCalendar={handleToggleCalendar}
+      />
+
+      <ZentryLockModal
+        deviceState={deviceState}
+        onSimulateUnlock={() => {
+          setDeviceState((prev) => ({ ...prev, isLocked: false }));
+        }}
+      />
+    </main>
   );
 };
 
