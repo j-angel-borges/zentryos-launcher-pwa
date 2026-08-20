@@ -11,7 +11,6 @@ import { ZentryWallpaper } from './components/wallpaper/ZentryWallpaper';
 import { ZentryStatusBar } from './components/shell/ZentryStatusBar';
 import { ZentryNavBar } from './components/shell/ZentryNavBar';
 import { ZentryTopPanels } from './components/shell/ZentryTopPanels';
-import { ZentryCommandSheet } from './components/shell/ZentryCommandSheet';
 import { ZentryLockModal } from './components/shell/ZentryLockModal';
 import { ZentryHomeScreen } from './components/home/ZentryHomeScreen';
 import { CustomizationPanel } from './components/home/CustomizationPanel';
@@ -134,7 +133,6 @@ export const App: React.FC = () => {
   const [isCustomizationOpen, setIsCustomizationOpen] = useState(false);
   const [isQuickPanelOpen, setIsQuickPanelOpen] = useState(false);
   const [quickPanelTab, setQuickPanelTab] = useState<'quick' | 'notices'>('quick');
-  const [isCommandSheetOpen, setIsCommandSheetOpen] = useState(false);
 
   // Firestore C&C State
   const [deviceState, setDeviceState] = useState<DeviceFirestoreState>(simulateDeviceState);
@@ -228,7 +226,7 @@ export const App: React.FC = () => {
             onSearch={(query) => {
               navigateTo('safe_search');
             }}
-            onOpenCommandSheet={() => setIsCommandSheetOpen(true)}
+            onOpenCommandSheet={() => navigateTo('ai')}
           />
         )}
 
@@ -318,30 +316,21 @@ export const App: React.FC = () => {
         )}
       </div>
 
-      {/* 4. Bottom System Navigation Gesture Bar */}
+      {/* 4. Bottom System Navigation Gesture & Dynamic Voice Agent Bar */}
       <ZentryNavBar
         currentScreen={currentScreen}
         onBack={handleBack}
         onHome={handleHome}
-        onOpenCommand={() => setIsCommandSheetOpen(true)}
+        onNavigate={navigateTo}
         isDark={currentWallpaper.isDark}
       />
 
-      {/* 5. Modals and Overlays */}
+      {/* 5. System Panels */}
       <ZentryTopPanels
         isOpen={isQuickPanelOpen}
         initialTab={quickPanelTab}
         onClose={() => setIsQuickPanelOpen(false)}
         isDark={currentWallpaper.isDark}
-      />
-
-      <ZentryCommandSheet
-        isOpen={isCommandSheetOpen}
-        onClose={() => setIsCommandSheetOpen(false)}
-        onNavigate={navigateTo}
-        onSearch={(query) => {
-          navigateTo('safe_search');
-        }}
       />
 
       <CustomizationPanel
