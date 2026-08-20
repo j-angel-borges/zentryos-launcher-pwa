@@ -4,11 +4,10 @@ import {
   doc,
   collection,
   onSnapshot,
+  setDoc,
   updateDoc,
   serverTimestamp,
-  query,
-  orderBy,
-  limit
+  getDoc
 } from 'firebase/firestore';
 import type { DeviceFirestoreState } from '../types/zentry';
 
@@ -27,8 +26,24 @@ export const db = getFirestore(app);
 
 export const DEFAULT_DEVICE_ID = 'dev_redmi9_mateo';
 
+export function getStoredDeviceId(): string {
+  try {
+    return localStorage.getItem('zentry_device_id') || DEFAULT_DEVICE_ID;
+  } catch {
+    return DEFAULT_DEVICE_ID;
+  }
+}
+
+export function setStoredDeviceId(id: string) {
+  try {
+    localStorage.setItem('zentry_device_id', id.trim());
+  } catch (e) {
+    console.warn('Could not save device ID:', e);
+  }
+}
+
 export const simulateDeviceState: DeviceFirestoreState = {
-  deviceId: DEFAULT_DEVICE_ID,
+  deviceId: getStoredDeviceId(),
   isLocked: false,
   lockReason: null,
   batteryLevel: 85,
@@ -36,10 +51,53 @@ export const simulateDeviceState: DeviceFirestoreState = {
   lastSeenAt: new Date().toISOString()
 };
 
+// Start live battery & telemetry heartbeat syncing
+let heartbeatInterval: any = null;
+
+export async function syncRealDeviceTelemetry(deviceId: string = getStoredDeviceId()) {
+  try {
+    const devRef = doc(db, 'devices', deviceId);
+    let batteryLevel = 85;
+    let isCharging = false;
+
+    // Web Battery API
+    if (typeof navigator !== 'undefined' && (navigator as any).getBattery) {
+      try {
+        const battery = await (navigator as any).getBattery();
+        batteryLevel = Math.round(battery.level * 100);
+        isCharging = battery.charging;
+      } catch {}
+    }
+
+    const snap = await getDoc(devRef);
+    if (snap.exists()) {
+      await updateDoc(devRef, {
+        batteryLevel,
+        isCharging,
+        networkStatus: navigator.onLine ? 'online' : 'offline',
+        lastSeenAt: serverTimestamp()
+      });
+    }
+  } catch (err) {
+    console.log('Telemetry sync note:', err);
+  }
+}
+
+export function startTelemetryHeartbeat(deviceId: string = getStoredDeviceId()) {
+  if (heartbeatInterval) clearInterval(heartbeatInterval);
+  syncRealDeviceTelemetry(deviceId);
+  heartbeatInterval = setInterval(() => {
+    syncRealDeviceTelemetry(deviceId);
+  }, 30000); // Every 30s
+}
+
 export function subscribeToDeviceState(
   callback: (state: DeviceFirestoreState) => void,
-  deviceId: string = DEFAULT_DEVICE_ID
+  deviceId: string = getStoredDeviceId()
 ): () => void {
+  // Start heartbeat
+  startTelemetryHeartbeat(deviceId);
+
   try {
     const devRef = doc(db, 'devices', deviceId);
     return onSnapshot(
