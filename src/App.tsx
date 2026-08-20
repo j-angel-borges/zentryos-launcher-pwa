@@ -306,7 +306,7 @@ export const App: React.FC = () => {
         )}
 
         {currentScreen === 'files' && (
-          <ZentryFilesScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
+          <ZentryFilesScreen onBack={handleBack} onNavigate={navigateTo} isDark={currentWallpaper.isDark} />
         )}
 
         {currentScreen === 'phone' && (
