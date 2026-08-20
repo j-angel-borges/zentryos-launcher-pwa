@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, Sparkles, Volume2 } from 'lucide-react';
+import { Send, Sparkles } from 'lucide-react';
 import type { ChatMessage } from '../../types/zentry';
 import { ZentrySubPageScaffold } from '../shell/ZentrySubPageScaffold';
 import { sounds } from '../../services/soundEffects';
@@ -14,7 +14,7 @@ export const ZentryAiScreen: React.FC<Props> = ({ onBack, isDark }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
-      text: '¡Hola! Soy Zentry AI, tu compañero de aprendizaje inteligente. ¿Qué reto o curiosidad exploramos hoy? 🚀',
+      text: '¡Hola! Soy Zentry. ¿Qué te gustaría descubrir o resolver hoy? ✨',
       isUser: false,
       timestamp: 'Ahora'
     }
@@ -23,19 +23,12 @@ export const ZentryAiScreen: React.FC<Props> = ({ onBack, isDark }) => {
   const [isThinking, setIsThinking] = useState(false);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
-  const suggestions = [
-    '¿Por qué el cielo es azul? 🌌',
-    'Ayúdame con un problema de fracciones 📐',
-    '¿Cómo funciona la fotosíntesis? 🌱',
-    'Cuéntame una historia sobre el espacio 🚀'
-  ];
-
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isThinking]);
 
-  const handleSend = async (textToSend?: string) => {
-    const text = (textToSend || input).trim();
+  const handleSend = async () => {
+    const text = input.trim();
     if (!text || isThinking) return;
 
     sounds.playTap();
@@ -47,7 +40,7 @@ export const ZentryAiScreen: React.FC<Props> = ({ onBack, isDark }) => {
     };
 
     setMessages((prev) => [...prev, userMsg]);
-    if (!textToSend) setInput('');
+    setInput('');
     setIsThinking(true);
 
     try {
@@ -63,7 +56,7 @@ export const ZentryAiScreen: React.FC<Props> = ({ onBack, isDark }) => {
     } catch (err: any) {
       const fallbackMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        text: 'Vamos a explorarlo paso a paso con el método socrático. ¿Qué pista inicial crees que nos ayuda a resolverlo?',
+        text: 'Vamos a pensarlo juntos paso a paso. ¿Qué es lo primero que se te ocurre sobre esto?',
         isUser: false,
         timestamp: 'Ahora'
       };
@@ -74,34 +67,19 @@ export const ZentryAiScreen: React.FC<Props> = ({ onBack, isDark }) => {
   };
 
   return (
-    <ZentrySubPageScaffold title="Zentry AI" kicker="COMPAÑERO SOCRÁTICO" onBack={onBack} isDark={isDark}>
-      <div className="flex flex-col h-full space-y-4">
+    <ZentrySubPageScaffold title="Zentry AI" kicker="TUTOR INTELIGENTE" onBack={onBack} isDark={isDark}>
+      <div className="flex flex-col h-full space-y-4 max-w-xl mx-auto w-full">
         {/* Interactive Avatar Bar */}
-        <div className="flex items-center justify-center gap-3 py-1">
+        <div className="flex items-center justify-center py-2">
           <div className="relative w-16 h-16 rounded-full bg-gradient-to-b from-[#533B87] to-[#3B2E63] border-2 border-white/40 shadow-xl flex items-center justify-center">
-            {/* Eyes */}
             <div className="flex items-center gap-2">
               <div className="w-2 h-3 rounded-full bg-[#C2F4E7] animate-pulse" />
               <div className="w-2 h-3 rounded-full bg-[#C2F4E7] animate-pulse" />
             </div>
-            {/* Thinking Aura */}
             {isThinking && (
               <div className="absolute -inset-1.5 rounded-full border-2 border-[#D6C8FA] animate-spin" />
             )}
           </div>
-        </div>
-
-        {/* Suggestion Chips */}
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          {suggestions.map((s, idx) => (
-            <button
-              key={idx}
-              onClick={() => handleSend(s)}
-              className={(isDark ? 'bg-white/10 hover:bg-white/20 text-white ' : 'bg-white/70 hover:bg-white/90 text-[#4A148C] ') + 'px-3 py-1 rounded-full text-xs font-semibold shadow-sm transition-all zentry-press cursor-pointer'}
-            >
-              {s}
-            </button>
-          ))}
         </div>
 
         {/* Chat Messages */}
@@ -114,8 +92,8 @@ export const ZentryAiScreen: React.FC<Props> = ({ onBack, isDark }) => {
               <div
                 className={
                   m.isUser
-                    ? 'bg-[#42A5F5] text-white rounded-[20px] rounded-br-[4px] px-4 py-2.5 max-w-[80%] text-sm shadow-md'
-                    : (isDark ? 'bg-white/15 text-white ' : 'bg-white/90 text-[#263238] ') + 'rounded-[20px] rounded-bl-[4px] px-4 py-2.5 max-w-[80%] text-sm shadow-md leading-relaxed'
+                    ? 'bg-[#42A5F5] text-white rounded-[20px] rounded-br-[4px] px-4 py-2.5 max-w-[80%] text-xs md:text-sm shadow-md'
+                    : (isDark ? 'bg-white/15 text-white ' : 'bg-white/90 text-[#263238] ') + 'rounded-[20px] rounded-bl-[4px] px-4 py-2.5 max-w-[80%] text-xs md:text-sm shadow-md leading-relaxed'
                 }
               >
                 {m.text}
@@ -126,7 +104,7 @@ export const ZentryAiScreen: React.FC<Props> = ({ onBack, isDark }) => {
             <div className="flex justify-start">
               <div className={(isDark ? 'bg-white/15 text-white ' : 'bg-white/80 text-[#263238] ') + 'rounded-[20px] px-4 py-2 text-xs font-semibold animate-pulse flex items-center gap-2'}>
                 <Sparkles className="w-3.5 h-3.5 text-purple-400 animate-spin" />
-                <span>Zentry AI (Gemini 2.5 Flash) está razonando...</span>
+                <span>Pensando una pista para ti...</span>
               </div>
             </div>
           )}
@@ -145,9 +123,9 @@ export const ZentryAiScreen: React.FC<Props> = ({ onBack, isDark }) => {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Pregúntame lo que quieras aprender..."
+            placeholder="Escribe lo que quieras preguntar o aprender..."
             disabled={isThinking}
-            className={(isDark ? 'bg-white/10 text-white placeholder-white/40 border-white/20 ' : 'bg-white/80 text-[#1E293B] placeholder-slate-400 border-white/60 ') + 'w-full pl-4 pr-12 py-3 rounded-full border text-sm font-medium focus:outline-none focus:border-[#8B5CF6] shadow-md disabled:opacity-50'}
+            className={(isDark ? 'bg-white/10 text-white placeholder-white/40 border-white/20 ' : 'bg-white/80 text-[#1E293B] placeholder-slate-400 border-white/60 ') + 'w-full pl-4 pr-12 py-3 rounded-full border text-xs md:text-sm font-medium focus:outline-none focus:border-[#8B5CF6] shadow-md disabled:opacity-50'}
           />
           <button
             type="submit"
