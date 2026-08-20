@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Home, Sparkles, Mic, X, Send, Keyboard, Check } from 'lucide-react';
+import { ArrowLeft, Home, Sparkles, Mic, Send, X } from 'lucide-react';
 import type { ScreenId } from '../../types/zentry';
 import { sounds } from '../../services/soundEffects';
 import { processVoiceAgentCommand, matchLocalVoiceCommand } from '../../services/voiceAgentService';
@@ -24,15 +24,15 @@ export const ZentryNavBar: React.FC<Props> = ({
   // Agent Bar State
   const [isAgentActive, setIsAgentActive] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [transcript, setTranscript] = useState('');
-  const [agentReply, setAgentReply] = useState<string | null>(null);
+  const [inputText, setInputText] = useState('');
+  const [agentStatus, setAgentStatus] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [textInputMode, setTextInputMode] = useState(false);
   const [clarificationOptions, setClarificationOptions] = useState<{ label: string; screen: ScreenId }[] | null>(null);
 
   // Long press detection
   const pressTimerRef = useRef<any>(null);
   const recognitionRef = useRef<any | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   // Initialize Web Speech API
   useEffect(() => {
@@ -47,7 +47,7 @@ export const ZentryNavBar: React.FC<Props> = ({
         const current = Array.from(event.results)
           .map((r: any) => r[0].transcript)
           .join('');
-        setTranscript(current);
+        setInputText(current);
       };
 
       rec.onend = () => {
@@ -65,21 +65,21 @@ export const ZentryNavBar: React.FC<Props> = ({
 
   // Execute Agent Command
   const handleExecuteCommand = async (textToProcess?: string) => {
-    const query = (textToProcess || transcript).trim();
+    const query = (textToProcess || inputText).trim();
     if (!query) return;
 
     setIsProcessing(true);
-    setAgentReply('Analizando...');
+    setAgentStatus('Analizando...');
 
     // Fast-path instant local execution
     const fastDecision = matchLocalVoiceCommand(query);
     if (fastDecision && fastDecision.action === 'navigate' && fastDecision.targetScreen) {
       sounds.playSuccess();
-      setAgentReply(fastDecision.speechResponse);
+      setAgentStatus(fastDecision.speechResponse);
       setTimeout(() => {
         onNavigate(fastDecision.targetScreen!);
         handleCloseAgent();
-      }, 700);
+      }, 600);
       return;
     }
 
@@ -87,13 +87,13 @@ export const ZentryNavBar: React.FC<Props> = ({
     try {
       const decision = await processVoiceAgentCommand(query);
       sounds.playSuccess();
-      setAgentReply(decision.speechResponse);
+      setAgentStatus(decision.speechResponse);
 
       if (decision.action === 'navigate' && decision.targetScreen) {
         setTimeout(() => {
           onNavigate(decision.targetScreen!);
           handleCloseAgent();
-        }, 800);
+        }, 700);
       } else if (decision.action === 'clarify' && decision.clarificationOptions) {
         setClarificationOptions(decision.clarificationOptions);
         setIsProcessing(false);
@@ -101,7 +101,7 @@ export const ZentryNavBar: React.FC<Props> = ({
         setIsProcessing(false);
       }
     } catch (e) {
-      setAgentReply('No pude procesar el comando. Intenta de nuevo.');
+      setAgentStatus('No pude procesar el comando.');
       setIsProcessing(false);
     }
   };
@@ -109,10 +109,9 @@ export const ZentryNavBar: React.FC<Props> = ({
   const startListening = () => {
     sounds.playTap();
     setIsAgentActive(true);
-    setTranscript('');
-    setAgentReply(null);
+    setInputText('');
+    setAgentStatus(null);
     setClarificationOptions(null);
-    setTextInputMode(false);
     setIsListening(true);
 
     try {
@@ -127,7 +126,7 @@ export const ZentryNavBar: React.FC<Props> = ({
       recognitionRef.current?.stop();
     } catch {}
     setIsListening(false);
-    if (transcript.trim()) {
+    if (inputText.trim()) {
       handleExecuteCommand();
     }
   };
@@ -135,7 +134,7 @@ export const ZentryNavBar: React.FC<Props> = ({
   const handleTouchStart = () => {
     pressTimerRef.current = setTimeout(() => {
       startListening();
-    }, 300);
+    }, 280);
   };
 
   const handleTouchEnd = () => {
@@ -152,8 +151,8 @@ export const ZentryNavBar: React.FC<Props> = ({
     sounds.playTap();
     setIsAgentActive(false);
     setIsListening(false);
-    setTranscript('');
-    setAgentReply(null);
+    setInputText('');
+    setAgentStatus(null);
     setClarificationOptions(null);
     setIsProcessing(false);
     try {
@@ -161,109 +160,93 @@ export const ZentryNavBar: React.FC<Props> = ({
     } catch {}
   };
 
+  const handleActionButtonClick = () => {
+    if (inputText.trim()) {
+      handleExecuteCommand();
+    } else if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  };
+
+  const hasText = inputText.trim().length > 0;
+
   return (
     <nav className="w-full py-2 px-4 md:px-6 flex items-center justify-center z-40 select-none">
-      {/* 1. ACTIVE VOICE / TEXT AGENT DYNAMIC BAR */}
+      {/* 1. ACTIVE UNIFIED SINGLE-LINE VOICE & TEXT BAR */}
       {isAgentActive ? (
-        <div
-          className={(isDark ? 'zentry-glass-dark ' : 'zentry-glass-light ') + 'w-full max-w-xl flex flex-col gap-2 p-2.5 rounded-[28px] shadow-2xl border border-indigo-400/40 animate-in slide-in-from-bottom-3 duration-200'}
-        >
-          <div className="flex items-center justify-between gap-2 px-2">
-            {/* Waveform / Mic status indicator */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={isListening ? stopListening : startListening}
-                className={(isListening ? 'bg-red-500 animate-pulse text-white ' : 'bg-gradient-to-tr from-purple-500 to-indigo-600 text-white ') + 'w-9 h-9 rounded-full flex items-center justify-center shadow-md cursor-pointer transition-all zentry-press'}
-              >
-                <Mic className="w-4 h-4" />
-              </button>
-
-              {isListening && (
-                <div className="flex items-center gap-1">
-                  <div className="w-1 h-3 bg-red-400 rounded-full animate-bounce" />
-                  <div className="w-1 h-5 bg-purple-400 rounded-full animate-bounce [animation-delay:0.1s]" />
-                  <div className="w-1 h-4 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.2s]" />
-                  <span className="text-[11px] font-semibold text-red-400 ml-1">Escuchando...</span>
-                </div>
-              )}
-            </div>
-
-            {/* Middle Transcript or Agent Reply */}
-            <div className="flex-1 px-2 min-w-0">
-              {agentReply ? (
-                <div className="text-xs font-bold text-indigo-400 truncate animate-in fade-in">
-                  {agentReply}
-                </div>
-              ) : transcript ? (
-                <div className="text-xs font-medium text-white truncate italic">
-                  "{transcript}"
-                </div>
-              ) : (
-                <div className="text-xs text-slate-400 truncate">
-                  {isListening ? 'Habla ahora (ej: "Abre los archivos")...' : 'Di tu comando o escribe abajo...'}
-                </div>
-              )}
-            </div>
-
-            {/* Right Controls: Keyboard Toggle, Send, Cancel */}
-            <div className="flex items-center gap-1.5">
-              <button
-                onClick={() => setTextInputMode(!textInputMode)}
-                title="Escribir comando"
-                className="p-2 rounded-full hover:bg-white/10 text-slate-300 cursor-pointer"
-              >
-                <Keyboard className="w-4 h-4" />
-              </button>
-
-              {transcript.trim() && !isProcessing && (
-                <button
-                  onClick={() => handleExecuteCommand()}
-                  className="p-2 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm cursor-pointer zentry-press"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                </button>
-              )}
-
-              <button
-                onClick={handleCloseAgent}
-                className="p-2 rounded-full hover:bg-red-500/20 text-slate-400 hover:text-red-400 cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* Text Input Row (if toggled) */}
-          {textInputMode && (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleExecuteCommand();
-              }}
-              className="flex gap-2 pt-1 px-1"
+        <div className="w-full max-w-lg flex flex-col gap-1.5 animate-in slide-in-from-bottom-2 duration-200">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleExecuteCommand();
+            }}
+            className="w-full flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/95 text-[#1E293B] shadow-2xl border border-white/80 transition-all backdrop-blur-md"
+          >
+            {/* Morphing Button: Mic (when speaking/empty) <-> Send (when typed) */}
+            <button
+              type="button"
+              onClick={handleActionButtonClick}
+              className={
+                (hasText
+                  ? 'bg-gradient-to-tr from-indigo-500 to-purple-600 text-white hover:scale-105 '
+                  : isListening
+                  ? 'bg-red-500 text-white animate-pulse '
+                  : 'bg-indigo-600 text-white hover:bg-indigo-500 ') +
+                'w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-md cursor-pointer transition-all zentry-press'
+              }
+              title={hasText ? 'Enviar comando' : isListening ? 'Detener dictado' : 'Hablar'}
             >
-              <input
-                type="text"
-                value={transcript}
-                onChange={(e) => setTranscript(e.target.value)}
-                placeholder="Escribe: 'Abre el asistente de estudio' o 'Abre los archivos'..."
-                autoFocus
-                className="flex-1 px-3 py-1.5 rounded-full bg-white/10 text-xs text-white placeholder-slate-400 border border-white/20 focus:outline-none focus:border-indigo-400"
-              />
-              <button
-                type="submit"
-                disabled={!transcript.trim() || isProcessing}
-                className="px-4 py-1.5 rounded-full bg-indigo-600 text-white text-xs font-bold disabled:opacity-40 cursor-pointer zentry-press"
-              >
-                Ejecutar
-              </button>
-            </form>
-          )}
+              {hasText ? (
+                <Send className="w-3.5 h-3.5" />
+              ) : (
+                <Mic className="w-3.5 h-3.5" />
+              )}
+            </button>
 
-          {/* Clarification Chips (if ambiguous) */}
+            {/* Single Unified Input Line with Live Waves */}
+            <div className="flex-1 flex items-center gap-2 relative min-w-0">
+              <input
+                ref={inputRef}
+                type="text"
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                placeholder="Habla..."
+                className="w-full bg-transparent text-xs md:text-sm font-semibold text-[#1E293B] placeholder-slate-400 focus:outline-none"
+              />
+
+              {isListening && !hasText && (
+                <div className="flex items-center gap-0.5 shrink-0 pr-1">
+                  <div className="w-0.5 h-2.5 bg-red-400 rounded-full animate-bounce" />
+                  <div className="w-0.5 h-4 bg-purple-500 rounded-full animate-bounce [animation-delay:0.1s]" />
+                  <div className="w-0.5 h-3 bg-indigo-500 rounded-full animate-bounce [animation-delay:0.2s]" />
+                </div>
+              )}
+            </div>
+
+            {/* Subtle Status Text if present */}
+            {agentStatus && (
+              <span className="text-[10px] font-bold text-indigo-600 truncate max-w-[110px] animate-in fade-in">
+                {agentStatus}
+              </span>
+            )}
+
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={handleCloseAgent}
+              className="p-1 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer shrink-0"
+              title="Cerrar"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </form>
+
+          {/* Clarification Chips if ambiguous */}
           {clarificationOptions && (
-            <div className="flex flex-wrap items-center gap-1.5 pt-1 px-1 border-t border-white/10">
-              <span className="text-[10px] text-slate-400 mr-1">¿A cuál te refieres?:</span>
+            <div className="flex flex-wrap items-center justify-center gap-1.5 px-2">
+              <span className="text-[10px] font-medium text-white/80">¿A cuál te refieres?:</span>
               {clarificationOptions.map((opt, idx) => (
                 <button
                   key={idx}
@@ -272,7 +255,7 @@ export const ZentryNavBar: React.FC<Props> = ({
                     onNavigate(opt.screen);
                     handleCloseAgent();
                   }}
-                  className="px-3 py-1 rounded-full bg-indigo-500/20 hover:bg-indigo-500/40 border border-indigo-400/30 text-indigo-200 text-[11px] font-semibold transition-all cursor-pointer zentry-press"
+                  className="px-3 py-1 rounded-full bg-white/90 text-[#1E293B] text-[11px] font-bold shadow-md hover:bg-white cursor-pointer zentry-press"
                 >
                   {opt.label}
                 </button>
