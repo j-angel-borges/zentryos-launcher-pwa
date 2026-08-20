@@ -9,14 +9,12 @@ import {
   X, 
   Play, 
   CheckCircle2, 
-  ArrowLeft,
-  MessageSquare,
   HelpCircle,
   Clock
 } from 'lucide-react';
 import { ZentrySubPageScaffold } from '../shell/ZentrySubPageScaffold';
 import { sounds } from '../../services/soundEffects';
-import { YOUTUBE_VIDEOS, YouTubeVideoItem } from '../../services/entertainmentData';
+import { YOUTUBE_VIDEOS, UniversalMediaItem } from '../../services/entertainmentData';
 import { askZentryAi } from '../../services/aiService';
 
 interface Props {
@@ -27,7 +25,7 @@ interface Props {
 export const ZentryTubeScreen: React.FC<Props> = ({ onBack, isDark }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('Todos');
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeVideo, setActiveVideo] = useState<YouTubeVideoItem | null>(null);
+  const [activeVideo, setActiveVideo] = useState<UniversalMediaItem | null>(null);
   const [likedVideos, setLikedVideos] = useState<Record<string, boolean>>({});
 
   // Socratic Quiz State
@@ -51,12 +49,12 @@ export const ZentryTubeScreen: React.FC<Props> = ({ onBack, isDark }) => {
     if (selectedCategory !== 'Todos' && v.category !== selectedCategory) return false;
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      return v.title.toLowerCase().includes(q) || v.channel.toLowerCase().includes(q);
+      return v.title.toLowerCase().includes(q) || v.creator.toLowerCase().includes(q);
     }
     return true;
   });
 
-  const handleGenerateQuiz = async (video: YouTubeVideoItem) => {
+  const handleGenerateQuiz = async (video: UniversalMediaItem) => {
     sounds.playTap();
     setIsGeneratingQuiz(true);
     setQuizData(null);
@@ -64,7 +62,7 @@ export const ZentryTubeScreen: React.FC<Props> = ({ onBack, isDark }) => {
     setShowQuizResult(false);
 
     try {
-      const prompt = `Genera un mini-quiz de 3 preguntas de opción múltiple pedagógicas para un estudiante sobre el video: "${video.title}" del canal "${video.channel}".
+      const prompt = `Genera un mini-quiz de 3 preguntas de opción múltiple pedagógicas para un estudiante sobre el video: "${video.title}" del canal "${video.creator}".
 Formato JSON estricto:
 {
   "questions": [
@@ -161,7 +159,7 @@ Formato JSON estricto:
                 {/* Video Thumbnail */}
                 <div className="relative aspect-video w-full overflow-hidden bg-black/40">
                   <img
-                    src={`https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`}
+                    src={`https://img.youtube.com/vi/${video.mediaId}/hqdefault.jpg`}
                     alt={video.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     loading="lazy"
@@ -178,7 +176,7 @@ Formato JSON estricto:
                   {/* Duration Badge */}
                   <div className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded-md bg-black/80 text-[10px] font-mono text-white flex items-center gap-1 font-bold">
                     <Clock className="w-2.5 h-2.5" />
-                    <span>{video.duration}</span>
+                    <span>{video.duration || '15:00'}</span>
                   </div>
 
                   {/* Category Badge */}
@@ -191,8 +189,8 @@ Formato JSON estricto:
                 <div className="p-3 space-y-1.5 flex-1 flex flex-col justify-between">
                   <div className="flex items-start gap-2.5">
                     <img
-                      src={video.channelAvatar}
-                      alt={video.channel}
+                      src={video.creatorAvatar}
+                      alt={video.creator}
                       className="w-7 h-7 rounded-full object-cover shrink-0 border border-white/20 mt-0.5"
                     />
                     <div className="min-w-0 flex-1">
@@ -200,9 +198,9 @@ Formato JSON estricto:
                         {video.title}
                       </h4>
                       <div className="text-[10px] text-slate-400 mt-1 flex items-center gap-1.5">
-                        <span className="font-semibold text-slate-300">{video.channel}</span>
+                        <span className="font-semibold text-slate-300">{video.creator}</span>
                         <span>•</span>
-                        <span>{video.views}</span>
+                        <span>{video.viewsOrLikes}</span>
                       </div>
                     </div>
                   </div>
@@ -236,7 +234,7 @@ Formato JSON estricto:
               {/* In-App YouTube IFrame Player */}
               <div className="relative aspect-video w-full rounded-[20px] overflow-hidden bg-black shadow-lg border border-white/10">
                 <iframe
-                  src={`https://www.youtube.com/embed/${activeVideo.youtubeId}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1`}
+                  src={`https://www.youtube.com/embed/${activeVideo.mediaId}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1`}
                   title={activeVideo.title}
                   className="w-full h-full border-0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -248,12 +246,12 @@ Formato JSON estricto:
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-2">
                 <div className="flex items-center gap-2">
                   <img
-                    src={activeVideo.channelAvatar}
-                    alt={activeVideo.channel}
+                    src={activeVideo.creatorAvatar}
+                    alt={activeVideo.creator}
                     className="w-8 h-8 rounded-full object-cover border border-white/20"
                   />
                   <div>
-                    <div className="text-xs font-bold">{activeVideo.channel}</div>
+                    <div className="text-xs font-bold">{activeVideo.creator}</div>
                     <div className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
                       <CheckCircle2 className="w-3 h-3" /> Canal Educativo Verificado
                     </div>
@@ -301,9 +299,6 @@ Formato JSON estricto:
 
                     <div className="space-y-3">
                       {quizData.map((q: any, qIdx: number) => {
-                        const isAnswered = selectedAnswers[qIdx] !== undefined;
-                        const isCorrect = selectedAnswers[qIdx] === q.correctIndex;
-
                         return (
                           <div key={qIdx} className="space-y-1.5 bg-black/20 p-3 rounded-xl">
                             <div className="text-xs font-bold text-white">

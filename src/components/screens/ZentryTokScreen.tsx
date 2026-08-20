@@ -1,7 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { 
   Heart, 
-  MessageCircle, 
   Share2, 
   Bookmark, 
   Music, 
@@ -10,12 +9,11 @@ import {
   Sparkles, 
   CheckCircle2, 
   X, 
-  HelpCircle,
   Flame
 } from 'lucide-react';
 import { ZentrySubPageScaffold } from '../shell/ZentrySubPageScaffold';
 import { sounds } from '../../services/soundEffects';
-import { TIKTOK_SHORTS, TikTokShortItem } from '../../services/entertainmentData';
+import { TIKTOK_SHORTS, UniversalMediaItem } from '../../services/entertainmentData';
 import { askZentryAi } from '../../services/aiService';
 
 interface Props {
@@ -51,7 +49,7 @@ export const ZentryTokScreen: React.FC<Props> = ({ onBack, isDark }) => {
     }
   };
 
-  const handleFetchAiInsight = async (short: TikTokShortItem) => {
+  const handleFetchAiInsight = async (short: UniversalMediaItem) => {
     sounds.playTap();
     setIsLoadingInsight(true);
     setIsAiInsightOpen(true);
@@ -75,11 +73,11 @@ Tópico: ${short.category}. Explícaselo a un estudiante con asombro y claridad.
       <div className="max-w-md mx-auto w-full h-full flex flex-col items-center justify-center relative overflow-hidden pb-2">
         {/* Main 9:16 Vertical Video Container */}
         <div className="relative w-full h-full max-h-[78vh] rounded-[32px] overflow-hidden bg-black shadow-2xl border border-white/20 flex flex-col justify-between">
-          {/* Embedded Vertical YouTube Player */}
-          <div className="absolute inset-0 z-0">
+          {/* Embedded Vertical Player */}
+          <div className="absolute inset-0 z-0 bg-black">
             <iframe
               key={currentShort.id}
-              src={`https://www.youtube.com/embed/${currentShort.youtubeId}?autoplay=1&controls=1&rel=0&loop=1&enablejsapi=1`}
+              src={`https://www.youtube.com/embed/${currentShort.mediaId}?autoplay=1&controls=1&rel=0&loop=1&enablejsapi=1`}
               title={currentShort.title}
               className="w-full h-full object-cover border-0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -88,7 +86,7 @@ Tópico: ${short.category}. Explícaselo a un estudiante con asombro y claridad.
           </div>
 
           {/* Subtle top & bottom shadow gradient for UI readability */}
-          <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-black/40 via-transparent to-black/80 z-10" />
+          <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-black/50 via-transparent to-black/85 z-10" />
 
           {/* Top Pill: Category & Index */}
           <div className="relative z-20 p-4 flex items-center justify-between">
@@ -106,7 +104,7 @@ Tópico: ${short.category}. Explícaselo a un estudiante con asombro y claridad.
           <div className="relative z-20 p-4 space-y-2 text-white">
             <div className="flex items-center gap-2">
               <img
-                src={currentShort.avatar}
+                src={currentShort.creatorAvatar}
                 alt={currentShort.creator}
                 className="w-8 h-8 rounded-full object-cover border-2 border-cyan-400"
               />
@@ -131,7 +129,7 @@ Tópico: ${short.category}. Explícaselo a un estudiante con asombro y claridad.
 
             <div className="flex items-center gap-1.5 text-[10px] text-slate-300 bg-black/40 px-2.5 py-1 rounded-full w-fit">
               <Music className="w-3 h-3 animate-spin" />
-              <span className="truncate max-w-[200px]">{currentShort.soundName}</span>
+              <span className="truncate max-w-[200px]">Cápsula Educativa ZentryOS</span>
             </div>
           </div>
 
@@ -157,7 +155,7 @@ Tópico: ${short.category}. Explícaselo a un estudiante con asombro y claridad.
               <div className={`p-2.5 rounded-full backdrop-blur-md transition-colors ${likedShorts[currentShort.id] ? 'bg-pink-600 text-white' : 'bg-black/50 text-white hover:bg-black/70'}`}>
                 <Heart className={`w-5 h-5 ${likedShorts[currentShort.id] ? 'fill-white' : ''}`} />
               </div>
-              <span className="text-[10px] font-bold drop-shadow">{currentShort.likes}</span>
+              <span className="text-[10px] font-bold drop-shadow">{currentShort.viewsOrLikes}</span>
             </button>
 
             {/* Bookmark Button */}
