@@ -15,10 +15,8 @@ export const OSSearchBar: React.FC<Props> = ({ onSearch, isDark }) => {
       sounds.playTap();
       const q = query.trim();
       setQuery('');
+      // Route internally inside ZentryOS PWA (NO window.open / NO new browser tabs)
       onSearch(q);
-      // Directly launch Google with SafeSearch & Google AI Mode
-      const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(q)}&safe=active`;
-      window.open(googleUrl, '_blank');
     }
   };
 
