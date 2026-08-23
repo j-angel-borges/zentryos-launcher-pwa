@@ -11,3 +11,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.worktrees
+zentryos-worktrees
+.env.local
+*.log
+
