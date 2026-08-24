@@ -16,12 +16,7 @@ export type ScreenId =
   | 'study_assistant'
   | 'deep_research'
   | 'redactor'
-  | 'workspace_app'
-  | 'entertainment_hub'
-  | 'zentry_tube'
-  | 'zentry_tok'
-  | 'zentry_gram'
-  | 'zentry_stream';
+  | 'workspace_app';
 
 export type WallpaperId = 'Glacial' | 'Lila' | 'Aura' | 'Brisa' | 'Espacio';
 

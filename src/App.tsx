@@ -11,6 +11,7 @@ import { ZentryWallpaper } from './components/wallpaper/ZentryWallpaper';
 import { ZentryStatusBar } from './components/shell/ZentryStatusBar';
 import { ZentryNavBar } from './components/shell/ZentryNavBar';
 import { ZentryTopPanels } from './components/shell/ZentryTopPanels';
+import { ZentryCommandSheet } from './components/shell/ZentryCommandSheet';
 import { ZentryLockModal } from './components/shell/ZentryLockModal';
 import { ZentryHomeScreen } from './components/home/ZentryHomeScreen';
 import { CustomizationPanel } from './components/home/CustomizationPanel';
@@ -33,14 +34,8 @@ import { ZentryStudyAssistantScreen } from './components/screens/ZentryStudyAssi
 import { ZentryResearchScreen } from './components/screens/ZentryResearchScreen';
 import { ZentryRedactorScreen } from './components/screens/ZentryRedactorScreen';
 import { ZentryEmbeddedAppScreen } from './components/screens/ZentryEmbeddedAppScreen';
-import { ZentryEntertainmentHubScreen } from './components/screens/ZentryEntertainmentHubScreen';
-import { ZentryTubeScreen } from './components/screens/ZentryTubeScreen';
-import { ZentryTokScreen } from './components/screens/ZentryTokScreen';
-import { ZentryGramScreen } from './components/screens/ZentryGramScreen';
-import { ZentryStreamScreen } from './components/screens/ZentryStreamScreen';
 
 import { subscribeToDeviceState, simulateDeviceState } from './services/firebase';
-import { sounds } from './services/soundEffects';
 
 const WALLPAPERS: Record<WallpaperId, WallpaperConfig> = {
   Glacial: {
@@ -91,11 +86,6 @@ export const App: React.FC = () => {
   const [history, setHistory] = useState<ScreenId[]>([]);
   const [selectedWorkspaceApp, setSelectedWorkspaceApp] = useState<WorkspaceAppInfo | null>(null);
 
-  // Hardware controls state
-  const [systemBrightness, setSystemBrightness] = useState<number>(85);
-  const [systemVolume, setSystemVolume] = useState<number>(75);
-  const [torchActive, setTorchActive] = useState<boolean>(false);
-
   // Wallpaper & Preferences
   const [wallpaperId, setWallpaperId] = useState<WallpaperId>(() => {
     return (localStorage.getItem('zentry_wallpaper') as WallpaperId) || 'Glacial';
@@ -144,6 +134,7 @@ export const App: React.FC = () => {
   const [isCustomizationOpen, setIsCustomizationOpen] = useState(false);
   const [isQuickPanelOpen, setIsQuickPanelOpen] = useState(false);
   const [quickPanelTab, setQuickPanelTab] = useState<'quick' | 'notices'>('quick');
+  const [isCommandSheetOpen, setIsCommandSheetOpen] = useState(false);
 
   // Firestore C&C State
   const [deviceState, setDeviceState] = useState<DeviceFirestoreState>(simulateDeviceState);
@@ -201,39 +192,10 @@ export const App: React.FC = () => {
     });
   };
 
-  const handleBrightnessChange = (val: number) => {
-    setSystemBrightness(val);
-  };
-
-  const handleVolumeChange = (val: number) => {
-    setSystemVolume(val);
-    sounds.setVolume(val);
-  };
-
   const currentWallpaper = WALLPAPERS[wallpaperId] || WALLPAPERS.Glacial;
 
   return (
-    <main 
-      className="w-screen h-screen min-h-screen overflow-hidden select-none relative flex flex-col justify-between"
-      style={{ WebkitTapHighlightColor: 'transparent' }}
-    >
-      {/* Dynamic Brightness Filter Overlay */}
-      <div 
-        className="fixed inset-0 pointer-events-none z-30 transition-opacity duration-150 bg-black"
-        style={{ opacity: Math.max(0, (100 - systemBrightness) * 0.0075) }}
-      />
-
-      {/* Screen Torch Flashlight Overlay */}
-      {torchActive && (
-        <div 
-          onClick={() => setTorchActive(false)}
-          className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center cursor-pointer p-6 animate-in fade-in"
-        >
-          <div className="text-black font-black text-lg">💡 Linterna de Pantalla Encendida</div>
-          <div className="text-slate-600 text-xs mt-1">Toca en cualquier parte para apagar</div>
-        </div>
-      )}
-
+    <main className="w-screen h-screen min-h-screen overflow-hidden select-none relative flex flex-col justify-between">
       {/* 1. Live Circadian Organic Mesh Wallpaper */}
       <ZentryWallpaper
         wallpaper={currentWallpaper}
@@ -266,7 +228,7 @@ export const App: React.FC = () => {
             onSearch={(query) => {
               navigateTo('safe_search');
             }}
-            onOpenCommandSheet={() => navigateTo('ai')}
+            onOpenCommandSheet={() => setIsCommandSheetOpen(true)}
           />
         )}
 
@@ -311,7 +273,7 @@ export const App: React.FC = () => {
         )}
 
         {currentScreen === 'files' && (
-          <ZentryFilesScreen onBack={handleBack} onNavigate={navigateTo} isDark={currentWallpaper.isDark} />
+          <ZentryFilesScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
         )}
 
         {currentScreen === 'phone' && (
@@ -354,53 +316,32 @@ export const App: React.FC = () => {
             isDark={currentWallpaper.isDark}
           />
         )}
-
-        {currentScreen === 'entertainment_hub' && (
-          <ZentryEntertainmentHubScreen
-            onBack={handleBack}
-            onNavigate={navigateTo}
-            isDark={currentWallpaper.isDark}
-          />
-        )}
-
-        {currentScreen === 'zentry_tube' && (
-          <ZentryTubeScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
-        )}
-
-        {currentScreen === 'zentry_tok' && (
-          <ZentryTokScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
-        )}
-
-        {currentScreen === 'zentry_gram' && (
-          <ZentryGramScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
-        )}
-
-        {currentScreen === 'zentry_stream' && (
-          <ZentryStreamScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
-        )}
       </div>
 
-      {/* 4. Bottom System Navigation Gesture & Dynamic Voice Agent Bar */}
+      {/* 4. Bottom System Navigation Gesture Bar */}
       <ZentryNavBar
         currentScreen={currentScreen}
         onBack={handleBack}
         onHome={handleHome}
-        onNavigate={navigateTo}
+        onOpenCommand={() => setIsCommandSheetOpen(true)}
         isDark={currentWallpaper.isDark}
       />
 
-      {/* 5. System Panels */}
+      {/* 5. Modals and Overlays */}
       <ZentryTopPanels
         isOpen={isQuickPanelOpen}
         initialTab={quickPanelTab}
-        brightness={systemBrightness}
-        onBrightnessChange={handleBrightnessChange}
-        volume={systemVolume}
-        onVolumeChange={handleVolumeChange}
         onClose={() => setIsQuickPanelOpen(false)}
         isDark={currentWallpaper.isDark}
-        torchActive={torchActive}
-        onToggleTorch={() => setTorchActive((t) => !t)}
+      />
+
+      <ZentryCommandSheet
+        isOpen={isCommandSheetOpen}
+        onClose={() => setIsCommandSheetOpen(false)}
+        onNavigate={navigateTo}
+        onSearch={(query) => {
+          navigateTo('safe_search');
+        }}
       />
 
       <CustomizationPanel

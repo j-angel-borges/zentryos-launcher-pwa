@@ -29,21 +29,6 @@ Genera SIEMPRE un JSON válido con esta estructura:
   }
 }`,
 
-  camera_vision: `Eres la Visión Multimodal Inteligente de ZentryOS para estudiantes.
-Analiza la imagen que el estudiante acaba de fotografiar (puede ser una tarea, cuaderno, libro, problema de matemáticas, planta, insecto, dibujo, o cualquier objeto del mundo real).
-1. En "title": Título claro y conciso del objeto o tema detectado (ej: "Matemáticas: Fracciones Equivalentes", "Biología: Hoja de Planta", "Geometría: Triángulos").
-2. En "observation": Qué observas en la imagen en 1 oración clara y sencilla.
-3. En "step": Pistas paso a paso o explicación socrática sencilla (máximo 2 oraciones).
-4. En "solution": La respuesta, conclusión pedagógica o pregunta clave.
-
-Genera SIEMPRE un JSON válido:
-{
-  "title": "Tema detectado",
-  "observation": "Veo un ejercicio de operaciones combinadas...",
-  "step": "Recuerda que primero resolvemos los paréntesis y luego las multiplicaciones.",
-  "solution": "El resultado del primer paso es 24."
-}`,
-
   neuro_art: `Eres el cerebro creativo de dibujo infantil.
 Analiza lo que el niño dibujó o describió y genera una evolución creativa y un informe educativo para padres.
 Formato JSON:
@@ -106,7 +91,7 @@ export function getZentryModel(appId: string): GenerativeModel {
   }
 
   const systemInstruction = SYSTEM_PROMPTS[appId] || SYSTEM_PROMPTS.general_ai;
-  const isJson = ['study_assistant', 'camera_vision', 'neuro_art', 'world_generator', 'deep_research', 'redactor'].includes(appId);
+  const isJson = ['study_assistant', 'neuro_art', 'world_generator', 'deep_research', 'redactor'].includes(appId);
 
   const model = getGenerativeModel(ai, {
     model: 'gemini-2.5-flash',

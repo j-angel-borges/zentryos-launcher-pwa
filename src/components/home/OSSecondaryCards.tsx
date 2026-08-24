@@ -1,5 +1,5 @@
 import React from 'react';
-import { Palette, Gamepad2, Sparkles } from 'lucide-react';
+import { Palette, Gamepad2 } from 'lucide-react';
 import type { ScreenId } from '../../types/zentry';
 import { sounds } from '../../services/soundEffects';
 
@@ -17,27 +17,24 @@ export const OSSecondaryCards: React.FC<Props> = ({ isDark, onNavigate }) => {
           sounds.playAppOpen();
           onNavigate('creation');
         }}
-        className={(isDark ? 'zentry-veil-dark ' : 'zentry-veil-light ') + 'flex-1 h-28 rounded-[24px] flex flex-col items-center justify-center gap-1.5 cursor-pointer zentry-press transition-all border border-white/10 hover:border-purple-400/30'}
+        className={(isDark ? 'zentry-veil-dark ' : 'zentry-veil-light ') + 'flex-1 h-28 rounded-[20px] flex flex-col items-center justify-center gap-1.5 cursor-pointer zentry-press'}
       >
-        <Palette className={(isDark ? 'text-purple-300 ' : 'text-[#3B3B58] ') + 'w-8 h-8'} />
-        <span className={(isDark ? 'text-white ' : 'text-[#1E293B] ') + 'text-xs font-extrabold'}>
+        <Palette className={(isDark ? 'text-white ' : 'text-[#3B3B58] ') + 'w-9 h-9'} />
+        <span className={(isDark ? 'text-white ' : 'text-[#1E293B] ') + 'text-sm font-extrabold'}>
           Crear
         </span>
       </div>
 
-      {/* Card Entretener (Opens Curated Entertainment Hub: Tube, Tok, Gram) */}
+      {/* Card Entretener */}
       <div
         onClick={() => {
-          sounds.playAppOpen();
-          onNavigate('entertainment_hub');
+          sounds.playTap();
+          alert('Espacio Recreativo Escolar ZentryOS');
         }}
-        className={(isDark ? 'zentry-veil-dark ' : 'zentry-veil-light ') + 'flex-1 h-28 rounded-[24px] flex flex-col items-center justify-center gap-1.5 cursor-pointer zentry-press transition-all border border-white/10 hover:border-pink-400/30 group'}
+        className={(isDark ? 'zentry-veil-dark ' : 'zentry-veil-light ') + 'flex-1 h-28 rounded-[20px] flex flex-col items-center justify-center gap-1.5 cursor-pointer zentry-press'}
       >
-        <div className="relative">
-          <Gamepad2 className={(isDark ? 'text-rose-300 ' : 'text-[#3B3B58] ') + 'w-8 h-8'} />
-          <span className="w-2 h-2 rounded-full bg-rose-400 absolute -top-0.5 -right-0.5 animate-pulse" />
-        </div>
-        <span className={(isDark ? 'text-white ' : 'text-[#1E293B] ') + 'text-xs font-extrabold'}>
+        <Gamepad2 className={(isDark ? 'text-white ' : 'text-[#3B3B58] ') + 'w-9 h-9'} />
+        <span className={(isDark ? 'text-white ' : 'text-[#1E293B] ') + 'text-sm font-extrabold'}>
           Entretener
         </span>
       </div>
