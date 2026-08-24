@@ -15,6 +15,7 @@ import {
 import { sounds } from '../../services/soundEffects';
 import { voiceService } from '../../services/voiceSpeech';
 import { YOUTUBE_VIDEOS, UniversalMediaItem } from '../../services/entertainmentData';
+import { mediaPlaybackService } from '../../services/mediaPlaybackService';
 
 interface Props {
   onBack: () => void;
@@ -50,6 +51,17 @@ export const ZentryTubeScreen: React.FC<Props> = ({ onBack, isDark }) => {
     sounds.playAppOpen();
     voiceService.speakFeedback(video.title);
     setActiveVideo(video);
+    mediaPlaybackService.playMedia({
+      id: video.id,
+      mediaId: video.mediaId,
+      title: video.title,
+      creator: video.creator,
+      creatorAvatar: video.creatorAvatar,
+      category: video.category,
+      type: 'youtube',
+      sourceScreen: 'zentry_tube',
+      duration: video.duration
+    });
   };
 
   return (

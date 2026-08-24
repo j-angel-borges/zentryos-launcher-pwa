@@ -2,6 +2,11 @@ export type ScreenId =
   | 'launcher'
   | 'ai'
   | 'creation'
+  | 'entertainment_hub'
+  | 'zentry_tube'
+  | 'zentry_tok'
+  | 'zentry_gram'
+  | 'zentry_stream'
   | 'tutor_hub'
   | 'safe_search'
   | 'calculator'
@@ -21,6 +26,8 @@ export type ScreenId =
   | 'deep_research'
   | 'redactor'
   | 'workspace_app';
+
+export type AgeTier = 'toddler' | 'explorer';
 
 export type WallpaperId = 'Glacial' | 'Lila' | 'Aura' | 'Brisa' | 'Espacio';
 

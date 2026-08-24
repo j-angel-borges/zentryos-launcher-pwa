@@ -5,7 +5,8 @@ import type {
   WallpaperConfig, 
   CircadianPhase, 
   DeviceFirestoreState,
-  WorkspaceAppInfo
+  WorkspaceAppInfo,
+  AgeTier
 } from './types/zentry';
 import { ZentryWallpaper } from './components/wallpaper/ZentryWallpaper';
 import { ZentryStatusBar } from './components/shell/ZentryStatusBar';
@@ -19,6 +20,11 @@ import { CustomizationPanel } from './components/home/CustomizationPanel';
 // Screen Imports
 import { ZentryAiScreen } from './components/screens/ZentryAiScreen';
 import { ZentryCreationScreen } from './components/screens/ZentryCreationScreen';
+import { ZentryEntertainmentHubScreen } from './components/screens/ZentryEntertainmentHubScreen';
+import { ZentryTubeScreen } from './components/screens/ZentryTubeScreen';
+import { ZentryTokScreen } from './components/screens/ZentryTokScreen';
+import { ZentryGramScreen } from './components/screens/ZentryGramScreen';
+import { ZentryStreamScreen } from './components/screens/ZentryStreamScreen';
 import { ZentryTutorHubScreen } from './components/screens/ZentryTutorHubScreen';
 import { ZentrySafeBrowserScreen } from './components/screens/ZentrySafeBrowserScreen';
 import { ZentryCalculatorScreen } from './components/screens/ZentryCalculatorScreen';
@@ -40,6 +46,7 @@ import { ZentryRedactorScreen } from './components/screens/ZentryRedactorScreen'
 import { ZentryEmbeddedAppScreen } from './components/screens/ZentryEmbeddedAppScreen';
 
 import { subscribeToDeviceState, simulateDeviceState } from './services/firebase';
+import { sounds } from './services/soundEffects';
 
 const WALLPAPERS: Record<WallpaperId, WallpaperConfig> = {
   Glacial: {
@@ -100,6 +107,15 @@ export const App: React.FC = () => {
   const [showCalendar, setShowCalendar] = useState<boolean>(() => {
     return localStorage.getItem('zentry_show_calendar') !== 'false';
   });
+  const [ageTier, setAgeTier] = useState<AgeTier>(() => {
+    return (localStorage.getItem('zentry_age_tier') as AgeTier) || 'toddler';
+  });
+
+  const handleSelectAgeTier = (tier: AgeTier) => {
+    sounds.playTap();
+    setAgeTier(tier);
+    localStorage.setItem('zentry_age_tier', tier);
+  };
 
   // Circadian Phase State
   const [circadianPhase, setCircadianPhase] = useState<CircadianPhase>(() => {
@@ -207,7 +223,7 @@ export const App: React.FC = () => {
         focusActive={false}
       />
 
-      {/* 2. Top System Status Bar */}
+      {/* 2. Top System Status Bar with Dynamic Island */}
       <ZentryStatusBar
         phase={circadianPhase}
         deviceState={deviceState}
@@ -216,6 +232,9 @@ export const App: React.FC = () => {
           setIsQuickPanelOpen(true);
         }}
         isDark={currentWallpaper.isDark}
+        currentScreen={currentScreen}
+        ageTier={ageTier}
+        onNavigate={navigateTo}
       />
 
       {/* 3. Screen Viewport */}
@@ -227,6 +246,7 @@ export const App: React.FC = () => {
             focusActive={false}
             showClock={showClock}
             showCalendar={showCalendar}
+            ageTier={ageTier}
             onNavigate={navigateTo}
             onOpenWorkspaceApp={handleOpenWorkspaceApp}
             onSearch={(query) => {
@@ -246,6 +266,30 @@ export const App: React.FC = () => {
             onNavigate={navigateTo}
             isDark={currentWallpaper.isDark}
           />
+        )}
+
+        {currentScreen === 'entertainment_hub' && (
+          <ZentryEntertainmentHubScreen
+            onBack={handleBack}
+            onNavigate={navigateTo}
+            isDark={currentWallpaper.isDark}
+          />
+        )}
+
+        {currentScreen === 'zentry_tube' && (
+          <ZentryTubeScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
+        )}
+
+        {currentScreen === 'zentry_tok' && (
+          <ZentryTokScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
+        )}
+
+        {currentScreen === 'zentry_gram' && (
+          <ZentryGramScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
+        )}
+
+        {currentScreen === 'zentry_stream' && (
+          <ZentryStreamScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
         )}
 
         {currentScreen === 'tutor_hub' && (
@@ -289,6 +333,8 @@ export const App: React.FC = () => {
             onBack={handleBack}
             currentWallpaper={wallpaperId}
             onSelectWallpaper={handleSelectWallpaper}
+            ageTier={ageTier}
+            onSelectAgeTier={handleSelectAgeTier}
             isDark={currentWallpaper.isDark}
           />
         )}
@@ -345,6 +391,7 @@ export const App: React.FC = () => {
         onHome={handleHome}
         onOpenCommand={() => setIsCommandSheetOpen(true)}
         isDark={currentWallpaper.isDark}
+        ageTier={ageTier}
       />
 
       {/* 5. Modals and Overlays */}

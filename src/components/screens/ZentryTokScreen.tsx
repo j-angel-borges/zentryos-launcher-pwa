@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Heart, 
   MessageCircle, 
@@ -16,6 +16,7 @@ import {
 import { sounds } from '../../services/soundEffects';
 import { voiceService } from '../../services/voiceSpeech';
 import { TIKTOK_SHORTS, UniversalMediaItem } from '../../services/entertainmentData';
+import { mediaPlaybackService } from '../../services/mediaPlaybackService';
 
 interface Props {
   onBack: () => void;
@@ -35,6 +36,21 @@ export const ZentryTokScreen: React.FC<Props> = ({ onBack, isDark }) => {
   });
 
   const currentShort: UniversalMediaItem = filteredShorts[currentIndex] || filteredShorts[0] || TIKTOK_SHORTS[0];
+
+  useEffect(() => {
+    if (currentShort) {
+      mediaPlaybackService.playMedia({
+        id: currentShort.id,
+        mediaId: currentShort.mediaId,
+        title: currentShort.title,
+        creator: currentShort.creator,
+        creatorAvatar: currentShort.creatorAvatar,
+        category: currentShort.category,
+        type: 'tiktok',
+        sourceScreen: 'zentry_tok'
+      });
+    }
+  }, [currentIndex]);
 
   const handleNext = () => {
     if (currentIndex < filteredShorts.length - 1) {
