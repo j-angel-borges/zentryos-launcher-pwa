@@ -907,7 +907,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@cocomelon/video/7358920192847291653',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7358920192847291653',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@cocomelon/video/7358920192847291653\" data-video-id=\"7358920192847291653\"><section><a href=\"https://www.tiktok.com/@cocomelon\">@cocomelon</a> <p>Canción de las Frutas y Vegetales Mágicos</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@cocomelon/video/7358920192847291653\" data-video-id=\"7358920192847291653\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@cocomelon\" href=\"https://www.tiktok.com/@cocomelon?refer=embed\">@cocomelon</a><p>Canción de las Frutas y Vegetales Mágicos</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @cocomelon</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_02',
@@ -923,7 +923,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@pinkfong_official/video/7342819283749281729',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7342819283749281729',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@pinkfong_official/video/7342819283749281729\" data-video-id=\"7342819283749281729\"><section><a href=\"https://www.tiktok.com/@pinkfong_official\">@pinkfong_official</a> <p>Baby Shark Dance Party en 9:16</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@pinkfong_official/video/7342819283749281729\" data-video-id=\"7342819283749281729\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@pinkfong_official\" href=\"https://www.tiktok.com/@pinkfong_official?refer=embed\">@pinkfong_official</a><p>Baby Shark Dance Party en 9:16</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @pinkfong_official</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_03',
@@ -939,7 +939,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@elreinoinfantil/video/7329182736451928374',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7329182736451928374',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@elreinoinfantil/video/7329182736451928374\" data-video-id=\"7329182736451928374\"><section><a href=\"https://www.tiktok.com/@elreinoinfantil\">@elreinoinfantil</a> <p>La Vaca Lola Bailando en el Prado</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@elreinoinfantil/video/7329182736451928374\" data-video-id=\"7329182736451928374\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@elreinoinfantil\" href=\"https://www.tiktok.com/@elreinoinfantil?refer=embed\">@elreinoinfantil</a><p>La Vaca Lola Bailando en el Prado</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @elreinoinfantil</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_04',
@@ -955,7 +955,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@pocoyo_latam/video/7318273645291827364',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7318273645291827364',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@pocoyo_latam/video/7318273645291827364\" data-video-id=\"7318273645291827364\"><section><a href=\"https://www.tiktok.com/@pocoyo_latam\">@pocoyo_latam</a> <p>Pocoyó y Elly Jugando a las Escondidas</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@pocoyo_latam/video/7318273645291827364\" data-video-id=\"7318273645291827364\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@pocoyo_latam\" href=\"https://www.tiktok.com/@pocoyo_latam?refer=embed\">@pocoyo_latam</a><p>Pocoyó y Elly Jugando a las Escondidas</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @pocoyo_latam</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_05',
@@ -971,7 +971,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@bluey/video/7381928374651928374',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7381928374651928374',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@bluey/video/7381928374651928374\" data-video-id=\"7381928374651928374\"><section><a href=\"https://www.tiktok.com/@bluey\">@bluey</a> <p>Bluey y Bingo Baile de las Estatuas</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@bluey/video/7381928374651928374\" data-video-id=\"7381928374651928374\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@bluey\" href=\"https://www.tiktok.com/@bluey?refer=embed\">@bluey</a><p>Bluey y Bingo Baile de las Estatuas</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @bluey</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_06',
@@ -987,7 +987,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@peppapig/video/7392817263548192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7392817263548192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@peppapig/video/7392817263548192837\" data-video-id=\"7392817263548192837\"><section><a href=\"https://www.tiktok.com/@peppapig\">@peppapig</a> <p>Saltando en Charcos de Lodo con Botas</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@peppapig/video/7392817263548192837\" data-video-id=\"7392817263548192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@peppapig\" href=\"https://www.tiktok.com/@peppapig?refer=embed\">@peppapig</a><p>Saltando en Charcos de Lodo con Botas</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @peppapig</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_07',
@@ -1003,7 +1003,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@cantajuegoficial/video/7371928374658192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7371928374658192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@cantajuegoficial/video/7371928374658192837\" data-video-id=\"7371928374658192837\"><section><a href=\"https://www.tiktok.com/@cantajuegoficial\">@cantajuegoficial</a> <p>Chuchuwa Coreografía con Manitos</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@cantajuegoficial/video/7371928374658192837\" data-video-id=\"7371928374658192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@cantajuegoficial\" href=\"https://www.tiktok.com/@cantajuegoficial?refer=embed\">@cantajuegoficial</a><p>Chuchuwa Coreografía con Manitos</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @cantajuegoficial</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_08',
@@ -1019,7 +1019,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@plimplimoficial/video/7361928374659182736',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7361928374659182736',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@plimplimoficial/video/7361928374659182736\" data-video-id=\"7361928374659182736\"><section><a href=\"https://www.tiktok.com/@plimplimoficial\">@plimplimoficial</a> <p>Plim Plim: Por Favor y Gracias</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@plimplimoficial/video/7361928374659182736\" data-video-id=\"7361928374659182736\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@plimplimoficial\" href=\"https://www.tiktok.com/@plimplimoficial?refer=embed\">@plimplimoficial</a><p>Plim Plim: Por Favor y Gracias</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @plimplimoficial</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_09',
@@ -1035,7 +1035,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@mashaandthebear/video/7351928374658192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7351928374658192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@mashaandthebear/video/7351928374658192837\" data-video-id=\"7351928374658192837\"><section><a href=\"https://www.tiktok.com/@mashaandthebear\">@mashaandthebear</a> <p>Masha Jugando con los Pajaritos</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@mashaandthebear/video/7351928374658192837\" data-video-id=\"7351928374658192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@mashaandthebear\" href=\"https://www.tiktok.com/@mashaandthebear?refer=embed\">@mashaandthebear</a><p>Masha Jugando con los Pajaritos</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @mashaandthebear</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_10',
@@ -1051,7 +1051,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@danielstigertv/video/7341928374658192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7341928374658192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@danielstigertv/video/7341928374658192837\" data-video-id=\"7341928374658192837\"><section><a href=\"https://www.tiktok.com/@danielstigertv\">@danielstigertv</a> <p>Daniel Tigre: Cuando Estés Enfadado Respira</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@danielstigertv/video/7341928374658192837\" data-video-id=\"7341928374658192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@danielstigertv\" href=\"https://www.tiktok.com/@danielstigertv?refer=embed\">@danielstigertv</a><p>Daniel Tigre: Cuando Estés Enfadado Respira</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @danielstigertv</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_11',
@@ -1067,7 +1067,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@super_simple_songs/video/7331928374658192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7331928374658192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@super_simple_songs/video/7331928374658192837\" data-video-id=\"7331928374658192837\"><section><a href=\"https://www.tiktok.com/@super_simple_songs\">@super_simple_songs</a> <p>Twinkle Twinkle Little Star Acústico</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@super_simple_songs/video/7331928374658192837\" data-video-id=\"7331928374658192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@super_simple_songs\" href=\"https://www.tiktok.com/@super_simple_songs?refer=embed\">@super_simple_songs</a><p>Twinkle Twinkle Little Star Acústico</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @super_simple_songs</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_12',
@@ -1083,7 +1083,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@daveandava/video/7321928374658192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7321928374658192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@daveandava/video/7321928374658192837\" data-video-id=\"7321928374658192837\"><section><a href=\"https://www.tiktok.com/@daveandava\">@daveandava</a> <p>Aprende los Números del 1 al 5</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@daveandava/video/7321928374658192837\" data-video-id=\"7321928374658192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@daveandava\" href=\"https://www.tiktok.com/@daveandava?refer=embed\">@daveandava</a><p>Aprende los Números del 1 al 5</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @daveandava</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_13',
@@ -1099,7 +1099,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@gallinapintadita/video/7311928374658192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7311928374658192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@gallinapintadita/video/7311928374658192837\" data-video-id=\"7311928374658192837\"><section><a href=\"https://www.tiktok.com/@gallinapintadita\">@gallinapintadita</a> <p>El Pollito Amarillito en la Palma de mi Mano</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@gallinapintadita/video/7311928374658192837\" data-video-id=\"7311928374658192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@gallinapintadita\" href=\"https://www.tiktok.com/@gallinapintadita?refer=embed\">@gallinapintadita</a><p>El Pollito Amarillito en la Palma de mi Mano</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @gallinapintadita</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_14',
@@ -1115,7 +1115,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@blippiofficial/video/7301928374658192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7301928374658192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@blippiofficial/video/7301928374658192837\" data-video-id=\"7301928374658192837\"><section><a href=\"https://www.tiktok.com/@blippiofficial\">@blippiofficial</a> <p>Blippi Descubriendo Camiones de Bomberos</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@blippiofficial/video/7301928374658192837\" data-video-id=\"7301928374658192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@blippiofficial\" href=\"https://www.tiktok.com/@blippiofficial?refer=embed\">@blippiofficial</a><p>Blippi Descubriendo Camiones de Bomberos</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @blippiofficial</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_15',
@@ -1131,7 +1131,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@loolookids/video/7291928374658192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7291928374658192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@loolookids/video/7291928374658192837\" data-video-id=\"7291928374658192837\"><section><a href=\"https://www.tiktok.com/@loolookids\">@loolookids</a> <p>Las Ruedas del Autobús Girando</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@loolookids/video/7291928374658192837\" data-video-id=\"7291928374658192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@loolookids\" href=\"https://www.tiktok.com/@loolookids?refer=embed\">@loolookids</a><p>Las Ruedas del Autobús Girando</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @loolookids</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_16',
@@ -1147,7 +1147,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@heyduggee/video/7281928374658192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7281928374658192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@heyduggee/video/7281928374658192837\" data-video-id=\"7281928374658192837\"><section><a href=\"https://www.tiktok.com/@heyduggee\">@heyduggee</a> <p>El Baile del Abrazo de Duggee</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@heyduggee/video/7281928374658192837\" data-video-id=\"7281928374658192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@heyduggee\" href=\"https://www.tiktok.com/@heyduggee?refer=embed\">@heyduggee</a><p>El Baile del Abrazo de Duggee</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @heyduggee</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_17',
@@ -1163,7 +1163,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@octonautsofficial/video/7271928374658192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7271928374658192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@octonautsofficial/video/7271928374658192837\" data-video-id=\"7271928374658192837\"><section><a href=\"https://www.tiktok.com/@octonautsofficial\">@octonautsofficial</a> <p>Explorando la Laguna de Peces Payaso</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@octonautsofficial/video/7271928374658192837\" data-video-id=\"7271928374658192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@octonautsofficial\" href=\"https://www.tiktok.com/@octonautsofficial?refer=embed\">@octonautsofficial</a><p>Explorando la Laguna de Peces Payaso</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @octonautsofficial</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_18',
@@ -1179,7 +1179,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@puffinrock/video/7261928374658192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7261928374658192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@puffinrock/video/7261928374658192837\" data-video-id=\"7261928374658192837\"><section><a href=\"https://www.tiktok.com/@puffinrock\">@puffinrock</a> <p>Oona Descubriendo Conchas en la Playa</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@puffinrock/video/7261928374658192837\" data-video-id=\"7261928374658192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@puffinrock\" href=\"https://www.tiktok.com/@puffinrock?refer=embed\">@puffinrock</a><p>Oona Descubriendo Conchas en la Playa</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @puffinrock</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_19',
@@ -1195,7 +1195,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@picapicaoficial/video/7251928374658192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7251928374658192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@picapicaoficial/video/7251928374658192837\" data-video-id=\"7251928374658192837\"><section><a href=\"https://www.tiktok.com/@picapicaoficial\">@picapicaoficial</a> <p>Toca tu Nariz y Salta con Pica Pica</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@picapicaoficial/video/7251928374658192837\" data-video-id=\"7251928374658192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@picapicaoficial\" href=\"https://www.tiktok.com/@picapicaoficial?refer=embed\">@picapicaoficial</a><p>Toca tu Nariz y Salta con Pica Pica</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @picapicaoficial</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_20',
@@ -1211,7 +1211,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@eddie_dino/video/7241928374658192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7241928374658192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@eddie_dino/video/7241928374658192837\" data-video-id=\"7241928374658192837\"><section><a href=\"https://www.tiktok.com/@eddie_dino\">@eddie_dino</a> <p>Eddie Mezclando Amarillo y Azul para hacer Verde</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@eddie_dino/video/7241928374658192837\" data-video-id=\"7241928374658192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@eddie_dino\" href=\"https://www.tiktok.com/@eddie_dino?refer=embed\">@eddie_dino</a><p>Eddie Mezclando Amarillo y Azul para hacer Verde</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @eddie_dino</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_21',
@@ -1227,7 +1227,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@montessoritoddler/video/7231928374658192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7231928374658192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@montessoritoddler/video/7231928374658192837\" data-video-id=\"7231928374658192837\"><section><a href=\"https://www.tiktok.com/@montessoritoddler\">@montessoritoddler</a> <p>Actividad con Pinzas y Pompones Suaves</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@montessoritoddler/video/7231928374658192837\" data-video-id=\"7231928374658192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@montessoritoddler\" href=\"https://www.tiktok.com/@montessoritoddler?refer=embed\">@montessoritoddler</a><p>Actividad con Pinzas y Pompones Suaves</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @montessoritoddler</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_22',
@@ -1243,7 +1243,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@sensoryplaykids/video/7221928374658192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7221928374658192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@sensoryplaykids/video/7221928374658192837\" data-video-id=\"7221928374658192837\"><section><a href=\"https://www.tiktok.com/@sensoryplaykids\">@sensoryplaykids</a> <p>Espuma de Afeitar con Colorante Alimentario</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@sensoryplaykids/video/7221928374658192837\" data-video-id=\"7221928374658192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@sensoryplaykids\" href=\"https://www.tiktok.com/@sensoryplaykids?refer=embed\">@sensoryplaykids</a><p>Espuma de Afeitar con Colorante Alimentario</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @sensoryplaykids</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_23',
@@ -1259,7 +1259,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@kidsartcorner/video/7211928374658192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7211928374658192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@kidsartcorner/video/7211928374658192837\" data-video-id=\"7211928374658192837\"><section><a href=\"https://www.tiktok.com/@kidsartcorner\">@kidsartcorner</a> <p>Pintando con Burbujas de Jabón</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@kidsartcorner/video/7211928374658192837\" data-video-id=\"7211928374658192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@kidsartcorner\" href=\"https://www.tiktok.com/@kidsartcorner?refer=embed\">@kidsartcorner</a><p>Pintando con Burbujas de Jabón</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @kidsartcorner</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_24',
@@ -1275,7 +1275,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@littlebabybum/video/7201928374658192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7201928374658192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@littlebabybum/video/7201928374658192837\" data-video-id=\"7201928374658192837\"><section><a href=\"https://www.tiktok.com/@littlebabybum\">@littlebabybum</a> <p>Cinco Patitos se Fueron a Nadar</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@littlebabybum/video/7201928374658192837\" data-video-id=\"7201928374658192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@littlebabybum\" href=\"https://www.tiktok.com/@littlebabybum?refer=embed\">@littlebabybum</a><p>Cinco Patitos se Fueron a Nadar</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @littlebabybum</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_25',
@@ -1291,7 +1291,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@cleocuquin/video/7191928374658192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7191928374658192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@cleocuquin/video/7191928374658192837\" data-video-id=\"7191928374658192837\"><section><a href=\"https://www.tiktok.com/@cleocuquin\">@cleocuquin</a> <p>Vamos a Guardar los Juguetes en su Lugar</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@cleocuquin/video/7191928374658192837\" data-video-id=\"7191928374658192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@cleocuquin\" href=\"https://www.tiktok.com/@cleocuquin?refer=embed\">@cleocuquin</a><p>Vamos a Guardar los Juguetes en su Lugar</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @cleocuquin</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_26',
@@ -1307,7 +1307,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@natgeo/video/7389182736451928374',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7389182736451928374',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@natgeo/video/7389182736451928374\" data-video-id=\"7389182736451928374\"><section><a href=\"https://www.tiktok.com/@natgeo\">@natgeo</a> <p>¿Cómo Duermen los Koalas en las Ramas?</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@natgeo/video/7389182736451928374\" data-video-id=\"7389182736451928374\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@natgeo\" href=\"https://www.tiktok.com/@natgeo?refer=embed\">@natgeo</a><p>¿Cómo Duermen los Koalas en las Ramas?</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @natgeo</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_27',
@@ -1323,7 +1323,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@bbcearth/video/7378192837465192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7378192837465192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@bbcearth/video/7378192837465192837\" data-video-id=\"7378192837465192837\"><section><a href=\"https://www.tiktok.com/@bbcearth\">@bbcearth</a> <p>Perritos Cachorros Jugando en la Nieve</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@bbcearth/video/7378192837465192837\" data-video-id=\"7378192837465192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@bbcearth\" href=\"https://www.tiktok.com/@bbcearth?refer=embed\">@bbcearth</a><p>Perritos Cachorros Jugando en la Nieve</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @bbcearth</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_28',
@@ -1339,7 +1339,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@sandiegozoo/video/7367192837465192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7367192837465192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@sandiegozoo/video/7367192837465192837\" data-video-id=\"7367192837465192837\"><section><a href=\"https://www.tiktok.com/@sandiegozoo\">@sandiegozoo</a> <p>Oso Panda Gigante Deslizándose en el Pasto</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@sandiegozoo/video/7367192837465192837\" data-video-id=\"7367192837465192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@sandiegozoo\" href=\"https://www.tiktok.com/@sandiegozoo?refer=embed\">@sandiegozoo</a><p>Oso Panda Gigante Deslizándose en el Pasto</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @sandiegozoo</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_29',
@@ -1355,7 +1355,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@montereybayaquarium/video/7356192837465192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7356192837465192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@montereybayaquarium/video/7356192837465192837\" data-video-id=\"7356192837465192837\"><section><a href=\"https://www.tiktok.com/@montereybayaquarium\">@montereybayaquarium</a> <p>Nutrias Marinas Flotando en el Agua</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@montereybayaquarium/video/7356192837465192837\" data-video-id=\"7356192837465192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@montereybayaquarium\" href=\"https://www.tiktok.com/@montereybayaquarium?refer=embed\">@montereybayaquarium</a><p>Nutrias Marinas Flotando en el Agua</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @montereybayaquarium</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_30',
@@ -1371,7 +1371,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@australiazoo/video/7345192837465192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7345192837465192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@australiazoo/video/7345192837465192837\" data-video-id=\"7345192837465192837\"><section><a href=\"https://www.tiktok.com/@australiazoo\">@australiazoo</a> <p>Canguro Bebé Saludando desde la Bolsa</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@australiazoo/video/7345192837465192837\" data-video-id=\"7345192837465192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@australiazoo\" href=\"https://www.tiktok.com/@australiazoo?refer=embed\">@australiazoo</a><p>Canguro Bebé Saludando desde la Bolsa</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @australiazoo</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_31',
@@ -1387,7 +1387,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@worldwildlifefund/video/7334192837465192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7334192837465192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@worldwildlifefund/video/7334192837465192837\" data-video-id=\"7334192837465192837\"><section><a href=\"https://www.tiktok.com/@worldwildlifefund\">@worldwildlifefund</a> <p>Crías de Pingüino Emperador en Grupo</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@worldwildlifefund/video/7334192837465192837\" data-video-id=\"7334192837465192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@worldwildlifefund\" href=\"https://www.tiktok.com/@worldwildlifefund?refer=embed\">@worldwildlifefund</a><p>Crías de Pingüino Emperador en Grupo</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @worldwildlifefund</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_32',
@@ -1403,7 +1403,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@wildlifeplanet/video/7323192837465192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7323192837465192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@wildlifeplanet/video/7323192837465192837\" data-video-id=\"7323192837465192837\"><section><a href=\"https://www.tiktok.com/@wildlifeplanet\">@wildlifeplanet</a> <p>Camaleón Cambiando a Verde Brillante</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@wildlifeplanet/video/7323192837465192837\" data-video-id=\"7323192837465192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@wildlifeplanet\" href=\"https://www.tiktok.com/@wildlifeplanet?refer=embed\">@wildlifeplanet</a><p>Camaleón Cambiando a Verde Brillante</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @wildlifeplanet</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_33',
@@ -1419,7 +1419,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@thedodo/video/7312192837465192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7312192837465192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@thedodo/video/7312192837465192837\" data-video-id=\"7312192837465192837\"><section><a href=\"https://www.tiktok.com/@thedodo\">@thedodo</a> <p>Gatito y Patito Siendo Mejores Amigos</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@thedodo/video/7312192837465192837\" data-video-id=\"7312192837465192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@thedodo\" href=\"https://www.tiktok.com/@thedodo?refer=embed\">@thedodo</a><p>Gatito y Patito Siendo Mejores Amigos</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @thedodo</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_34',
@@ -1435,7 +1435,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@geographicalkids/video/7301192837465192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7301192837465192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@geographicalkids/video/7301192837465192837\" data-video-id=\"7301192837465192837\"><section><a href=\"https://www.tiktok.com/@geographicalkids\">@geographicalkids</a> <p>Delfines Dando Saltos en el Océano</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@geographicalkids/video/7301192837465192837\" data-video-id=\"7301192837465192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@geographicalkids\" href=\"https://www.tiktok.com/@geographicalkids?refer=embed\">@geographicalkids</a><p>Delfines Dando Saltos en el Océano</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @geographicalkids</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_35',
@@ -1451,7 +1451,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@jungleexplorers/video/7290192837465192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7290192837465192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@jungleexplorers/video/7290192837465192837\" data-video-id=\"7290192837465192837\"><section><a href=\"https://www.tiktok.com/@jungleexplorers\">@jungleexplorers</a> <p>Tucán Comiendo Frutas con su Gran Pico</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@jungleexplorers/video/7290192837465192837\" data-video-id=\"7290192837465192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@jungleexplorers\" href=\"https://www.tiktok.com/@jungleexplorers?refer=embed\">@jungleexplorers</a><p>Tucán Comiendo Frutas con su Gran Pico</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @jungleexplorers</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_36',
@@ -1467,7 +1467,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@safarikids/video/7289192837465192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7289192837465192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@safarikids/video/7289192837465192837\" data-video-id=\"7289192837465192837\"><section><a href=\"https://www.tiktok.com/@safarikids\">@safarikids</a> <p>Jirafa Bebé Tomando Leche con su Mamá</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@safarikids/video/7289192837465192837\" data-video-id=\"7289192837465192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@safarikids\" href=\"https://www.tiktok.com/@safarikids?refer=embed\">@safarikids</a><p>Jirafa Bebé Tomando Leche con su Mamá</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @safarikids</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_37',
@@ -1483,7 +1483,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@arctic_wildlife/video/7278192837465192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7278192837465192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@arctic_wildlife/video/7278192837465192837\" data-video-id=\"7278192837465192837\"><section><a href=\"https://www.tiktok.com/@arctic_wildlife\">@arctic_wildlife</a> <p>Zorro Ártico con su Pelaje Blanco Puro</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@arctic_wildlife/video/7278192837465192837\" data-video-id=\"7278192837465192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@arctic_wildlife\" href=\"https://www.tiktok.com/@arctic_wildlife?refer=embed\">@arctic_wildlife</a><p>Zorro Ártico con su Pelaje Blanco Puro</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @arctic_wildlife</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_38',
@@ -1499,7 +1499,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@insects_macro/video/7267192837465192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7267192837465192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@insects_macro/video/7267192837465192837\" data-video-id=\"7267192837465192837\"><section><a href=\"https://www.tiktok.com/@insects_macro\">@insects_macro</a> <p>Mariquita con Gotitas de Rocío en las Alas</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@insects_macro/video/7267192837465192837\" data-video-id=\"7267192837465192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@insects_macro\" href=\"https://www.tiktok.com/@insects_macro?refer=embed\">@insects_macro</a><p>Mariquita con Gotitas de Rocío en las Alas</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @insects_macro</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_39',
@@ -1515,7 +1515,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@oceanconservation/video/7256192837465192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7256192837465192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@oceanconservation/video/7256192837465192837\" data-video-id=\"7256192837465192837\"><section><a href=\"https://www.tiktok.com/@oceanconservation\">@oceanconservation</a> <p>Tortuga Marina Volando Bajo el Agua</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@oceanconservation/video/7256192837465192837\" data-video-id=\"7256192837465192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@oceanconservation\" href=\"https://www.tiktok.com/@oceanconservation?refer=embed\">@oceanconservation</a><p>Tortuga Marina Volando Bajo el Agua</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @oceanconservation</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_40',
@@ -1531,7 +1531,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@farmanimalsdaily/video/7245192837465192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7245192837465192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@farmanimalsdaily/video/7245192837465192837\" data-video-id=\"7245192837465192837\"><section><a href=\"https://www.tiktok.com/@farmanimalsdaily\">@farmanimalsdaily</a> <p>Ovejitas Bebés Corriendo por la Pradera</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@farmanimalsdaily/video/7245192837465192837\" data-video-id=\"7245192837465192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@farmanimalsdaily\" href=\"https://www.tiktok.com/@farmanimalsdaily?refer=embed\">@farmanimalsdaily</a><p>Ovejitas Bebés Corriendo por la Pradera</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @farmanimalsdaily</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_41',
@@ -1547,7 +1547,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@wild_horses_love/video/7234192837465192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7234192837465192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@wild_horses_love/video/7234192837465192837\" data-video-id=\"7234192837465192837\"><section><a href=\"https://www.tiktok.com/@wild_horses_love\">@wild_horses_love</a> <p>Potrillo Trotando al Lado de su Madre</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@wild_horses_love/video/7234192837465192837\" data-video-id=\"7234192837465192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@wild_horses_love\" href=\"https://www.tiktok.com/@wild_horses_love?refer=embed\">@wild_horses_love</a><p>Potrillo Trotando al Lado de su Madre</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @wild_horses_love</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_42',
@@ -1563,7 +1563,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@birdsofparadise/video/7223192837465192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7223192837465192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@birdsofparadise/video/7223192837465192837\" data-video-id=\"7223192837465192837\"><section><a href=\"https://www.tiktok.com/@birdsofparadise\">@birdsofparadise</a> <p>Colibrí Batiendo sus Alas a Toda Velocidad</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@birdsofparadise/video/7223192837465192837\" data-video-id=\"7223192837465192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@birdsofparadise\" href=\"https://www.tiktok.com/@birdsofparadise?refer=embed\">@birdsofparadise</a><p>Colibrí Batiendo sus Alas a Toda Velocidad</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @birdsofparadise</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_43',
@@ -1579,7 +1579,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@sloth_sanctuary/video/7212192837465192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7212192837465192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@sloth_sanctuary/video/7212192837465192837\" data-video-id=\"7212192837465192837\"><section><a href=\"https://www.tiktok.com/@sloth_sanctuary\">@sloth_sanctuary</a> <p>Perezoso Comiendo una Hoja Despacito</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@sloth_sanctuary/video/7212192837465192837\" data-video-id=\"7212192837465192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@sloth_sanctuary\" href=\"https://www.tiktok.com/@sloth_sanctuary?refer=embed\">@sloth_sanctuary</a><p>Perezoso Comiendo una Hoja Despacito</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @sloth_sanctuary</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_44',
@@ -1595,7 +1595,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@honeybee_facts/video/7201192837465192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7201192837465192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@honeybee_facts/video/7201192837465192837\" data-video-id=\"7201192837465192837\"><section><a href=\"https://www.tiktok.com/@honeybee_facts\">@honeybee_facts</a> <p>Abeja Recolectando Polen Amarillo</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@honeybee_facts/video/7201192837465192837\" data-video-id=\"7201192837465192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@honeybee_facts\" href=\"https://www.tiktok.com/@honeybee_facts?refer=embed\">@honeybee_facts</a><p>Abeja Recolectando Polen Amarillo</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @honeybee_facts</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_45',
@@ -1611,7 +1611,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@sealife_wonders/video/7190192837465192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7190192837465192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@sealife_wonders/video/7190192837465192837\" data-video-id=\"7190192837465192837\"><section><a href=\"https://www.tiktok.com/@sealife_wonders\">@sealife_wonders</a> <p>Pez Globo Inflando su Cuerpo Redondo</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@sealife_wonders/video/7190192837465192837\" data-video-id=\"7190192837465192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@sealife_wonders\" href=\"https://www.tiktok.com/@sealife_wonders?refer=embed\">@sealife_wonders</a><p>Pez Globo Inflando su Cuerpo Redondo</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @sealife_wonders</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_46',
@@ -1627,7 +1627,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@savanna_moments/video/7189192837465192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7189192837465192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@savanna_moments/video/7189192837465192837\" data-video-id=\"7189192837465192837\"><section><a href=\"https://www.tiktok.com/@savanna_moments\">@savanna_moments</a> <p>Elefantito Jugando en el Lodo Fresco</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@savanna_moments/video/7189192837465192837\" data-video-id=\"7189192837465192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@savanna_moments\" href=\"https://www.tiktok.com/@savanna_moments?refer=embed\">@savanna_moments</a><p>Elefantito Jugando en el Lodo Fresco</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @savanna_moments</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_47',
@@ -1643,7 +1643,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@frog_chronicles/video/7178192837465192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7178192837465192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@frog_chronicles/video/7178192837465192837\" data-video-id=\"7178192837465192837\"><section><a href=\"https://www.tiktok.com/@frog_chronicles\">@frog_chronicles</a> <p>Ranita Verde con Ojos Rojos Brillantes</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@frog_chronicles/video/7178192837465192837\" data-video-id=\"7178192837465192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@frog_chronicles\" href=\"https://www.tiktok.com/@frog_chronicles?refer=embed\">@frog_chronicles</a><p>Ranita Verde con Ojos Rojos Brillantes</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @frog_chronicles</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_48',
@@ -1659,7 +1659,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@squirrel_adventures/video/7167192837465192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7167192837465192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@squirrel_adventures/video/7167192837465192837\" data-video-id=\"7167192837465192837\"><section><a href=\"https://www.tiktok.com/@squirrel_adventures\">@squirrel_adventures</a> <p>Ardilla Escondiendo una Bellota en la Tierra</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@squirrel_adventures/video/7167192837465192837\" data-video-id=\"7167192837465192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@squirrel_adventures\" href=\"https://www.tiktok.com/@squirrel_adventures?refer=embed\">@squirrel_adventures</a><p>Ardilla Escondiendo una Bellota en la Tierra</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @squirrel_adventures</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_49',
@@ -1675,7 +1675,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@desert_critters/video/7156192837465192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7156192837465192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@desert_critters/video/7156192837465192837\" data-video-id=\"7156192837465192837\"><section><a href=\"https://www.tiktok.com/@desert_critters\">@desert_critters</a> <p>Suricatas Haciendo Guardia en Grupo</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@desert_critters/video/7156192837465192837\" data-video-id=\"7156192837465192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@desert_critters\" href=\"https://www.tiktok.com/@desert_critters?refer=embed\">@desert_critters</a><p>Suricatas Haciendo Guardia en Grupo</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @desert_critters</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
   {
     id: 'TT_50',
@@ -1691,7 +1691,7 @@ export const TIKTOK_SHORTS: UniversalMediaItem[] = [
     tags: ['#TikTokKids', '#AprenderJugando'],
     urlDirecta: 'https://www.tiktok.com/@night_wonders_macro/video/7145192837465192837',
     urlEmbed: 'https://www.tiktok.com/embed/v2/7145192837465192837',
-    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@night_wonders_macro/video/7145192837465192837\" data-video-id=\"7145192837465192837\"><section><a href=\"https://www.tiktok.com/@night_wonders_macro\">@night_wonders_macro</a> <p>Luciérnagas Encendiendo su Luz en el Bosque</p></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
+    codigoEmbed: "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@night_wonders_macro/video/7145192837465192837\" data-video-id=\"7145192837465192837\" data-embed-from=\"oembed\" style=\"max-width:605px;min-width:325px;\"><section><a target=\"_blank\" title=\"@night_wonders_macro\" href=\"https://www.tiktok.com/@night_wonders_macro?refer=embed\">@night_wonders_macro</a><p>Luciérnagas Encendiendo su Luz en el Bosque</p><a target=\"_blank\" title=\"♬ Sonido Original\" href=\"https://www.tiktok.com\">♬ Sonido Original - @night_wonders_macro</a></section></blockquote><script async src=\"https://www.tiktok.com/embed.js\"></script>"
   },
 
 ];
