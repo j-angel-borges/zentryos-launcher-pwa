@@ -4,25 +4,24 @@ import {
   Camera,
   Sparkles,
   Volume2,
-  Mic,
-  MicOff,
   Undo2,
   Trash2,
   ArrowLeft,
-  RotateCcw,
-  CheckCircle2,
   RefreshCw,
-  Image as ImageIcon,
-  Heart,
+  Wand2,
   Star,
-  Flame,
-  Wand2
+  Heart,
+  Sun,
+  Smile,
+  Brush,
+  Eraser,
+  Stamp,
+  Check
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ZentrySubPageScaffold } from '../shell/ZentrySubPageScaffold';
 import { sounds } from '../../services/soundEffects';
 import { askZentryAi } from '../../services/aiService';
-import { voiceService } from '../../services/voiceSpeech';
 
 interface Props {
   onBack: () => void;
@@ -32,82 +31,86 @@ interface Props {
 interface SavedDrawing {
   id: string;
   thumbnail: string;
-  subject: string;
+  emoji: string;
   story: string;
-  date: string;
-  source: 'canvas' | 'camera';
 }
 
-interface AiArtResponse {
-  speechText: string;
-  detectedSubject: string;
-  quickPicks: string[];
-  evolutionStory: string;
-  physicalMission?: string;
-}
+const STAMPS = [
+  { id: 'star', emoji: '⭐', label: 'Estrella' },
+  { id: 'heart', emoji: '❤️', label: 'Corazón' },
+  { id: 'sun', emoji: '☀️', label: 'Sol' },
+  { id: 'dino', emoji: '🦖', label: 'Dino' },
+  { id: 'rocket', emoji: '🚀', label: 'Cohete' },
+  { id: 'rainbow', emoji: '🌈', label: 'Arcoíris' },
+  { id: 'crown', emoji: '👑', label: 'Corona' },
+  { id: 'paw', emoji: '🐾', label: 'Huellita' }
+];
+
+const MAGIC_CHOICES = [
+  { id: 'rocket', emoji: '🚀', color: 'from-blue-500 to-indigo-600', story: '¡Tu personaje viaja en cohete a las estrellas y juega con la luna!' },
+  { id: 'lightning', emoji: '⚡', color: 'from-amber-400 to-yellow-500', story: '¡Tu personaje tiene superpoderes mágicos y lanza chispitas de luz!' },
+  { id: 'cookie', emoji: '🍪', color: 'from-amber-600 to-orange-700', story: '¡Tu personaje come ricas galletas y comparte con todos sus amigos!' },
+  { id: 'rainbow', emoji: '🌈', color: 'from-pink-500 via-purple-500 to-cyan-500', story: '¡Tu personaje pinta un arcoíris en el cielo y salta sobre las nubes!' }
+];
 
 export const ZentryNeuroArtScreen: React.FC<Props> = ({ onBack, isDark }) => {
-  // Screen views: 'welcome' | 'canvas' | 'camera' | 'magic_mind'
-  const [viewState, setViewState] = useState<'welcome' | 'canvas' | 'camera' | 'magic_mind'>('welcome');
+  // Estados de pantalla: 'welcome' | 'canvas' | 'camera' | 'magic'
+  const [viewState, setViewState] = useState<'welcome' | 'canvas' | 'camera' | 'magic'>('welcome');
 
-  // Drawing Canvas State
+  // Herramientas del Lienzo
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [selectedColor, setSelectedColor] = useState('#8B5CF6');
-  const [brushSize, setBrushSize] = useState(14);
-  const [isEraser, setIsEraser] = useState(false);
+  const [toolMode, setToolMode] = useState<'brush' | 'stamp' | 'eraser'>('brush');
+  const [selectedStamp, setSelectedStamp] = useState(STAMPS[0]);
+  const [selectedColor, setSelectedColor] = useState('#EC4899');
+  const [brushSize, setBrushSize] = useState(18);
+  const [isRainbowBrush, setIsRainbowBrush] = useState(false);
   const [strokeHistory, setStrokeHistory] = useState<ImageData[]>([]);
+  const isDrawingRef = useRef(false);
   const lastPosRef = useRef<{ x: number; y: number } | null>(null);
+  const rainbowHueRef = useRef(0);
 
-  // Active Image (from canvas or camera)
-  const [capturedImageBase64, setCapturedImageBase64] = useState<string | null>(null);
-  const [imageSource, setImageSource] = useState<'canvas' | 'camera'>('canvas');
+  // Captura & IA
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [isThinking, setIsThinking] = useState(false);
+  const [spokenPrompt, setSpokenPrompt] = useState<string>('¡Qué dibujo tan lindo! ¿Qué aventura quiere vivir tu amigo?');
+  const [selectedChoice, setSelectedChoice] = useState<typeof MAGIC_CHOICES[0] | null>(null);
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
-  // Camera State
+  // Cámara
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
-  const [cameraError, setCameraError] = useState<string | null>(null);
 
-  // AI & Co-creation State
-  const [isThinking, setIsThinking] = useState(false);
-  const [aiResult, setAiResult] = useState<AiArtResponse | null>(null);
-  const [selectedEvolution, setSelectedEvolution] = useState<string | null>(null);
-  const [isDictating, setIsDictating] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-
-  // Saved Gallery State
+  // Historial Guardado
   const [gallery, setGallery] = useState<SavedDrawing[]>(() => {
     try {
-      const saved = localStorage.getItem('zentry_neuroart_gallery');
+      const saved = localStorage.getItem('zentry_toddler_art');
       return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
     }
   });
-  const [selectedGalleryItem, setSelectedGalleryItem] = useState<SavedDrawing | null>(null);
 
   const colors = [
-    '#FF477E', // Rosa Mágico
-    '#8B5CF6', // Violeta Estelar
-    '#3B82F6', // Azul Cielo
-    '#10B981', // Verde Esmeralda
-    '#F59E0B', // Amarillo Sol
-    '#EF4444', // Rojo Fuego
-    '#1E293B', // Tinta Oscura
-    '#FFFFFF'  // Blanco Nube
+    '#EC4899', // Rosa
+    '#8B5CF6', // Violeta
+    '#3B82F6', // Azul
+    '#10B981', // Verde
+    '#F59E0B', // Amarillo
+    '#EF4444', // Rojo
+    '#1E293B'  // Negro
   ];
 
   // ----------------------------------------------------
-  // Audio Speech (TTS)
+  // Síntesis de Voz Amigable para Niños
   // ----------------------------------------------------
-  const speakText = (text: string) => {
+  const speak = (text: string) => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'es-ES';
-      utterance.rate = 0.95;
-      utterance.pitch = 1.15;
+      utterance.rate = 0.92;
+      utterance.pitch = 1.25;
       utterance.onstart = () => setIsSpeaking(true);
       utterance.onend = () => setIsSpeaking(false);
       utterance.onerror = () => setIsSpeaking(false);
@@ -115,7 +118,7 @@ export const ZentryNeuroArtScreen: React.FC<Props> = ({ onBack, isDark }) => {
     }
   };
 
-  const stopSpeaking = () => {
+  const stopVoice = () => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       setIsSpeaking(false);
@@ -123,14 +126,13 @@ export const ZentryNeuroArtScreen: React.FC<Props> = ({ onBack, isDark }) => {
   };
 
   // ----------------------------------------------------
-  // Canvas Setup & Drawing Handlers
+  // Inicialización del Lienzo
   // ----------------------------------------------------
   useEffect(() => {
     if (viewState === 'canvas' && canvasRef.current) {
       const canvas = canvasRef.current;
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        // Adjust for retina high-DPI
         const rect = canvas.getBoundingClientRect();
         const dpr = window.devicePixelRatio || 1;
         canvas.width = rect.width * dpr;
@@ -141,20 +143,20 @@ export const ZentryNeuroArtScreen: React.FC<Props> = ({ onBack, isDark }) => {
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(0, 0, rect.width, rect.height);
 
-        // Save blank initial state
         const initial = ctx.getImageData(0, 0, canvas.width, canvas.height);
         setStrokeHistory([initial]);
       }
+      speak('¡Toca los colores y dibuja con tu dedito!');
     }
   }, [viewState]);
 
-  const saveCanvasState = () => {
+  const saveHistoryState = () => {
     const canvas = canvasRef.current;
     if (canvas) {
       const ctx = canvas.getContext('2d');
       if (ctx) {
         const state = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        setStrokeHistory((prev) => [...prev.slice(-15), state]);
+        setStrokeHistory((prev) => [...prev.slice(-12), state]);
       }
     }
   };
@@ -171,24 +173,37 @@ export const ZentryNeuroArtScreen: React.FC<Props> = ({ onBack, isDark }) => {
 
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const pos = getCanvasPos(e);
-    setIsDrawing(true);
-    lastPosRef.current = pos;
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
 
     const canvas = canvasRef.current;
-    if (canvas) {
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.beginPath();
-        ctx.arc(pos.x, pos.y, (isEraser ? brushSize * 1.5 : brushSize) / 2, 0, Math.PI * 2);
-        ctx.fillStyle = isEraser ? '#FFFFFF' : selectedColor;
-        ctx.fill();
-      }
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    if (toolMode === 'stamp') {
+      // Estampar figura
+      if (navigator.vibrate) navigator.vibrate(8);
+      sounds.playTap();
+      ctx.font = `${brushSize * 2.8}px system-ui, Apple Color Emoji, Segoe UI Emoji`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(selectedStamp.emoji, pos.x, pos.y);
+      saveHistoryState();
+      return;
     }
+
+    // Modo dibujo
+    isDrawingRef.current = true;
+    lastPosRef.current = pos;
+
+    ctx.beginPath();
+    ctx.arc(pos.x, pos.y, (toolMode === 'eraser' ? brushSize * 1.8 : brushSize) / 2, 0, Math.PI * 2);
+    ctx.fillStyle = toolMode === 'eraser' ? '#FFFFFF' : isRainbowBrush ? `hsl(${rainbowHueRef.current}, 90%, 55%)` : selectedColor;
+    ctx.fill();
   };
 
   const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!isDrawing || !lastPosRef.current) return;
+    if (!isDrawingRef.current || !lastPosRef.current || toolMode === 'stamp') return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -196,21 +211,27 @@ export const ZentryNeuroArtScreen: React.FC<Props> = ({ onBack, isDark }) => {
 
     const currentPos = getCanvasPos(e);
 
+    if (isRainbowBrush && toolMode !== 'eraser') {
+      rainbowHueRef.current = (rainbowHueRef.current + 8) % 360;
+      ctx.strokeStyle = `hsl(${rainbowHueRef.current}, 95%, 55%)`;
+    } else {
+      ctx.strokeStyle = toolMode === 'eraser' ? '#FFFFFF' : selectedColor;
+    }
+
+    ctx.lineWidth = toolMode === 'eraser' ? brushSize * 1.8 : brushSize;
     ctx.beginPath();
     ctx.moveTo(lastPosRef.current.x, lastPosRef.current.y);
     ctx.lineTo(currentPos.x, currentPos.y);
-    ctx.strokeStyle = isEraser ? '#FFFFFF' : selectedColor;
-    ctx.lineWidth = isEraser ? brushSize * 1.5 : brushSize;
     ctx.stroke();
 
     lastPosRef.current = currentPos;
   };
 
   const handlePointerUp = () => {
-    if (isDrawing) {
-      setIsDrawing(false);
+    if (isDrawingRef.current) {
+      isDrawingRef.current = false;
       lastPosRef.current = null;
-      saveCanvasState();
+      saveHistoryState();
     }
   };
 
@@ -221,15 +242,15 @@ export const ZentryNeuroArtScreen: React.FC<Props> = ({ onBack, isDark }) => {
     if (canvas) {
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        const nextHistory = strokeHistory.slice(0, -1);
-        const previousState = nextHistory[nextHistory.length - 1];
-        ctx.putImageData(previousState, 0, 0);
-        setStrokeHistory(nextHistory);
+        const next = strokeHistory.slice(0, -1);
+        const prev = next[next.length - 1];
+        ctx.putImageData(prev, 0, 0);
+        setStrokeHistory(next);
       }
     }
   };
 
-  const handleClearCanvas = () => {
+  const handleClear = () => {
     sounds.playTap();
     const canvas = canvasRef.current;
     if (canvas) {
@@ -238,31 +259,26 @@ export const ZentryNeuroArtScreen: React.FC<Props> = ({ onBack, isDark }) => {
         const rect = canvas.getBoundingClientRect();
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(0, 0, rect.width, rect.height);
-        saveCanvasState();
+        saveHistoryState();
       }
     }
   };
 
   // ----------------------------------------------------
-  // Camera Handlers
+  // Cámara en Vivo
   // ----------------------------------------------------
   const startCamera = async () => {
-    setCameraError(null);
     try {
-      if (cameraStream) {
-        cameraStream.getTracks().forEach((t) => t.stop());
-      }
+      if (cameraStream) cameraStream.getTracks().forEach((t) => t.stop());
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
+        video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: false
       });
       setCameraStream(stream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
-    } catch (err: any) {
-      console.error('Camera access error:', err);
-      setCameraError('No pudimos acceder a la cámara. Por favor permite los permisos.');
+      if (videoRef.current) videoRef.current.srcObject = stream;
+      speak('¡Apunta a tu dibujo y toca el botón brillante!');
+    } catch (e) {
+      console.warn('Camera error:', e);
     }
   };
 
@@ -277,149 +293,105 @@ export const ZentryNeuroArtScreen: React.FC<Props> = ({ onBack, isDark }) => {
     if (!videoRef.current) return;
     sounds.playTap();
     const video = videoRef.current;
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = video.videoWidth || 640;
-    tempCanvas.height = video.videoHeight || 480;
-    const ctx = tempCanvas.getContext('2d');
+    const temp = document.createElement('canvas');
+    temp.width = video.videoWidth || 640;
+    temp.height = video.videoHeight || 480;
+    const ctx = temp.getContext('2d');
     if (ctx) {
-      ctx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
-      const base64 = tempCanvas.toDataURL('image/jpeg', 0.85);
+      ctx.drawImage(video, 0, 0, temp.width, temp.height);
+      const base64 = temp.toDataURL('image/jpeg', 0.85);
       stopCamera();
-      setCapturedImageBase64(base64);
-      setImageSource('camera');
-      processImageWithAI(base64, 'Foto de papel escaneado');
+      setCapturedImage(base64);
+      triggerMagicWithAi(base64);
     }
   };
 
   // ----------------------------------------------------
-  // AI Co-creation Pipeline
+  // Magia de IA y Transformación
   // ----------------------------------------------------
   const handleMagicFromCanvas = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     sounds.playTap();
     const base64 = canvas.toDataURL('image/jpeg', 0.85);
-    setCapturedImageBase64(base64);
-    setImageSource('canvas');
-    processImageWithAI(base64, 'Dibujo en lienzo digital');
+    setCapturedImage(base64);
+    triggerMagicWithAi(base64);
   };
 
-  const processImageWithAI = async (base64: string, sourceLabel: string) => {
-    setViewState('magic_mind');
+  const triggerMagicWithAi = async (base64: string) => {
+    setViewState('magic');
     setIsThinking(true);
-    setAiResult(null);
-    setSelectedEvolution(null);
+    setSelectedChoice(null);
+
+    confetti({ particleCount: 40, spread: 60, origin: { y: 0.6 } });
 
     try {
       const raw = await askZentryAi(
         'neuro_art',
-        `El niño pequeño creó un dibujo (${sourceLabel}). Analízalo con emoción y genera la respuesta mágica para niños de 2 a 5 años.`,
+        'Analiza este dibujo de un niño de 2 a 5 años. Salúdalo alegremente y pregúntale qué aventura quiere vivir con su dibujo.',
         base64
       );
-
-      const parsed: AiArtResponse = JSON.parse(raw.trim().replace(/^```json/, '').replace(/```$/, ''));
-      setAiResult(parsed);
-      sounds.playSuccess();
-      speakText(parsed.speechText);
-    } catch (error) {
-      console.warn('Fallback NeuroArt AI response:', error);
-      const fallback: AiArtResponse = {
-        speechText: '¡Guau! ¡Qué dibujo tan hermoso! Veo un personaje súper alegre con colores mágicos. ¿Qué superpoder te gustaría que tenga?',
-        detectedSubject: 'Personaje Mágico',
-        quickPicks: ['⚡ Rayos de colores', '🚀 Volar al espacio', '🍪 Comer galletas', '🌟 Hacer estrellas'],
-        evolutionStory: '¡Tu personaje aprendió a volar por encima de las nubes y ahora ilumina el cielo con su sonrisa!',
-        physicalMission: '¡Busca un juguete en tu habitación para que sea el mejor amigo de tu personaje!'
-      };
-      setAiResult(fallback);
-      sounds.playSuccess();
-      speakText(fallback.speechText);
+      const parsed = JSON.parse(raw.trim().replace(/^```json/, '').replace(/```$/, ''));
+      const text = parsed.speechText || '¡Qué dibujo tan hermoso! ¿Qué aventura mágica quiere vivir tu amigo?';
+      setSpokenPrompt(text);
+      speak(text);
+    } catch {
+      const fallbackText = '¡Qué dibujo tan hermoso! ¿Qué aventura mágica quiere vivir tu amigo?';
+      setSpokenPrompt(fallbackText);
+      speak(fallbackText);
     } finally {
       setIsThinking(false);
     }
   };
 
-  const handlePickEvolution = (choice: string) => {
-    if (navigator.vibrate) navigator.vibrate(10);
-    sounds.playTap();
-    setSelectedEvolution(choice);
+  const handleSelectMagicChoice = (choice: typeof MAGIC_CHOICES[0]) => {
+    if (navigator.vibrate) navigator.vibrate(15);
+    sounds.playSuccess();
+    setSelectedChoice(choice);
 
     confetti({
-      particleCount: 50,
-      spread: 60,
-      origin: { y: 0.7 }
+      particleCount: 80,
+      spread: 80,
+      origin: { y: 0.5 }
     });
 
-    if (aiResult) {
-      const storyText = `¡Increíble! Elegiste ${choice}. ${aiResult.evolutionStory}`;
-      speakText(storyText);
-    }
+    speak(choice.story);
   };
 
-  const handleDictateResponse = () => {
-    if (isDictating) {
-      voiceService.stopListening();
-      setIsDictating(false);
-      return;
-    }
-
-    if (navigator.vibrate) navigator.vibrate(8);
-    sounds.playTap();
-    setIsDictating(true);
-
-    voiceService.startListening(
-      (result) => {
-        setIsDictating(false);
-        handlePickEvolution(result.transcript);
-      },
-      () => {
-        setIsDictating(false);
-      }
-    );
-  };
-
-  const handleSaveToGallery = () => {
-    if (!capturedImageBase64 || !aiResult) return;
+  const handleSaveDrawing = () => {
+    if (!capturedImage) return;
     if (navigator.vibrate) navigator.vibrate(15);
     sounds.playSuccess();
 
-    const newDrawing: SavedDrawing = {
+    const newSaved: SavedDrawing = {
       id: String(Date.now()),
-      thumbnail: capturedImageBase64,
-      subject: aiResult.detectedSubject || 'Aventura Creativa',
-      story: selectedEvolution
-        ? `Eligió: ${selectedEvolution}. ${aiResult.evolutionStory}`
-        : aiResult.evolutionStory,
-      date: new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }),
-      source: imageSource
+      thumbnail: capturedImage,
+      emoji: selectedChoice ? selectedChoice.emoji : '🎨',
+      story: selectedChoice ? selectedChoice.story : '¡Una hermosa obra de arte!'
     };
 
-    const updated = [newDrawing, ...gallery.slice(0, 19)];
-    setGallery(updated);
-    localStorage.setItem('zentry_neuroart_gallery', JSON.stringify(updated));
+    const nextGallery = [newSaved, ...gallery.slice(0, 15)];
+    setGallery(nextGallery);
+    localStorage.setItem('zentry_toddler_art', JSON.stringify(nextGallery));
 
-    confetti({
-      particleCount: 70,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
-
+    confetti({ particleCount: 100, spread: 90, origin: { y: 0.5 } });
     setViewState('welcome');
+    speak('¡Tu dibujo se guardó en tu cofre mágico!');
   };
 
-  // Clean up speech on unmount
   useEffect(() => {
     return () => {
-      stopSpeaking();
+      stopVoice();
       stopCamera();
     };
   }, []);
 
   return (
     <ZentrySubPageScaffold
-      title="Art-Attack"
-      kicker="CO-CREACIÓN MÁGICA"
+      title=""
+      kicker=""
       onBack={() => {
-        stopSpeaking();
+        stopVoice();
         stopCamera();
         if (viewState !== 'welcome') {
           setViewState('welcome');
@@ -430,283 +402,234 @@ export const ZentryNeuroArtScreen: React.FC<Props> = ({ onBack, isDark }) => {
       isDark={isDark}
     >
       {/* ---------------------------------------------------- */}
-      {/* 1. MODO BIENVENIDA / SELECTOR */}
+      {/* 1. MODO BIENVENIDA (2 BOTONES GIGANTES ILUSTRADOS) */}
       {/* ---------------------------------------------------- */}
       {viewState === 'welcome' && (
-        <div className="w-full h-full flex flex-col items-center justify-between p-2 md:p-4 space-y-4 overflow-y-auto no-scrollbar">
-          {/* Main Action Cards (Grandes, táctiles para niños de 2 a 5 años) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-xl">
-            {/* Tarjeta 1: Lienzo Mágico */}
+        <div className="w-full h-full flex flex-col items-center justify-between p-2 md:p-6 space-y-4">
+          {/* Tarjetas Gigantes de Inicio */}
+          <div className="grid grid-cols-2 gap-4 md:gap-8 w-full max-w-lg flex-1 items-center">
+            {/* Botón 1: DIBUJAR (Pincel & Lienzo) */}
             <button
               onClick={() => {
-                if (navigator.vibrate) navigator.vibrate(10);
+                if (navigator.vibrate) navigator.vibrate(12);
                 sounds.playAppOpen();
                 setViewState('canvas');
               }}
-              className={`p-6 rounded-[32px] flex flex-col items-center justify-center gap-3 border shadow-xl transition-transform active:scale-95 cursor-pointer zentry-press ${
-                isDark
-                  ? 'bg-gradient-to-br from-purple-900/40 via-purple-800/30 to-pink-900/40 border-purple-500/30'
-                  : 'bg-gradient-to-br from-purple-100 via-pink-50 to-rose-100 border-purple-200 shadow-purple-100'
-              }`}
+              className="h-56 md:h-64 rounded-[36px] bg-gradient-to-br from-pink-400 via-rose-500 to-purple-600 flex flex-col items-center justify-center gap-3 p-4 shadow-2xl shadow-pink-500/40 cursor-pointer zentry-press border-4 border-white/60 active:scale-95"
             >
-              <div className="w-20 h-20 rounded-[24px] bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-pink-500/30">
-                <Palette className="w-10 h-10" />
+              <div className="w-24 h-24 md:w-28 md:h-28 rounded-full bg-white/25 backdrop-blur-md flex items-center justify-center text-white shadow-inner">
+                <Palette className="w-14 h-14 md:w-16 md:h-16" />
               </div>
-              <span className={`text-base font-black tracking-tight ${isDark ? 'text-white' : 'text-[#1E293B]'}`}>
-                Lienzo Mágico
-              </span>
-              <span className={`text-xs font-semibold ${isDark ? 'text-purple-300' : 'text-purple-600'}`}>
-                Dibuja con tus dedos
-              </span>
+              <span className="text-4xl md:text-5xl">🎨</span>
             </button>
 
-            {/* Tarjeta 2: Escanear Papel */}
+            {/* Botón 2: FOTO (Cámara Escáner) */}
             <button
               onClick={() => {
-                if (navigator.vibrate) navigator.vibrate(10);
+                if (navigator.vibrate) navigator.vibrate(12);
                 sounds.playAppOpen();
                 setViewState('camera');
                 startCamera();
               }}
-              className={`p-6 rounded-[32px] flex flex-col items-center justify-center gap-3 border shadow-xl transition-transform active:scale-95 cursor-pointer zentry-press ${
-                isDark
-                  ? 'bg-gradient-to-br from-blue-900/40 via-indigo-800/30 to-cyan-900/40 border-blue-500/30'
-                  : 'bg-gradient-to-br from-blue-100 via-sky-50 to-indigo-100 border-blue-200 shadow-blue-100'
-              }`}
+              className="h-56 md:h-64 rounded-[36px] bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600 flex flex-col items-center justify-center gap-3 p-4 shadow-2xl shadow-cyan-500/40 cursor-pointer zentry-press border-4 border-white/60 active:scale-95"
             >
-              <div className="w-20 h-20 rounded-[24px] bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
-                <Camera className="w-10 h-10" />
+              <div className="w-24 h-24 md:w-28 md:h-28 rounded-full bg-white/25 backdrop-blur-md flex items-center justify-center text-white shadow-inner">
+                <Camera className="w-14 h-14 md:w-16 md:h-16" />
               </div>
-              <span className={`text-base font-black tracking-tight ${isDark ? 'text-white' : 'text-[#1E293B]'}`}>
-                Escanear Papel
-              </span>
-              <span className={`text-xs font-semibold ${isDark ? 'text-blue-300' : 'text-blue-600'}`}>
-                Toma foto a tu dibujo real
-              </span>
+              <span className="text-4xl md:text-5xl">📸</span>
             </button>
           </div>
 
-          {/* Galería de Dibujos Guardados */}
-          <div className="w-full max-w-xl flex-1 flex flex-col min-h-[140px]">
-            <div className="flex items-center justify-between pb-2">
-              <span className={`text-xs font-black uppercase tracking-wider ${isDark ? 'text-white/60' : 'text-slate-500'}`}>
-                🖼️ Mis Obras Mágicas ({gallery.length})
-              </span>
+          {/* Galería Visual Inferior (Cofre de Dibujos) */}
+          {gallery.length > 0 && (
+            <div className="w-full max-w-lg flex items-center gap-3 overflow-x-auto no-scrollbar py-2 px-1">
+              <span className="text-2xl flex-shrink-0">⭐</span>
+              {gallery.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => speak(item.story)}
+                  className="w-18 h-18 rounded-[22px] overflow-hidden border-3 border-pink-400/60 shadow-lg flex-shrink-0 relative zentry-press active:scale-90 bg-white"
+                >
+                  <img src={item.thumbnail} alt="Obra" className="w-full h-full object-cover" />
+                  <span className="absolute bottom-1 right-1 text-sm bg-black/60 rounded-full px-1">
+                    {item.emoji}
+                  </span>
+                </button>
+              ))}
             </div>
-
-            {gallery.length === 0 ? (
-              <div
-                className={`flex-1 rounded-[24px] border border-dashed flex flex-col items-center justify-center p-6 text-center ${
-                  isDark ? 'border-white/10 text-white/40' : 'border-black/10 text-slate-400'
-                }`}
-              >
-                <Sparkles className="w-8 h-8 mb-2 opacity-50 text-pink-400" />
-                <p className="text-xs font-bold">Aún no tienes dibujos guardados.</p>
-                <p className="text-[11px] opacity-70">¡Crea tu primera obra en el Lienzo o con la Cámara!</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 overflow-y-auto no-scrollbar max-h-48 p-1">
-                {gallery.map((item) => (
-                  <div
-                    key={item.id}
-                    onClick={() => {
-                      setSelectedGalleryItem(item);
-                      speakText(item.story);
-                    }}
-                    className={`rounded-[20px] p-1.5 border flex flex-col items-center gap-1 cursor-pointer transition-transform active:scale-95 shadow-md ${
-                      isDark ? 'bg-white/10 border-white/15' : 'bg-white border-black/5 shadow-slate-100'
-                    }`}
-                  >
-                    <img
-                      src={item.thumbnail}
-                      alt={item.subject}
-                      className="w-full h-16 object-cover rounded-[14px] bg-white shadow-inner"
-                    />
-                    <span className={`text-[10px] font-black truncate w-full text-center ${isDark ? 'text-white' : 'text-[#1E293B]'}`}>
-                      {item.subject}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          )}
         </div>
       )}
 
       {/* ---------------------------------------------------- */}
-      {/* 2. MODO LIENZO MÁGICO (HTML5 Canvas Real) */}
+      {/* 2. MODO LIENZO (100% VISUAL: PINCEL, SELLOS, COLORES) */}
       {/* ---------------------------------------------------- */}
       {viewState === 'canvas' && (
-        <div className="w-full h-full flex flex-col justify-between overflow-hidden gap-2">
-          {/* Barra Superior de Herramientas */}
-          <div className="flex items-center justify-between gap-2 px-1">
-            {/* Paleta de Colores Táctiles */}
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
-              {colors.map((c) => (
+        <div className="w-full h-full flex flex-col justify-between overflow-hidden gap-2 relative">
+          {/* Barra Superior: Figuras / Sellos Táctiles */}
+          <div className="flex items-center justify-between gap-1 px-1 bg-white/30 backdrop-blur-md rounded-[24px] p-1.5 border border-white/40 shadow-sm">
+            {/* Modo Pincel Normal */}
+            <button
+              onClick={() => {
+                if (navigator.vibrate) navigator.vibrate(5);
+                setToolMode('brush');
+                setIsRainbowBrush(false);
+              }}
+              className={`p-2.5 rounded-[20px] text-xl border-2 transition-transform cursor-pointer ${
+                toolMode === 'brush' && !isRainbowBrush
+                  ? 'bg-pink-500 text-white border-pink-300 scale-110 shadow-lg'
+                  : 'bg-white/80 border-transparent text-slate-700'
+              }`}
+            >
+              🖌️
+            </button>
+
+            {/* Pincel Arcoíris */}
+            <button
+              onClick={() => {
+                if (navigator.vibrate) navigator.vibrate(5);
+                setToolMode('brush');
+                setIsRainbowBrush(true);
+              }}
+              className={`p-2.5 rounded-[20px] text-xl border-2 transition-transform cursor-pointer ${
+                toolMode === 'brush' && isRainbowBrush
+                  ? 'bg-gradient-to-r from-pink-500 via-yellow-400 to-cyan-400 text-white border-white scale-110 shadow-lg'
+                  : 'bg-white/80 border-transparent'
+              }`}
+            >
+              🌈
+            </button>
+
+            {/* Sellos de Figuras (⭐, ❤️, ☀️, 🦖, 🚀) */}
+            <div className="flex items-center gap-1 overflow-x-auto no-scrollbar max-w-[45%]">
+              {STAMPS.map((st) => (
                 <button
-                  key={c}
+                  key={st.id}
                   onClick={() => {
                     if (navigator.vibrate) navigator.vibrate(5);
-                    setSelectedColor(c);
-                    setIsEraser(false);
+                    setToolMode('stamp');
+                    setSelectedStamp(st);
                   }}
-                  style={{ backgroundColor: c }}
-                  className={`w-7 h-7 md:w-8 md:h-8 rounded-full border-2 transition-transform cursor-pointer zentry-press ${
-                    !isEraser && selectedColor === c
-                      ? 'scale-125 border-pink-400 shadow-md ring-2 ring-pink-300'
-                      : 'border-white/60'
+                  className={`p-2 rounded-[18px] text-xl transition-transform cursor-pointer flex-shrink-0 ${
+                    toolMode === 'stamp' && selectedStamp.id === st.id
+                      ? 'bg-amber-400 scale-125 border-2 border-white shadow-md'
+                      : 'bg-white/60 hover:bg-white'
                   }`}
-                />
+                >
+                  {st.emoji}
+                </button>
               ))}
             </div>
 
-            {/* Acciones Rápidas (Borrador, Deshacer, Limpiar) */}
-            <div className="flex items-center gap-1.5 flex-shrink-0">
+            {/* Borrador & Deshacer */}
+            <div className="flex items-center gap-1">
               <button
                 onClick={() => {
                   if (navigator.vibrate) navigator.vibrate(5);
-                  setIsEraser((prev) => !prev);
+                  setToolMode('eraser');
                 }}
-                className={`p-2 rounded-[14px] border font-bold text-xs flex items-center gap-1 cursor-pointer transition-all zentry-press ${
-                  isEraser
-                    ? 'bg-pink-500 text-white border-pink-400 shadow-md'
-                    : isDark
-                    ? 'bg-white/10 text-white/80 border-white/15'
-                    : 'bg-white text-slate-700 border-black/10'
+                className={`p-2.5 rounded-[20px] text-xl transition-transform cursor-pointer ${
+                  toolMode === 'eraser' ? 'bg-purple-600 text-white scale-110 shadow-lg' : 'bg-white/80'
                 }`}
-                title="Borrador"
               >
-                <span>🧹</span>
+                🧽
               </button>
 
               <button
                 onClick={handleUndo}
-                className={`p-2 rounded-[14px] border font-bold text-xs flex items-center cursor-pointer transition-all zentry-press ${
-                  isDark ? 'bg-white/10 text-white/80 border-white/15' : 'bg-white text-slate-700 border-black/10'
-                }`}
-                title="Deshacer"
+                className="p-2.5 rounded-[20px] text-xl bg-white/80 active:scale-90 cursor-pointer"
               >
-                <Undo2 className="w-4 h-4" />
+                ↩️
               </button>
 
               <button
-                onClick={handleClearCanvas}
-                className={`p-2 rounded-[14px] border font-bold text-xs flex items-center cursor-pointer transition-all zentry-press ${
-                  isDark ? 'bg-white/10 text-white/80 border-white/15' : 'bg-white text-slate-700 border-black/10'
-                }`}
-                title="Limpiar"
+                onClick={handleClear}
+                className="p-2.5 rounded-[20px] text-xl bg-white/80 active:scale-90 cursor-pointer"
               >
-                <Trash2 className="w-4 h-4 text-red-400" />
+                🗑️
               </button>
             </div>
           </div>
 
-          {/* Lienzo Interactivo Touch */}
-          <div className="flex-1 w-full relative rounded-[28px] overflow-hidden bg-white shadow-2xl border border-white/20 touch-none">
+          {/* Lienzo Táctil */}
+          <div className="flex-1 w-full relative rounded-[32px] overflow-hidden bg-white shadow-2xl border-4 border-white/80 touch-none">
             <canvas
               ref={canvasRef}
               onPointerDown={handlePointerDown}
               onPointerMove={handlePointerMove}
               onPointerUp={handlePointerUp}
               onPointerCancel={handlePointerUp}
-              className="w-full h-full cursor-crosshair block"
+              className="w-full h-full block cursor-pointer"
             />
           </div>
 
-          {/* Botón Principal: ¡Hacer Magia! */}
-          <div className="flex items-center justify-between gap-3 pt-1">
-            {/* Grosor de Pincel */}
-            <div className="flex items-center gap-2">
-              <span className={`text-[11px] font-bold ${isDark ? 'text-white/60' : 'text-slate-500'}`}>Grosor:</span>
-              {[8, 16, 28].map((size) => (
+          {/* Barra Inferior: Colores Gigantes & Botón Varita Mágica 🪄 */}
+          <div className="flex items-center justify-between gap-2 px-1 py-1">
+            {/* Círculos de Colores Gigantes */}
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+              {colors.map((c) => (
                 <button
-                  key={size}
-                  onClick={() => setBrushSize(size)}
-                  className={`w-7 h-7 rounded-full flex items-center justify-center border cursor-pointer ${
-                    brushSize === size
-                      ? 'bg-pink-500 text-white border-pink-300'
-                      : isDark
-                      ? 'bg-white/10 border-white/15 text-white/60'
-                      : 'bg-white border-black/10 text-slate-600'
+                  key={c}
+                  onClick={() => {
+                    if (navigator.vibrate) navigator.vibrate(5);
+                    setSelectedColor(c);
+                    setToolMode('brush');
+                    setIsRainbowBrush(false);
+                  }}
+                  style={{ backgroundColor: c }}
+                  className={`w-10 h-10 md:w-12 md:h-12 rounded-full border-3 transition-transform cursor-pointer ${
+                    toolMode === 'brush' && !isRainbowBrush && selectedColor === c
+                      ? 'scale-125 border-white ring-4 ring-pink-400 shadow-xl'
+                      : 'border-white/80 shadow-md'
                   }`}
-                >
-                  <div
-                    className="rounded-full bg-current"
-                    style={{ width: `${size * 0.4 + 4}px`, height: `${size * 0.4 + 4}px` }}
-                  />
-                </button>
+                />
               ))}
             </div>
 
+            {/* BOTÓN GIGANTE: VARITA MÁGICA 🪄 */}
             <button
               onClick={handleMagicFromCanvas}
-              className="px-6 py-3 rounded-full bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-600 text-white font-black text-sm shadow-xl shadow-purple-500/30 flex items-center gap-2 transition-transform active:scale-95 cursor-pointer zentry-press"
+              className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-tr from-pink-500 via-purple-500 to-indigo-600 text-white flex items-center justify-center shadow-2xl shadow-purple-500/50 border-4 border-white active:scale-90 transition-transform cursor-pointer animate-bounce flex-shrink-0"
             >
-              <Sparkles className="w-5 h-5 animate-spin" />
-              <span>¡Hacer Magia! ✨</span>
+              <Wand2 className="w-9 h-9 md:w-11 md:h-11" />
             </button>
           </div>
         </div>
       )}
 
       {/* ---------------------------------------------------- */}
-      {/* 3. MODO CÁMARA (Escanear Papel Físico) */}
+      {/* 3. MODO CÁMARA (ESCANEAR CON BOTONES VISUALES) */}
       {/* ---------------------------------------------------- */}
       {viewState === 'camera' && (
-        <div className="w-full h-full flex flex-col justify-between overflow-hidden relative rounded-[28px] bg-black">
-          {/* Visor de Video en Vivo */}
+        <div className="w-full h-full flex flex-col justify-between overflow-hidden relative rounded-[32px] bg-black">
           <div className="flex-1 w-full relative flex items-center justify-center overflow-hidden">
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className="w-full h-full object-cover"
-            />
+            <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
 
-            {/* Marco de Encuadre Punteado para Hoja de Papel */}
-            <div className="absolute w-[80%] h-[75%] border-4 border-dashed border-pink-400/80 rounded-[28px] pointer-events-none flex flex-col items-center justify-between p-4 shadow-[0_0_50px_rgba(236,72,153,0.3)]">
-              <span className="px-3 py-1 bg-black/60 backdrop-blur-md rounded-full text-white text-[11px] font-bold">
-                🎯 Encuadra tu dibujo de papel aquí
-              </span>
-              <span className="px-3 py-1 bg-black/60 backdrop-blur-md rounded-full text-pink-300 text-[10px] font-bold">
-                Mantén la cámara firme
-              </span>
+            {/* Marco de Figuras Punteado */}
+            <div className="absolute w-[85%] h-[80%] border-6 border-dashed border-pink-400/90 rounded-[36px] pointer-events-none flex items-center justify-center">
+              <span className="text-6xl animate-pulse opacity-40">✨</span>
             </div>
-
-            {cameraError && (
-              <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center p-6 text-center text-white space-y-3">
-                <p className="text-xs">{cameraError}</p>
-                <button
-                  onClick={startCamera}
-                  className="px-4 py-2 rounded-full bg-pink-500 text-xs font-bold"
-                >
-                  Reintentar Cámara
-                </button>
-              </div>
-            )}
           </div>
 
-          {/* Controles de Disparo */}
+          {/* Controles de Cámara */}
           <div className="p-4 bg-gradient-to-t from-black via-black/80 to-transparent flex items-center justify-around">
             <button
               onClick={() => {
                 setFacingMode((prev) => (prev === 'environment' ? 'user' : 'environment'));
                 startCamera();
               }}
-              className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center cursor-pointer zentry-press"
-              title="Cambiar Cámara"
+              className="w-14 h-14 rounded-full bg-white/25 text-3xl flex items-center justify-center active:scale-90"
             >
-              <RefreshCw className="w-5 h-5" />
+              🔄
             </button>
 
-            {/* Disparador Grande */}
+            {/* Disparador Gigante */}
             <button
               onClick={handleCapturePhoto}
-              className="w-18 h-18 rounded-full bg-white p-1.5 shadow-2xl flex items-center justify-center cursor-pointer zentry-press active:scale-90"
+              className="w-22 h-22 rounded-full bg-white p-2 shadow-2xl flex items-center justify-center active:scale-90 cursor-pointer"
             >
-              <div className="w-full h-full rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-white">
-                <Camera className="w-7 h-7" />
+              <div className="w-full h-full rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-white text-4xl">
+                📸
               </div>
             </button>
 
@@ -715,204 +638,82 @@ export const ZentryNeuroArtScreen: React.FC<Props> = ({ onBack, isDark }) => {
                 stopCamera();
                 setViewState('welcome');
               }}
-              className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center cursor-pointer zentry-press"
+              className="w-14 h-14 rounded-full bg-white/25 text-3xl flex items-center justify-center active:scale-90"
             >
-              <ArrowLeft className="w-5 h-5" />
+              ❌
             </button>
           </div>
         </div>
       )}
 
       {/* ---------------------------------------------------- */}
-      {/* 4. MODO MENTE CO-CREATIVA (Voz, Diálogo y Transformación) */}
+      {/* 4. MODO MENTE MÁGICA (FIGURAS GIGANTES & VOZ HABLADA) */}
       {/* ---------------------------------------------------- */}
-      {viewState === 'magic_mind' && (
-        <div className="w-full h-full flex flex-col justify-between overflow-y-auto no-scrollbar p-2 md:p-4 space-y-4">
+      {viewState === 'magic' && (
+        <div className="w-full h-full flex flex-col items-center justify-between p-2 md:p-6 space-y-4">
           {isThinking ? (
-            <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4 animate-pulse">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-pink-500 via-purple-500 to-indigo-600 flex items-center justify-center text-white shadow-2xl shadow-purple-500/40">
-                <Sparkles className="w-12 h-12 animate-spin" />
+            <div className="flex-1 flex flex-col items-center justify-center text-center space-y-6">
+              <div className="w-32 h-32 rounded-full bg-gradient-to-tr from-pink-500 via-purple-500 to-cyan-400 flex items-center justify-center text-6xl shadow-2xl animate-spin">
+                🪄
               </div>
-              <h3 className={`text-lg font-black ${isDark ? 'text-white' : 'text-[#1E293B]'}`}>
-                ¡Despertando la magia de tu dibujo! 🪄
-              </h3>
-              <p className={`text-xs ${isDark ? 'text-purple-300' : 'text-purple-600'}`}>
-                Zentry está mirando tus colores y preparando su voz...
-              </p>
+              <span className="text-4xl animate-bounce">✨ 🌟 ✨</span>
             </div>
           ) : (
-            aiResult && (
-              <div className="flex-1 flex flex-col space-y-4 max-w-xl mx-auto w-full">
-                {/* Cabecera con Miniatura y Voz */}
-                <div
-                  className={`p-4 rounded-[28px] border flex items-center gap-4 shadow-xl ${
-                    isDark ? 'zentry-veil-dark border-purple-500/30' : 'zentry-veil-light border-purple-200 bg-purple-50/60'
-                  }`}
+            <div className="w-full max-w-lg flex-1 flex flex-col items-center justify-between space-y-4">
+              {/* Dibujo & Altavoz */}
+              <div className="relative w-full flex items-center justify-center">
+                {capturedImage && (
+                  <div className="w-40 h-40 md:w-48 md:h-48 rounded-[32px] overflow-hidden border-4 border-pink-400 shadow-2xl bg-white relative">
+                    <img src={capturedImage} alt="Obra" className="w-full h-full object-cover" />
+                    {selectedChoice && (
+                      <span className="absolute inset-0 bg-black/30 backdrop-blur-xs flex items-center justify-center text-6xl animate-in zoom-in duration-300">
+                        {selectedChoice.emoji}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* Botón Altavoz para repetir audio */}
+                <button
+                  onClick={() => speak(selectedChoice ? selectedChoice.story : spokenPrompt)}
+                  className="absolute -top-2 right-4 w-14 h-14 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 text-white flex items-center justify-center shadow-xl border-3 border-white text-2xl active:scale-90 cursor-pointer"
                 >
-                  {capturedImageBase64 && (
-                    <img
-                      src={capturedImageBase64}
-                      alt="Dibujo"
-                      className="w-20 h-20 object-cover rounded-[20px] bg-white border border-white/40 shadow-md flex-shrink-0"
-                    />
-                  )}
-
-                  <div className="flex-1 flex flex-col">
-                    <span className={`text-[10px] font-black uppercase tracking-wider text-pink-400`}>
-                      ✨ {aiResult.detectedSubject || 'Personaje Mágico'}
-                    </span>
-                    <p className={`text-xs md:text-sm font-bold leading-snug mt-1 ${isDark ? 'text-white' : 'text-[#1E293B]'}`}>
-                      "{aiResult.speechText}"
-                    </p>
-
-                    {/* Botón para volver a escuchar en voz alta */}
-                    <button
-                      onClick={() => speakText(aiResult.speechText)}
-                      className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-black text-purple-400 hover:text-purple-300 w-fit cursor-pointer"
-                    >
-                      <Volume2 className={`w-3.5 h-3.5 ${isSpeaking ? 'animate-bounce text-pink-400' : ''}`} />
-                      <span>{isSpeaking ? 'Hablando...' : 'Escuchar de nuevo'}</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Opciones Rápidas Táctiles (Para niños de 2 a 5 años sin necesidad de escribir) */}
-                {!selectedEvolution && (
-                  <div className="space-y-2">
-                    <span className={`text-xs font-black px-1 ${isDark ? 'text-white/70' : 'text-slate-600'}`}>
-                      👇 Toca una idea para darle vida:
-                    </span>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      {aiResult.quickPicks?.map((pick, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => handlePickEvolution(pick)}
-                          className={`p-3.5 rounded-[22px] border text-left font-extrabold text-xs flex items-center gap-2.5 transition-transform active:scale-95 cursor-pointer zentry-press shadow-md ${
-                            isDark
-                              ? 'bg-white/10 hover:bg-white/15 border-white/15 text-white'
-                              : 'bg-white hover:bg-purple-50 border-purple-100 text-[#1E293B]'
-                          }`}
-                        >
-                          <span className="w-2.5 h-2.5 rounded-full bg-pink-400 flex-shrink-0" />
-                          <span>{pick}</span>
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Dictado por Micrófono */}
-                    <div className="pt-2 flex justify-center">
-                      <button
-                        onClick={handleDictateResponse}
-                        className={`px-5 py-2.5 rounded-full border text-xs font-bold flex items-center gap-2 cursor-pointer zentry-press ${
-                          isDictating
-                            ? 'bg-red-500 text-white border-red-400 animate-pulse'
-                            : isDark
-                            ? 'bg-white/10 text-white border-white/15'
-                            : 'bg-white text-slate-700 border-black/10'
-                        }`}
-                      >
-                        {isDictating ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4 text-pink-400" />}
-                        <span>{isDictating ? 'Escuchando tu voz...' : 'O habla con tu voz 🎤'}</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Transformación Mágica Seleccionada */}
-                {selectedEvolution && (
-                  <div className="space-y-3 animate-in fade-in zoom-in duration-300">
-                    <div
-                      className={`p-4 rounded-[26px] border space-y-2 shadow-xl ${
-                        isDark ? 'bg-purple-950/60 border-purple-500/40 text-white' : 'bg-purple-100/80 border-purple-300 text-[#1E293B]'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 text-xs font-black text-pink-400">
-                        <Wand2 className="w-4 h-4" />
-                        <span>¡Tu historia mágica!</span>
-                      </div>
-                      <p className="text-xs md:text-sm font-bold leading-relaxed">
-                        {aiResult.evolutionStory}
-                      </p>
-
-                      {aiResult.physicalMission && (
-                        <div className="pt-2 border-t border-purple-400/20">
-                          <span className="text-[11px] font-black text-amber-400 block mb-1">
-                            🏡 Reto en Casa (Mundo Real):
-                          </span>
-                          <p className="text-[11px] font-semibold text-slate-300">
-                            {aiResult.physicalMission}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Botón Guardar en Galería */}
-                    <button
-                      onClick={handleSaveToGallery}
-                      className="w-full py-3.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black text-sm shadow-xl shadow-emerald-500/30 flex items-center justify-center gap-2 cursor-pointer zentry-press active:scale-95"
-                    >
-                      <CheckCircle2 className="w-5 h-5" />
-                      <span>Guardar en Mi Galería 💾</span>
-                    </button>
-                  </div>
-                )}
+                  <Volume2 className={`w-7 h-7 ${isSpeaking ? 'animate-bounce text-yellow-300' : ''}`} />
+                </button>
               </div>
-            )
+
+              {/* 4 FIGURAS GIGANTES DE ELECCIÓN (🚀, ⚡, 🍪, 🌈) */}
+              {!selectedChoice ? (
+                <div className="grid grid-cols-2 gap-4 w-full flex-1 items-center">
+                  {MAGIC_CHOICES.map((choice) => (
+                    <button
+                      key={choice.id}
+                      onClick={() => handleSelectMagicChoice(choice)}
+                      className={`h-28 md:h-32 rounded-[32px] bg-gradient-to-br ${choice.color} flex items-center justify-center text-6xl md:text-7xl shadow-xl border-4 border-white/80 active:scale-90 transition-transform cursor-pointer zentry-press`}
+                    >
+                      {choice.emoji}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                /* Celebración & Botón Guardar */
+                <div className="w-full flex flex-col items-center gap-4 animate-in zoom-in duration-300">
+                  <div className="text-center">
+                    <span className="text-7xl animate-bounce block mb-2">{selectedChoice.emoji}</span>
+                  </div>
+
+                  <button
+                    onClick={handleSaveDrawing}
+                    className="w-full py-5 rounded-[32px] bg-gradient-to-r from-emerald-400 via-teal-500 to-green-600 text-white font-black text-2xl shadow-2xl border-4 border-white flex items-center justify-center gap-3 cursor-pointer zentry-press active:scale-95"
+                  >
+                    <span>⭐</span>
+                    <span className="text-4xl">💾</span>
+                    <span>⭐</span>
+                  </button>
+                </div>
+              )}
+            </div>
           )}
-        </div>
-      )}
-
-      {/* Dialog para Ver Obra del Historial */}
-      {selectedGalleryItem && (
-        <div
-          onClick={() => {
-            stopSpeaking();
-            setSelectedGalleryItem(null);
-          }}
-          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className={`w-full max-w-sm rounded-[32px] p-5 space-y-4 border shadow-2xl ${
-              isDark ? 'bg-slate-900 border-white/20 text-white' : 'bg-white border-black/10 text-[#1E293B]'
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <h4 className="text-sm font-black">{selectedGalleryItem.subject}</h4>
-              <span className="text-[10px] opacity-60 font-semibold">{selectedGalleryItem.date}</span>
-            </div>
-
-            <img
-              src={selectedGalleryItem.thumbnail}
-              alt={selectedGalleryItem.subject}
-              className="w-full h-44 object-contain rounded-[20px] bg-slate-950/20 border border-white/10"
-            />
-
-            <p className="text-xs leading-relaxed font-medium opacity-90">
-              {selectedGalleryItem.story}
-            </p>
-
-            <div className="flex gap-2 pt-2">
-              <button
-                onClick={() => speakText(selectedGalleryItem.story)}
-                className="flex-1 py-2.5 rounded-full bg-purple-600 text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer zentry-press"
-              >
-                <Volume2 className="w-4 h-4" />
-                <span>Escuchar</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  stopSpeaking();
-                  setSelectedGalleryItem(null);
-                }}
-                className="px-5 py-2.5 rounded-full bg-white/20 text-xs font-bold cursor-pointer zentry-press"
-              >
-                Cerrar
-              </button>
-            </div>
-          </div>
         </div>
       )}
     </ZentrySubPageScaffold>
