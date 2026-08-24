@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Heart, 
   Share2, 
@@ -15,6 +15,7 @@ import { ZentrySubPageScaffold } from '../shell/ZentrySubPageScaffold';
 import { sounds } from '../../services/soundEffects';
 import { TIKTOK_SHORTS, UniversalMediaItem } from '../../services/entertainmentData';
 import { askZentryAi } from '../../services/aiService';
+import { mediaPlaybackService } from '../../services/mediaPlaybackService';
 
 interface Props {
   onBack: () => void;
@@ -30,6 +31,21 @@ export const ZentryTokScreen: React.FC<Props> = ({ onBack, isDark }) => {
   const [isLoadingInsight, setIsLoadingInsight] = useState(false);
 
   const currentShort = TIKTOK_SHORTS[currentIndex] || TIKTOK_SHORTS[0];
+
+  useEffect(() => {
+    if (currentShort) {
+      mediaPlaybackService.playMedia({
+        id: currentShort.id,
+        mediaId: currentShort.mediaId,
+        title: currentShort.title,
+        creator: currentShort.creator,
+        creatorAvatar: currentShort.creatorAvatar,
+        category: currentShort.category,
+        type: 'tiktok',
+        sourceScreen: 'zentry_tok'
+      });
+    }
+  }, [currentIndex]);
 
   const handleNext = () => {
     if (currentIndex < TIKTOK_SHORTS.length - 1) {

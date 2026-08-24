@@ -5,7 +5,8 @@ import type {
   WallpaperConfig, 
   CircadianPhase, 
   DeviceFirestoreState,
-  WorkspaceAppInfo
+  WorkspaceAppInfo,
+  AgeTier
 } from './types/zentry';
 import { ZentryWallpaper } from './components/wallpaper/ZentryWallpaper';
 import { ZentryStatusBar } from './components/shell/ZentryStatusBar';
@@ -106,6 +107,15 @@ export const App: React.FC = () => {
   const [showCalendar, setShowCalendar] = useState<boolean>(() => {
     return localStorage.getItem('zentry_show_calendar') !== 'false';
   });
+  const [ageTier, setAgeTier] = useState<AgeTier>(() => {
+    return (localStorage.getItem('zentry_age_tier') as AgeTier) || 'toddler';
+  });
+
+  const handleSelectAgeTier = (tier: AgeTier) => {
+    sounds.playTap();
+    setAgeTier(tier);
+    localStorage.setItem('zentry_age_tier', tier);
+  };
 
   // Circadian Phase State
   const [circadianPhase, setCircadianPhase] = useState<CircadianPhase>(() => {
@@ -241,7 +251,7 @@ export const App: React.FC = () => {
         focusActive={false}
       />
 
-      {/* 2. Top System Status Bar */}
+      {/* 2. Top System Status Bar with Dynamic Island */}
       <ZentryStatusBar
         phase={circadianPhase}
         deviceState={deviceState}
@@ -250,6 +260,9 @@ export const App: React.FC = () => {
           setIsQuickPanelOpen(true);
         }}
         isDark={currentWallpaper.isDark}
+        currentScreen={currentScreen}
+        ageTier={ageTier}
+        onNavigate={navigateTo}
       />
 
       {/* 3. Screen Viewport */}
@@ -261,6 +274,7 @@ export const App: React.FC = () => {
             focusActive={false}
             showClock={showClock}
             showCalendar={showCalendar}
+            ageTier={ageTier}
             onNavigate={navigateTo}
             onOpenWorkspaceApp={handleOpenWorkspaceApp}
             onSearch={(query) => {
@@ -323,6 +337,8 @@ export const App: React.FC = () => {
             onBack={handleBack}
             currentWallpaper={wallpaperId}
             onSelectWallpaper={handleSelectWallpaper}
+            ageTier={ageTier}
+            onSelectAgeTier={handleSelectAgeTier}
             isDark={currentWallpaper.isDark}
           />
         )}
@@ -387,6 +403,7 @@ export const App: React.FC = () => {
         onHome={handleHome}
         onNavigate={navigateTo}
         isDark={currentWallpaper.isDark}
+        ageTier={ageTier}
       />
 
       {/* 5. System Panels */}

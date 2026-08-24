@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Scan, CheckCircle2, Eye, SwitchCamera, Upload, Sparkles, RefreshCw } from 'lucide-react';
+import { Scan, CheckCircle2, Eye, SwitchCamera, Upload, Sparkles, RefreshCw, Send, MessageCircle } from 'lucide-react';
 import { ZentrySubPageScaffold } from '../shell/ZentrySubPageScaffold';
 import { sounds } from '../../services/soundEffects';
 import { askZentryAi } from '../../services/aiService';
+import { voiceService } from '../../services/voiceSpeech';
 
 interface Props {
   onBack: () => void;
@@ -23,6 +24,7 @@ export const ZentryCameraScreen: React.FC<Props> = ({ onBack, isDark }) => {
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [customQuestion, setCustomQuestion] = useState('');
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -99,7 +101,7 @@ export const ZentryCameraScreen: React.FC<Props> = ({ onBack, isDark }) => {
     return canvas.toDataURL('image/jpeg', 0.85);
   };
 
-  const handleScanLive = async () => {
+  const handleScanLive = async (promptOverride?: string) => {
     sounds.playTap();
     let base64 = captureFrame();
 
@@ -116,25 +118,30 @@ export const ZentryCameraScreen: React.FC<Props> = ({ onBack, isDark }) => {
     setIsScanning(true);
     setResult(null);
 
+    const questionText = promptOverride || customQuestion.trim() || 'Analiza esta imagen educativa. Identifica el problema o concepto, explica paso a paso de forma amigable para un estudiante y sugiere la solución o pregunta reflexiva.';
+
     try {
       const raw = await askZentryAi(
         'camera_vision',
-        'Analiza esta imagen educativa. Identifica el problema o concepto, explica paso a paso de forma amigable para un estudiante y sugiere la solución o pregunta reflexiva.',
+        questionText,
         base64
       );
 
       const parsed: VisionResult = JSON.parse(raw.trim().replace(/^```json/, '').replace(/```$/, ''));
       sounds.playSuccess();
       setResult(parsed);
+      voiceService.speakFeedback(`${parsed.title}. ${parsed.observation} ${parsed.solution}`);
     } catch (err) {
       console.error('Vision analysis error:', err);
       // Fallback result
-      setResult({
-        title: 'Contenido Escolar Identificado',
-        observation: 'He recibido la imagen de tu tarea o cuaderno.',
-        step: 'Te sugiero verificar los datos principales y repasar los conceptos clave de la lección.',
-        solution: '¡Buen trabajo! Continúa con el siguiente ejercicio.'
-      });
+      const fallback = {
+        title: 'Objeto Educativo Observado',
+        observation: 'He recibido la imagen enfocado por tu cámara.',
+        step: 'Te sugiero observar los detalles clave y describir qué elementos reconoces.',
+        solution: '¡Sigue explorando el mundo con tu cámara inteligente!'
+      };
+      setResult(fallback);
+      voiceService.speakFeedback(fallback.observation);
     } finally {
       setIsScanning(false);
     }
@@ -158,12 +165,13 @@ export const ZentryCameraScreen: React.FC<Props> = ({ onBack, isDark }) => {
     sounds.playTap();
     setCapturedImage(null);
     setResult(null);
+    setCustomQuestion('');
     startCamera(facingMode);
   };
 
   return (
     <ZentrySubPageScaffold title="Cámara Multimodal IA" kicker="VISIÓN GEMINI" onBack={onBack} isDark={isDark}>
-      <div className="max-w-xl mx-auto w-full space-y-3">
+      <div className="max-w-xl mx-auto w-full space-y-3 pb-2">
         {/* Hidden file input */}
         <input
           ref={fileInputRef}
@@ -174,7 +182,7 @@ export const ZentryCameraScreen: React.FC<Props> = ({ onBack, isDark }) => {
         />
 
         {/* Viewport View / Captured Preview */}
-        <div className="relative w-full h-72 md:h-80 rounded-[28px] overflow-hidden bg-black flex items-center justify-center shadow-xl border border-white/20">
+        <div className="relative w-full h-64 md:h-72 rounded-[28px] overflow-hidden bg-black flex items-center justify-center shadow-xl border border-white/20">
           {capturedImage ? (
             <img src={capturedImage} alt="Captura" className="w-full h-full object-contain bg-black" />
           ) : (
@@ -238,12 +246,33 @@ export const ZentryCameraScreen: React.FC<Props> = ({ onBack, isDark }) => {
           )}
         </div>
 
+        {/* Ask Question to Camera Multimodal AI Bar */}
+        <div className={(isDark ? 'zentry-veil-dark ' : 'zentry-veil-light ') + 'p-2 rounded-2xl flex items-center gap-2 border border-purple-400/30'}>
+          <MessageCircle className="w-4 h-4 text-purple-400 shrink-0 ml-1.5" />
+          <input
+            type="text"
+            value={customQuestion}
+            onChange={(e) => setCustomQuestion(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleScanLive()}
+            placeholder="Pregúntale a la IA sobre lo que ves..."
+            className="flex-1 bg-transparent text-xs font-semibold text-white placeholder-slate-400 focus:outline-none"
+          />
+          <button
+            onClick={() => handleScanLive()}
+            disabled={isScanning}
+            className="p-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white cursor-pointer disabled:opacity-50 zentry-press"
+            title="Enviar pregunta"
+          >
+            <Send className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
         {/* Action Button */}
         <div className="flex justify-center pt-1">
           <button
-            onClick={handleScanLive}
+            onClick={() => handleScanLive()}
             disabled={isScanning}
-            className="px-6 py-3 rounded-full bg-gradient-to-r from-purple-600 via-indigo-600 to-teal-500 text-white font-bold text-xs shadow-lg flex items-center gap-2 zentry-press cursor-pointer disabled:opacity-50"
+            className="px-6 py-2.5 rounded-full bg-gradient-to-r from-purple-600 via-indigo-600 to-teal-500 text-white font-bold text-xs shadow-lg flex items-center gap-2 zentry-press cursor-pointer disabled:opacity-50"
           >
             {isScanning ? (
               <Sparkles className="w-4 h-4 text-amber-300 animate-spin" />
@@ -256,7 +285,7 @@ export const ZentryCameraScreen: React.FC<Props> = ({ onBack, isDark }) => {
 
         {/* Real Multimodal AI Result Card */}
         {result && (
-          <div className={(isDark ? 'zentry-veil-dark ' : 'zentry-veil-light ') + 'rounded-[24px] p-5 space-y-2.5 animate-in fade-in duration-300 border border-purple-400/30'}>
+          <div className={(isDark ? 'zentry-veil-dark ' : 'zentry-veil-light ') + 'rounded-[24px] p-4 space-y-2 animate-in fade-in duration-300 border border-purple-400/30'}>
             <div className="flex items-center gap-2 text-xs font-bold text-emerald-400">
               <CheckCircle2 className="w-4 h-4" />
               <span>{result.title}</span>
@@ -272,7 +301,7 @@ export const ZentryCameraScreen: React.FC<Props> = ({ onBack, isDark }) => {
               {result.step}
             </div>
 
-            <div className="text-xs font-bold text-white bg-purple-600/30 p-3 rounded-xl border border-purple-400/40">
+            <div className="text-xs font-bold text-white bg-purple-600/30 p-2.5 rounded-xl border border-purple-400/40">
               🎯 {result.solution}
             </div>
           </div>

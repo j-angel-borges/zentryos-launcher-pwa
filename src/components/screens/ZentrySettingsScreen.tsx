@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Sliders, Wallpaper, Lock, Shield, Check, Smartphone, ExternalLink, RefreshCw, Copy } from 'lucide-react';
-import type { WallpaperId } from '../../types/zentry';
+import { Wallpaper, Lock, Shield, Check, Smartphone, ExternalLink, Copy } from 'lucide-react';
+import type { WallpaperId, AgeTier } from '../../types/zentry';
 import { ZentrySubPageScaffold } from '../shell/ZentrySubPageScaffold';
 import { sounds } from '../../services/soundEffects';
 import { getStoredDeviceId, setStoredDeviceId, syncRealDeviceTelemetry } from '../../services/firebase';
@@ -9,6 +9,8 @@ interface Props {
   onBack: () => void;
   currentWallpaper: WallpaperId;
   onSelectWallpaper: (id: WallpaperId) => void;
+  ageTier?: AgeTier;
+  onSelectAgeTier?: (tier: AgeTier) => void;
   isDark: boolean;
 }
 

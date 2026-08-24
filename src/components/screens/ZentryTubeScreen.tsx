@@ -16,6 +16,7 @@ import { ZentrySubPageScaffold } from '../shell/ZentrySubPageScaffold';
 import { sounds } from '../../services/soundEffects';
 import { YOUTUBE_VIDEOS, UniversalMediaItem } from '../../services/entertainmentData';
 import { askZentryAi } from '../../services/aiService';
+import { mediaPlaybackService } from '../../services/mediaPlaybackService';
 
 interface Props {
   onBack: () => void;
@@ -153,6 +154,17 @@ Formato JSON estricto:
                   sounds.playTap();
                   setActiveVideo(video);
                   setQuizData(null);
+                  mediaPlaybackService.playMedia({
+                    id: video.id,
+                    mediaId: video.mediaId,
+                    title: video.title,
+                    creator: video.creator,
+                    creatorAvatar: video.creatorAvatar,
+                    category: video.category,
+                    type: 'youtube',
+                    sourceScreen: 'zentry_tube',
+                    duration: video.duration
+                  });
                 }}
                 className={(isDark ? 'bg-white/10 hover:bg-white/15 border-white/15 ' : 'bg-white/85 hover:bg-white border-white/40 ') + 'rounded-[22px] overflow-hidden border cursor-pointer transition-all zentry-press shadow-md group flex flex-col justify-between'}
               >

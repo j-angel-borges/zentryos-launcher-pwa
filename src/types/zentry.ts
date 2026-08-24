@@ -23,6 +23,8 @@ export type ScreenId =
   | 'zentry_gram'
   | 'zentry_stream';
 
+export type AgeTier = 'toddler' | 'explorer';
+
 export type WallpaperId = 'Glacial' | 'Lila' | 'Aura' | 'Brisa' | 'Espacio';
 
 export interface WallpaperConfig {

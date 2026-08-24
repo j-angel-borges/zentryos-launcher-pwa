@@ -1,20 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Wifi, Battery, ShieldCheck, Sunrise, Sun, Moon } from 'lucide-react';
-import type { CircadianPhase, DeviceFirestoreState } from '../../types/zentry';
+import { Wifi, Battery, ShieldCheck } from 'lucide-react';
+import type { CircadianPhase, DeviceFirestoreState, ScreenId, AgeTier } from '../../types/zentry';
 import { sounds } from '../../services/soundEffects';
+import { ZentryDynamicIsland } from './ZentryDynamicIsland';
 
 interface Props {
   phase: CircadianPhase;
   deviceState: DeviceFirestoreState;
   onOpenQuickPanel: (tab?: 'quick' | 'notices') => void;
   isDark: boolean;
+  currentScreen: ScreenId;
+  ageTier?: AgeTier;
+  onNavigate: (screen: ScreenId) => void;
 }
 
 export const ZentryStatusBar: React.FC<Props> = ({
-  phase,
   deviceState,
   onOpenQuickPanel,
-  isDark
+  isDark,
+  currentScreen,
+  ageTier = 'toddler',
+  onNavigate
 }) => {
   const [timeStr, setTimeStr] = useState('');
   const startY = useRef<number | null>(null);
@@ -35,18 +41,6 @@ export const ZentryStatusBar: React.FC<Props> = ({
     return () => clearInterval(interval);
   }, []);
 
-  const getPhaseIcon = () => {
-    switch (phase.name) {
-      case 'MORNING':
-        return <Sunrise className="w-3.5 h-3.5 text-amber-400" />;
-      case 'AFTERNOON':
-        return <Sun className="w-3.5 h-3.5 text-sky-400" />;
-      case 'NIGHT':
-      default:
-        return <Moon className="w-3.5 h-3.5 text-indigo-400" />;
-    }
-  };
-
   const handleTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     startY.current = clientY;
@@ -59,8 +53,8 @@ export const ZentryStatusBar: React.FC<Props> = ({
     const deltaY = clientY - startY.current;
     startY.current = null;
 
-    // If dragged down or tapped
-    if (deltaY > 15 || deltaY >= 0) {
+    // If dragged down towards the screen (swipe down gesture)
+    if (deltaY > 15) {
       sounds.playTap();
       const isLeft = clientX < window.innerWidth / 2;
       onOpenQuickPanel(isLeft ? 'quick' : 'notices');
@@ -73,31 +67,47 @@ export const ZentryStatusBar: React.FC<Props> = ({
       onTouchEnd={handleTouchEnd}
       onMouseDown={handleTouchStart}
       onMouseUp={handleTouchEnd}
-      className={(isDark ? 'zentry-glass-dark text-white ' : 'zentry-glass-light text-[#3B3B58] ') + 'w-full px-5 py-2.5 flex items-center justify-between text-xs select-none z-30 cursor-pointer transition-all active:opacity-90 shadow-sm'}
+      className="w-full px-4 pt-2.5 pb-1 flex items-center justify-between text-xs select-none z-30 transition-all bg-transparent border-none shadow-none"
       title="Desliza hacia abajo para abrir los Controles Rápidos y Notificaciones"
     >
-      {/* Left: Time and Circadian Phase */}
-      <div className="flex items-center gap-3 font-semibold">
-        <span className="text-sm font-bold tracking-tight">{timeStr}</span>
-        <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 text-[11px]">
-          {getPhaseIcon()}
-          <span className="font-medium">{phase.title}</span>
-        </div>
+      {/* Left: Clean Time (Directo en el fondo unificado) */}
+      <div className="flex items-center font-black tracking-tight shrink-0 min-w-[55px]">
+        <span
+          className={
+            (isDark
+              ? 'text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] '
+              : 'text-slate-900 drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)] ') +
+            'text-xs font-black'
+          }
+        >
+          {timeStr}
+        </span>
       </div>
 
-      {/* Center: Clean Pull Indicator (no buttons) */}
-      <div className="w-10 h-1 rounded-full bg-current opacity-20 transition-opacity hover:opacity-40" />
+      {/* Center: Live Interactive Dynamic Island (Liquid Glass ZENTRY Flotante) */}
+      <div className="flex-1 flex justify-center px-1 max-w-sm">
+        <ZentryDynamicIsland
+          currentScreen={currentScreen}
+          ageTier={ageTier}
+          onNavigate={onNavigate}
+          isDark={isDark}
+        />
+      </div>
 
-      {/* Right: Protection & Status */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1 text-[11px] font-semibold text-emerald-500">
-          <ShieldCheck className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Protegido</span>
-        </div>
-        <Wifi className="w-3.5 h-3.5 opacity-80" />
-        <div className="flex items-center gap-1 font-mono text-[11px]">
+      {/* Right: Clean Shield, Wifi & Battery Status (Directo en el fondo unificado) */}
+      <div
+        className={
+          (isDark
+            ? 'text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] '
+            : 'text-slate-900 drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)] ') +
+          'flex items-center gap-2 shrink-0 min-w-[55px] justify-end'
+        }
+      >
+        <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 drop-shadow-sm" />
+        <Wifi className="w-3.5 h-3.5 opacity-90 drop-shadow-sm" />
+        <div className="flex items-center gap-1 font-mono text-[11px] font-bold">
           <span>{deviceState.batteryLevel}%</span>
-          <Battery className="w-4 h-4 text-emerald-500" />
+          <Battery className="w-3.5 h-3.5 text-emerald-400 drop-shadow-sm" />
         </div>
       </div>
     </header>

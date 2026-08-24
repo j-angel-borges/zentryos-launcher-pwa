@@ -270,7 +270,12 @@ export const ZentryTopPanels: React.FC<Props> = ({
                   min="20"
                   max="100"
                   value={brightness}
-                  onChange={(e) => onBrightnessChange(Number(e.target.value))}
+                  onChange={(e) => {
+                    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+                      navigator.vibrate(5);
+                    }
+                    onBrightnessChange(Number(e.target.value));
+                  }}
                   className="w-full accent-amber-400 h-2 bg-white/20 rounded-lg cursor-pointer outline-none"
                 />
                 <span className="text-[10px] font-mono w-7 text-right text-slate-300">{brightness}%</span>
@@ -288,7 +293,12 @@ export const ZentryTopPanels: React.FC<Props> = ({
                   min="0"
                   max="100"
                   value={volume}
-                  onChange={(e) => onVolumeChange(Number(e.target.value))}
+                  onChange={(e) => {
+                    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+                      navigator.vibrate(5);
+                    }
+                    onVolumeChange(Number(e.target.value));
+                  }}
                   className="w-full accent-sky-400 h-2 bg-white/20 rounded-lg cursor-pointer outline-none"
                 />
                 <span className="text-[10px] font-mono w-7 text-right text-slate-300">{volume}%</span>

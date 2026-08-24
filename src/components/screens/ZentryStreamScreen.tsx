@@ -15,6 +15,7 @@ import { ZentrySubPageScaffold } from '../shell/ZentrySubPageScaffold';
 import { sounds } from '../../services/soundEffects';
 import { TWITCH_STREAMS, TwitchStreamItem } from '../../services/entertainmentData';
 import { askZentryAi } from '../../services/aiService';
+import { mediaPlaybackService } from '../../services/mediaPlaybackService';
 
 interface Props {
   onBack: () => void;
@@ -96,6 +97,16 @@ export const ZentryStreamScreen: React.FC<Props> = ({ onBack, isDark }) => {
                 onClick={() => {
                   sounds.playTap();
                   setActiveStream(stream);
+                  mediaPlaybackService.playMedia({
+                    id: stream.id,
+                    mediaId: stream.channel,
+                    title: stream.title,
+                    creator: stream.channel,
+                    creatorAvatar: stream.streamerAvatar,
+                    category: stream.category,
+                    type: 'stream',
+                    sourceScreen: 'zentry_stream'
+                  });
                 }}
                 className={(isDark ? 'bg-white/10 hover:bg-white/15 border-white/15 ' : 'bg-white/85 hover:bg-white border-white/40 ') + 'rounded-[22px] overflow-hidden border cursor-pointer transition-all zentry-press shadow-md group flex flex-col justify-between'}
               >
