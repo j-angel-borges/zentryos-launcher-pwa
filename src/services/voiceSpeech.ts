@@ -733,3 +733,7 @@ export class VoiceSpeechService {
 
 export const voiceService = new VoiceSpeechService();
 
+if (typeof window !== 'undefined') {
+  (window as any).voiceService = voiceService;
+}
+

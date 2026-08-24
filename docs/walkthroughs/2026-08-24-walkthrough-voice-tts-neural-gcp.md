@@ -21,6 +21,8 @@ Se implementó la evolución completa del servicio `src/services/voiceSpeech.ts`
   - Mecanismo anti-solapamiento con `AbortController.abort()` para peticiones HTTP en curso y pausa/liberación inmediata de elementos de audio previos.
   - Métodos `unlockAudioContext()` para sortear restricciones de autoplay del navegador y `preloadPhrases()` para precarga proactiva en segundo plano.
   - Fallback offline automático a `window.speechSynthesis` sin arrojar excepciones ni degradar la experiencia de usuario.
+- `src/components/screens/ZentrySettingsScreen.tsx`:
+  - Panel interactivo de configuración y prueba de voz con selector de cohorte (`toddler` vs `explorer`), campo de texto personalizado, botón de reproducción en vivo y control de limpieza de caché `IndexedDB`.
 - `docs/walkthroughs/2026-08-24-walkthrough-voice-tts-neural-gcp.md`: Documento de walkthrough para auditoría del Mezclador.
 
 ## 3. Estado de Compilación y Pruebas

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Sliders, Wallpaper, Lock, Shield, Check } from 'lucide-react';
+import { Sliders, Wallpaper, Lock, Shield, Check, Volume2, Play, Sparkles, GraduationCap, Baby, Trash2 } from 'lucide-react';
 import type { WallpaperId } from '../../types/zentry';
 import { ZentrySubPageScaffold } from '../shell/ZentrySubPageScaffold';
 import { sounds } from '../../services/soundEffects';
+import { voiceService, type AgeCohort } from '../../services/voiceSpeech';
 
 interface Props {
   onBack: () => void;
@@ -19,6 +20,10 @@ export const ZentrySettingsScreen: React.FC<Props> = ({
 }) => {
   const [brightness, setBrightness] = useState(80);
   const [pin, setPin] = useState('1234');
+  const [selectedCohort, setSelectedCohort] = useState<AgeCohort>(() => voiceService.getAgeProfile());
+  const [testPhrase, setTestPhrase] = useState('¡Hola! Soy Zentry, tu compañero de aprendizaje inteligente.');
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [cacheStatus, setCacheStatus] = useState<string>('');
 
   const wallpapers: { id: WallpaperId; name: string; color: string }[] = [
     { id: 'Glacial', name: 'Glacial', color: '#F1F5F9' },
@@ -28,9 +33,139 @@ export const ZentrySettingsScreen: React.FC<Props> = ({
     { id: 'Espacio', name: 'Espacio', color: '#26262B' }
   ];
 
+  const handleSelectCohort = (cohort: AgeCohort) => {
+    sounds.playTap();
+    setSelectedCohort(cohort);
+    voiceService.setAgeProfile(cohort);
+    if (cohort === 'toddler') {
+      setTestPhrase('¡Hola amiguito! ¿Quieres que aprendamos juntos jugando? ✨');
+    } else {
+      setTestPhrase('Hola. Soy tu tutor socrático. ¿Qué reto académico exploraremos hoy?');
+    }
+  };
+
+  const handleSpeakTest = async () => {
+    sounds.playTap();
+    voiceService.unlockAudioContext();
+    setIsSpeaking(true);
+    setCacheStatus('Sintetizando...');
+
+    try {
+      await voiceService.speakFeedback(testPhrase, {
+        onStart: () => {
+          setIsSpeaking(true);
+          setCacheStatus('Reproduciendo audio');
+        },
+        onEnd: () => {
+          setIsSpeaking(false);
+          setCacheStatus('Audio completado (Guardado en IndexedDB)');
+        },
+        onError: () => {
+          setIsSpeaking(false);
+          setCacheStatus('Completado vía fallback offline');
+        }
+      });
+    } catch {
+      setIsSpeaking(false);
+    }
+  };
+
+  const handleClearCache = async () => {
+    sounds.playTap();
+    await voiceService.clearAudioCache();
+    setCacheStatus('Caché de audio limpiada.');
+  };
+
   return (
     <ZentrySubPageScaffold title="Configuración" kicker="SISTEMA" onBack={onBack} isDark={isDark}>
       <div className="max-w-lg mx-auto w-full space-y-4 pb-4">
+        {/* 1. Síntesis Vocal Neuronal GCP & Cohortes */}
+        <div className={(isDark ? 'zentry-veil-dark ' : 'zentry-veil-light ') + 'rounded-[22px] p-4 space-y-3'}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs font-bold">
+              <Volume2 className="w-4 h-4 text-[#8B5CF6]" />
+              <span>Síntesis Vocal Neuronal GCP (TTS)</span>
+            </div>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-semibold">
+              0 ms IndexedDB
+            </span>
+          </div>
+
+          <div className="text-[11px] text-slate-400">
+            Selecciona la cohorte de edad para adaptar el tono, timbre y ritmo de la voz:
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => handleSelectCohort('toddler')}
+              className={
+                'p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col gap-1 ' +
+                (selectedCohort === 'toddler'
+                  ? 'bg-purple-500/20 border-purple-400 shadow-md'
+                  : 'bg-white/5 border-white/10 hover:bg-white/10')
+              }
+            >
+              <div className="flex items-center gap-1.5 font-bold text-xs">
+                <Baby className="w-3.5 h-3.5 text-pink-400" />
+                <span>Modo Toddler (2-5)</span>
+              </div>
+              <div className="text-[10px] text-slate-400">Neural2-A • Dulce & Guiado (+1.5 pitch)</div>
+            </button>
+
+            <button
+              onClick={() => handleSelectCohort('explorer')}
+              className={
+                'p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col gap-1 ' +
+                (selectedCohort === 'explorer'
+                  ? 'bg-purple-500/20 border-purple-400 shadow-md'
+                  : 'bg-white/5 border-white/10 hover:bg-white/10')
+              }
+            >
+              <div className="flex items-center gap-1.5 font-bold text-xs">
+                <GraduationCap className="w-3.5 h-3.5 text-blue-400" />
+                <span>Modo Explorer (5-10+)</span>
+              </div>
+              <div className="text-[10px] text-slate-400">Journey-F • Tutor Socrático (0.0 pitch)</div>
+            </button>
+          </div>
+
+          {/* Test Phrase Input & Trigger */}
+          <div className="space-y-2 pt-1">
+            <div className="relative">
+              <input
+                type="text"
+                value={testPhrase}
+                onChange={(e) => setTestPhrase(e.target.value)}
+                placeholder="Escribe una frase para probar la voz..."
+                className="w-full pl-3 pr-20 py-2.5 rounded-xl bg-white/10 border border-white/15 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-purple-400"
+              />
+              <button
+                onClick={handleSpeakTest}
+                disabled={isSpeaking}
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3 py-1 rounded-lg bg-[#8B5CF6] hover:bg-[#7C3AED] disabled:opacity-50 text-white text-xs font-semibold cursor-pointer flex items-center gap-1 shadow"
+              >
+                <Play className="w-3 h-3 fill-current" />
+                <span>{isSpeaking ? 'Hablando' : 'Probar'}</span>
+              </button>
+            </div>
+
+            {cacheStatus && (
+              <div className="text-[10px] text-purple-300 font-medium flex items-center justify-between">
+                <span>{cacheStatus}</span>
+                <button
+                  onClick={handleClearCache}
+                  className="text-slate-400 hover:text-red-400 flex items-center gap-1 cursor-pointer"
+                  title="Limpiar caché IndexedDB"
+                >
+                  <Trash2 className="w-3 h-3" />
+                  <span>Limpiar caché</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 2. Brillo de Pantalla */}
         <div className={(isDark ? 'zentry-veil-dark ' : 'zentry-veil-light ') + 'rounded-[22px] p-4 space-y-2'}>
           <div className="flex items-center gap-2 text-xs font-bold">
             <Sliders className="w-4 h-4 text-[#8B5CF6]" />
@@ -46,6 +181,7 @@ export const ZentrySettingsScreen: React.FC<Props> = ({
           />
         </div>
 
+        {/* 3. Lienzo Vivo (Wallpaper) */}
         <div className={(isDark ? 'zentry-veil-dark ' : 'zentry-veil-light ') + 'rounded-[22px] p-4 space-y-3'}>
           <div className="flex items-center gap-2 text-xs font-bold">
             <Wallpaper className="w-4 h-4 text-[#8B5CF6]" />
@@ -72,6 +208,7 @@ export const ZentrySettingsScreen: React.FC<Props> = ({
           </div>
         </div>
 
+        {/* 4. Seguridad y PIN */}
         <div className={(isDark ? 'zentry-veil-dark ' : 'zentry-veil-light ') + 'rounded-[22px] p-4 space-y-2'}>
           <div className="flex items-center gap-2 text-xs font-bold">
             <Lock className="w-4 h-4 text-[#8B5CF6]" />
@@ -80,6 +217,7 @@ export const ZentrySettingsScreen: React.FC<Props> = ({
           <div className="text-xs text-slate-400">Código PIN actual: {pin}</div>
         </div>
 
+        {/* 5. Kiosco */}
         <div className={(isDark ? 'zentry-veil-dark ' : 'zentry-veil-light ') + 'rounded-[22px] p-4 space-y-1'}>
           <div className="flex items-center gap-2 text-xs font-bold text-emerald-400">
             <Shield className="w-4 h-4" />
@@ -97,3 +235,4 @@ export const ZentrySettingsScreen: React.FC<Props> = ({
     </ZentrySubPageScaffold>
   );
 };
+
