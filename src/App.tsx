@@ -29,6 +29,10 @@ import { ZentryPhoneScreen } from './components/screens/ZentryPhoneScreen';
 import { ZentrySettingsScreen } from './components/screens/ZentrySettingsScreen';
 import { ZentryNeuroArtScreen } from './components/screens/ZentryNeuroArtScreen';
 import { ZentryWorldGeneratorScreen } from './components/screens/ZentryWorldGeneratorScreen';
+import { ZentryCharacterScreen } from './components/screens/ZentryCharacterScreen';
+import { ZentryFreeCanvasScreen } from './components/screens/ZentryFreeCanvasScreen';
+import { ZentryRealMissionsScreen } from './components/screens/ZentryRealMissionsScreen';
+import { ZentryMonsterScreen } from './components/screens/ZentryMonsterScreen';
 import { ZentryStudyAssistantScreen } from './components/screens/ZentryStudyAssistantScreen';
 import { ZentryResearchScreen } from './components/screens/ZentryResearchScreen';
 import { ZentryRedactorScreen } from './components/screens/ZentryRedactorScreen';
@@ -333,6 +337,22 @@ export const App: React.FC = () => {
 
         {currentScreen === 'world_generator' && (
           <ZentryWorldGeneratorScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
+        )}
+
+        {currentScreen === 'characters' && (
+          <ZentryCharacterScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
+        )}
+
+        {currentScreen === 'free_canvas' && (
+          <ZentryFreeCanvasScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
+        )}
+
+        {currentScreen === 'real_missions' && (
+          <ZentryRealMissionsScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
+        )}
+
+        {currentScreen === 'monsters' && (
+          <ZentryMonsterScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
         )}
 
         {currentScreen === 'study_assistant' && (

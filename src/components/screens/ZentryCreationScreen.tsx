@@ -41,7 +41,7 @@ export const ZentryCreationScreen: React.FC<Props> = ({ onBack, onNavigate, isDa
       name: 'Personajes',
       category: 'personajes',
       icon: UserCheck,
-      screen: 'neuro_art',
+      screen: 'characters',
       gradient: 'from-purple-500 via-indigo-500 to-blue-600'
     },
     {
@@ -49,7 +49,7 @@ export const ZentryCreationScreen: React.FC<Props> = ({ onBack, onNavigate, isDa
       name: 'Lienzo Libre',
       category: 'arte',
       icon: Brush,
-      screen: 'neuro_art',
+      screen: 'free_canvas',
       gradient: 'from-fuchsia-500 via-pink-600 to-rose-600'
     },
     {
@@ -57,7 +57,7 @@ export const ZentryCreationScreen: React.FC<Props> = ({ onBack, onNavigate, isDa
       name: 'Misiones Reales',
       category: 'mundos',
       icon: Compass,
-      screen: 'world_generator',
+      screen: 'real_missions',
       gradient: 'from-lime-400 via-emerald-500 to-green-600'
     },
     {
@@ -65,7 +65,7 @@ export const ZentryCreationScreen: React.FC<Props> = ({ onBack, onNavigate, isDa
       name: 'Monstruos',
       category: 'personajes',
       icon: Smile,
-      screen: 'neuro_art',
+      screen: 'monsters',
       gradient: 'from-yellow-400 via-amber-500 to-orange-500'
     }
   ];
