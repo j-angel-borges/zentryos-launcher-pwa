@@ -1,8 +1,15 @@
 import React from 'react';
-import { Palette, Globe, User } from 'lucide-react';
+import {
+  Palette,
+  Globe,
+  UserCheck,
+  Brush,
+  Compass,
+  Smile
+} from 'lucide-react';
 import type { ScreenId } from '../../types/zentry';
 import { ZentrySubPageScaffold } from '../shell/ZentrySubPageScaffold';
-import { sounds } from '../../services/soundEffects';
+import { FisheyeBubbleGrid, type FisheyeItemData } from './FisheyeBubbleGrid';
 
 interface Props {
   onBack: () => void;
@@ -11,57 +18,76 @@ interface Props {
 }
 
 export const ZentryCreationScreen: React.FC<Props> = ({ onBack, onNavigate, isDark }) => {
-  const apps = [
+  // Aplicaciones de creación sensorial para la sección de 2 a 5 años (sin exceso de texto ni tutores académicos)
+  const creationApps: FisheyeItemData[] = [
     {
-      name: 'Art-Attack (NeuroArt)',
-      desc: 'Lienzo de dibujo y generación artística con IA',
+      id: 'neuro_art',
+      name: 'Art-Attack',
+      category: 'arte',
       icon: Palette,
-      screen: 'neuro_art' as ScreenId,
-      color: 'from-pink-500 to-rose-600'
+      screen: 'neuro_art',
+      gradient: 'from-pink-500 via-rose-500 to-red-500'
     },
     {
+      id: 'world_generator',
       name: 'Generador de Mundos',
-      desc: 'Simulaciones planetarias y leyes físicas interactivas',
+      category: 'mundos',
       icon: Globe,
-      screen: 'world_generator' as ScreenId,
-      color: 'from-amber-500 to-orange-600'
+      screen: 'world_generator',
+      gradient: 'from-amber-400 via-orange-500 to-red-500'
     },
     {
-      name: 'Generador de Personajes',
-      desc: 'Crea avatares y héroes para tus cuentos escolares',
-      icon: User,
-      screen: 'neuro_art' as ScreenId,
-      color: 'from-purple-500 to-indigo-600'
+      id: 'characters',
+      name: 'Personajes',
+      category: 'personajes',
+      icon: UserCheck,
+      screen: 'characters',
+      gradient: 'from-purple-500 via-indigo-500 to-blue-600'
+    },
+    {
+      id: 'free_canvas',
+      name: 'Lienzo Libre',
+      category: 'arte',
+      icon: Brush,
+      screen: 'free_canvas',
+      gradient: 'from-fuchsia-500 via-pink-600 to-rose-600'
+    },
+    {
+      id: 'real_missions',
+      name: 'Misiones Reales',
+      category: 'mundos',
+      icon: Compass,
+      screen: 'real_missions',
+      gradient: 'from-lime-400 via-emerald-500 to-green-600'
+    },
+    {
+      id: 'friendly_monsters',
+      name: 'Monstruos',
+      category: 'personajes',
+      icon: Smile,
+      screen: 'monsters',
+      gradient: 'from-yellow-400 via-amber-500 to-orange-500'
     }
   ];
 
   return (
-    <ZentrySubPageScaffold title="Espacio Creativo" kicker="CREAR" onBack={onBack} isDark={isDark}>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 h-full items-center">
-        {apps.map((app) => {
-          const Icon = app.icon;
-          return (
-            <div
-              key={app.name}
-              onClick={() => {
-                sounds.playAppOpen();
-                onNavigate(app.screen);
-              }}
-              className={(isDark ? 'zentry-veil-dark ' : 'zentry-veil-light ') + 'rounded-[28px] p-6 flex flex-col items-center text-center gap-3 cursor-pointer zentry-press group'}
-            >
-              <div className={'w-20 h-20 rounded-[22px] bg-gradient-to-br ' + app.color + ' flex items-center justify-center text-white shadow-xl group-hover:scale-105 transition-transform'}>
-                <Icon className="w-10 h-10" />
-              </div>
-              <h3 className={(isDark ? 'text-white ' : 'text-[#1E293B] ') + 'text-base font-extrabold'}>
-                {app.name}
-              </h3>
-              <p className={(isDark ? 'text-slate-300 ' : 'text-[#64748B] ') + 'text-xs leading-relaxed'}>
-                {app.desc}
-              </p>
-            </div>
-          );
-        })}
+    <ZentrySubPageScaffold
+      title="Crear"
+      kicker="ESPACIO CREATIVO"
+      onBack={onBack}
+      isDark={isDark}
+    >
+      <div className="w-full h-full relative overflow-hidden rounded-[28px]">
+        <FisheyeBubbleGrid
+          items={creationApps}
+          onSelectApp={(app) => {
+            onNavigate(app.screen);
+          }}
+          isDark={isDark}
+        />
       </div>
     </ZentrySubPageScaffold>
   );
 };
+
+export default ZentryCreationScreen;
