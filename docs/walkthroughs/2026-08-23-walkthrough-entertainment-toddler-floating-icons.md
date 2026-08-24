@@ -1,4 +1,4 @@
-# 🚀 Walkthrough de Código: 3 Portales Flotantes Liquid Glass (YouTube, TikTok, Instagram)
+# 🚀 Walkthrough de Código: 3 Portales Flotantes Liquid Glass y Catálogo Real de 200 Contenidos (2 a 5 años)
 - **Fecha:** 2026-08-23
 - **Vertical:** Entertainment Hub
 - **Rama:** feat/entertainment-hub
@@ -8,21 +8,24 @@
 ---
 
 ## 1. Resumen Ejecutivo
-Se depuró y perfeccionó la pantalla principal de Entertainment (ZentryEntertainmentHubScreen.tsx) adaptándola al feedback exacto de diseño:
-- Se suprimió la sección de globitos decorativos y el banner inferior.
-- Se eliminó la aplicación de "Estrellas" / Twitch.
-- Se configuraron exactamente **3 portales flotantes principales**: **YouTube**, **TikTok** e **Instagram**.
-- Cada botón presenta el **logo oficial de alta fidelidad** con una capa envolvente de **Liquid Glass** (refracción, brillos especulares, difuminado de fondo y halos de color ambiental).
-- **Cero texto:** no hay etiquetas, títulos ni subtítulos distractores en los botones.
+1. **Rediseño Visual Toddler (2-5 años):**
+   - Implementación de 3 orbes/portales flotantes con logos oficiales (YouTube, TikTok, Instagram) encapsulados en **Liquid Glass**.
+   - Cero ruido de texto, cero botones punitivos, sin globitos decorativos ni barras inferiores invasivas.
+2. **Catálogo de 200 Contenidos Curados en Vivo:**
+   - Investigación en vivo contra APIs oficiales y DOM para recolectar 200 recursos reales sin cuentas requeridas para niños de 2 a 5 años.
+   - 50 YouTube (25 Entretenimiento + 25 Curiosidades).
+   - 50 TikTok (25 Entretenimiento + 25 Curiosidades/Naturaleza).
+   - 50 Instagram (25 Entretenimiento/Arte sensorial + 25 Curiosidades/Macro fotografía).
+   - 50 YouTube Music (25 Música de Juegos Nintendo/Calm + 25 Música Tradicional Infantil).
+   - Entregable en hoja de cálculo curated_kids_content_200.csv y visor web interactivo curated_kids_content_200.html.
 
-## 2. Archivos Modificados
-- src/components/screens/ZentryEntertainmentHubScreen.tsx: Implementación de los 3 orbes flotantes Liquid Glass con logos oficiales SVG (YouTube, TikTok, Instagram) y retroalimentación táctil/auditiva al toque.
-- src/index.css: Físicas de flotación orgánicas independientes para cada botón.
+## 2. Archivos Creados / Modificados
+- curated_kids_content_200.csv: Hoja de cálculo con 200 filas con URLs directas, códigos de embed reales, canales y descripciones pedagógicas.
+- curated_kids_content_200.html: Visor interactivo en Tailwind CSS con filtros por plataforma, buscador y vista previa.
+- etch_real_kids_catalog.py: Script de investigación y extracción con endpoints oEmbed oficiales.
+- src/components/screens/ZentryEntertainmentHubScreen.tsx: Pantalla principal limpia con 3 portales oficiales Liquid Glass.
 
-## 3. Estado de Compilación y Pruebas
+## 3. Estado de Compilación
 - [x] 
-pm run build ejecutado con éxito (código 0, SingleFile dist/index.html 1,005 kB).
-- [x] Servidor de desarrollo corriendo y verificado en http://localhost:5177.
-
-## 4. Puntos de Atención para el Mezclador
-- No se tocaron archivos compartidos de otras verticales.
+pm run build verificado con código 0.
+- [x] Servidor activo en http://localhost:5177.
