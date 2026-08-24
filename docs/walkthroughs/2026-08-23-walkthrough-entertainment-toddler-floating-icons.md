@@ -1,4 +1,4 @@
-# 🚀 Walkthrough de Código: Rediseño de Entertainment para Niños (2 a 5 años)
+# 🚀 Walkthrough de Código: 3 Portales Flotantes Liquid Glass (YouTube, TikTok, Instagram)
 - **Fecha:** 2026-08-23
 - **Vertical:** Entertainment Hub
 - **Rama:** feat/entertainment-hub
@@ -8,24 +8,21 @@
 ---
 
 ## 1. Resumen Ejecutivo
-Se transformó por completo la sección de Entertainment y sus 4 plataformas hijas (ZentryTube, ZentryTok, ZentryGram, ZentryStream) para la vertiente de **2 a 5 años (toddlers / primera infancia)**.
-- Se eliminó el 100% del texto denso, descripciones técnicas, contadores numéricos y badges carcelarios/punitivos.
-- Se introdujo una experiencia táctil y gráfica basada en **orbes e iconos flotantes vivos** con física de flotación orgánica CSS (@keyframes floatOrb1..4).
-- Se incorporaron burbujas decorativas flotantes interactivas que los niños pueden reventar al tocar con sonido y micro-hápticos.
-- Se integró retroalimentación por voz socrática/amigable en español (oiceService.speakFeedback) al tocar cada portal y al interactuar con el contenido.
+Se depuró y perfeccionó la pantalla principal de Entertainment (ZentryEntertainmentHubScreen.tsx) adaptándola al feedback exacto de diseño:
+- Se suprimió la sección de globitos decorativos y el banner inferior.
+- Se eliminó la aplicación de "Estrellas" / Twitch.
+- Se configuraron exactamente **3 portales flotantes principales**: **YouTube**, **TikTok** e **Instagram**.
+- Cada botón presenta el **logo oficial de alta fidelidad** con una capa envolvente de **Liquid Glass** (refracción, brillos especulares, difuminado de fondo y halos de color ambiental).
+- **Cero texto:** no hay etiquetas, títulos ni subtítulos distractores en los botones.
 
-## 2. Archivos Modificados / Creados
-- src/index.css: Añadidas keyframes de flotación (nimate-float-1..4), burbujas (nimate-mini-bubble), centelleo (nimate-sparkle-twinkle) y escala pop (nimate-pop-scale).
-- src/components/screens/ZentryEntertainmentHubScreen.tsx: Rediseño total para 2-5 años: 4 portales flotantes gigantes (Videos 🎬, Música 🎵, Animales 🦁, Estrellas 🚀), burbujas pop interactivas, botón de asistencia por voz y cero párrafos de texto.
-- src/components/screens/ZentryTubeScreen.tsx: Adaptado para niños con selector de categorías por emojis (🦁 Animales, 🎵 Canciones, 🎨 Dibujitos, 🚀 Espacio, 🚗 Carritos), miniaturas gigantes con botón Play brillante y reproductor modal amigable.
-- src/components/screens/ZentryTokScreen.tsx: Adaptado con botones táctiles gigantes de corazón/reacción, flechas de navegación grandes arriba/abajo y narración por voz.
-- src/components/screens/ZentryGramScreen.tsx: Transformado a carrusel de historias circulares de animalitos (🦁, 🐼, 🐬, 🦋, 🪐) y galería de fotos mágicas con corazón emergente.
-- src/components/screens/ZentryStreamScreen.tsx: Tarjetas cósmicas espaciales con insignias pulsantes "EN VIVO" y reproducción directa sin ruido textual.
+## 2. Archivos Modificados
+- src/components/screens/ZentryEntertainmentHubScreen.tsx: Implementación de los 3 orbes flotantes Liquid Glass con logos oficiales SVG (YouTube, TikTok, Instagram) y retroalimentación táctil/auditiva al toque.
+- src/index.css: Físicas de flotación orgánicas independientes para cada botón.
 
 ## 3. Estado de Compilación y Pruebas
 - [x] 
-pm run build ejecutado con éxito (código 0, bundle SingleFile dist/index.html 1,006 kB generado limpiamente).
-- [x] Cero errores de TypeScript y cero colisiones de dependencias.
+pm run build ejecutado con éxito (código 0, SingleFile dist/index.html 1,005 kB).
+- [x] Servidor de desarrollo corriendo y verificado en http://localhost:5177.
 
 ## 4. Puntos de Atención para el Mezclador
-- No se modificaron tipos compartidos ni App.tsx. Los cambios se concentran exclusivamente en la vertical de Entertainment (src/components/screens/Zentry*Screen.tsx) y estilos complementarios en src/index.css.
+- No se tocaron archivos compartidos de otras verticales.
