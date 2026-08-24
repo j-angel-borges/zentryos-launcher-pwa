@@ -82,6 +82,71 @@
   to { transform: rotate(360deg); }
 }
 
+/* Kid 2-5yo Floating Physics & Ambient Orbs */
+@keyframes floatOrb1 {
+  0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
+  50% { transform: translateY(-14px) rotate(2deg) scale(1.03); }
+}
+
+@keyframes floatOrb2 {
+  0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
+  50% { transform: translateY(-18px) rotate(-3deg) scale(1.04); }
+}
+
+@keyframes floatOrb3 {
+  0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
+  50% { transform: translateY(-12px) rotate(3deg) scale(1.02); }
+}
+
+@keyframes floatOrb4 {
+  0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
+  50% { transform: translateY(-16px) rotate(-2deg) scale(1.03); }
+}
+
+@keyframes floatMiniBubble {
+  0%, 100% { transform: translateY(0px) scale(1); opacity: 0.7; }
+  50% { transform: translateY(-22px) scale(1.15); opacity: 0.95; }
+}
+
+@keyframes sparkleTwinkle {
+  0%, 100% { transform: scale(0.8) rotate(0deg); opacity: 0.4; }
+  50% { transform: scale(1.25) rotate(90deg); opacity: 1; }
+}
+
+@keyframes popScale {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.28) rotate(6deg); }
+  100% { transform: scale(1); }
+}
+
+.animate-float-1 {
+  animation: floatOrb1 4.5s ease-in-out infinite;
+}
+
+.animate-float-2 {
+  animation: floatOrb2 5.2s ease-in-out infinite 0.4s;
+}
+
+.animate-float-3 {
+  animation: floatOrb3 4.8s ease-in-out infinite 0.8s;
+}
+
+.animate-float-4 {
+  animation: floatOrb4 5.6s ease-in-out infinite 1.2s;
+}
+
+.animate-mini-bubble {
+  animation: floatMiniBubble 3.8s ease-in-out infinite;
+}
+
+.animate-sparkle-twinkle {
+  animation: sparkleTwinkle 2.5s ease-in-out infinite;
+}
+
+.animate-pop-scale {
+  animation: popScale 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
 /* Spring Press Feedback */
 .zentry-press {
   transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
@@ -110,3 +175,4 @@
   background: rgba(255, 255, 255, 0.2);
   border-radius: 4px;
 }
+
