@@ -110,6 +110,8 @@ export const App: React.FC = () => {
   const [ageTier, setAgeTier] = useState<AgeTier>(() => {
     return (localStorage.getItem('zentry_age_tier') as AgeTier) || 'toddler';
   });
+  const [brightness, setBrightness] = useState(80);
+  const [volume, setVolume] = useState(75);
 
   const handleSelectAgeTier = (tier: AgeTier) => {
     sounds.playTap();
@@ -389,7 +391,7 @@ export const App: React.FC = () => {
         currentScreen={currentScreen}
         onBack={handleBack}
         onHome={handleHome}
-        onOpenCommand={() => setIsCommandSheetOpen(true)}
+        onNavigate={navigateTo}
         isDark={currentWallpaper.isDark}
         ageTier={ageTier}
       />
@@ -398,6 +400,10 @@ export const App: React.FC = () => {
       <ZentryTopPanels
         isOpen={isQuickPanelOpen}
         initialTab={quickPanelTab}
+        brightness={brightness}
+        onBrightnessChange={setBrightness}
+        volume={volume}
+        onVolumeChange={setVolume}
         onClose={() => setIsQuickPanelOpen(false)}
         isDark={currentWallpaper.isDark}
       />
