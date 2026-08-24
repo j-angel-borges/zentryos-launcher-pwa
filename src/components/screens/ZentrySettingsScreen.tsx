@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sliders, Wallpaper, Lock, Shield, Check, Volume2, Play, Sparkles, GraduationCap, Baby, Trash2 } from 'lucide-react';
+import { Sliders, Wallpaper, Lock, Shield, Check, Volume2, Play, Sparkles, GraduationCap, Baby, Trash2, Key, Eye, EyeOff } from 'lucide-react';
 import type { WallpaperId } from '../../types/zentry';
 import { ZentrySubPageScaffold } from '../shell/ZentrySubPageScaffold';
 import { sounds } from '../../services/soundEffects';
@@ -24,6 +24,22 @@ export const ZentrySettingsScreen: React.FC<Props> = ({
   const [testPhrase, setTestPhrase] = useState('¡Hola! Soy Zentry, tu compañero de aprendizaje inteligente.');
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [cacheStatus, setCacheStatus] = useState<string>('');
+  const [apiKeyInput, setApiKeyInput] = useState<string>(() => {
+    return localStorage.getItem('zentry_tts_api_key') || '';
+  });
+  const [showApiKey, setShowApiKey] = useState(false);
+
+  const handleSaveApiKey = (val: string) => {
+    const trimmed = val.trim();
+    setApiKeyInput(trimmed);
+    if (trimmed) {
+      localStorage.setItem('zentry_tts_api_key', trimmed);
+      setCacheStatus('API Key guardada localmente.');
+    } else {
+      localStorage.removeItem('zentry_tts_api_key');
+      setCacheStatus('API Key eliminada (usando fallback offline).');
+    }
+  };
 
   const wallpapers: { id: WallpaperId; name: string; color: string }[] = [
     { id: 'Glacial', name: 'Glacial', color: '#F1F5F9' },
@@ -48,7 +64,7 @@ export const ZentrySettingsScreen: React.FC<Props> = ({
     sounds.playTap();
     voiceService.unlockAudioContext();
     setIsSpeaking(true);
-    setCacheStatus('Sintetizando...');
+    setCacheStatus('Sintetizando con Google Cloud TTS...');
 
     try {
       await voiceService.speakFeedback(testPhrase, {
@@ -147,6 +163,36 @@ export const ZentrySettingsScreen: React.FC<Props> = ({
                 <Play className="w-3 h-3 fill-current" />
                 <span>{isSpeaking ? 'Hablando' : 'Probar'}</span>
               </button>
+            </div>
+
+            {/* Google Cloud API Key input */}
+            <div className="bg-black/20 border border-white/10 rounded-xl p-2.5 space-y-1.5">
+              <div className="flex items-center justify-between text-[11px]">
+                <div className="flex items-center gap-1.5 text-slate-300 font-semibold">
+                  <Key className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Google Cloud TTS API Key:</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowApiKey((v) => !v)}
+                  className="text-slate-400 hover:text-white text-[10px] flex items-center gap-1 cursor-pointer"
+                >
+                  {showApiKey ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                  <span>{showApiKey ? 'Ocultar' : 'Ver'}</span>
+                </button>
+              </div>
+              <input
+                type={showApiKey ? 'text' : 'password'}
+                value={apiKeyInput}
+                onChange={(e) => handleSaveApiKey(e.target.value)}
+                placeholder="Pega tu API Key (AIzaSy...) o usa .env.local"
+                className="w-full px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+              />
+              <div className="text-[10px] text-slate-400">
+                {apiKeyInput.trim()
+                  ? '🟢 Clave configurada: Utilizando síntesis neuronal GCP en tiempo real.'
+                  : '🟡 Sin clave: Operando en fallback offline nativo del navegador.'}
+              </div>
             </div>
 
             {cacheStatus && (
