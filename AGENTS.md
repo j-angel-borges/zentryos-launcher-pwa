@@ -1,4 +1,4 @@
-﻿# AGENTS.md — ZentryOS Launcher PWA
+# AGENTS.md — ZentryOS Launcher PWA
 
 ## 🎯 Identidad y Misión del Proyecto
 Este repositorio (`zentryos-launcher-pwa`) es el **núcleo primario de desarrollo de ZentryOS**.
@@ -25,6 +25,7 @@ Para el desarrollo multi-agente en paralelo, cada operador trabaja en su directo
 | **2. IA & Microapps**| `D:\1_jose_angel\1_GitHub\Zentry\zentryos-worktrees\microapps-ai` | `feat/microapps-ai-core` | `5176` | `npm run dev:ai` |
 | **3. Entertainment** | `D:\1_jose_angel\1_GitHub\Zentry\zentryos-worktrees\entertainment` | `feat/entertainment-hub` | `5177` | `npm run dev:entertainment` |
 | **4. Parental Sync** | `D:\1_jose_angel\1_GitHub\Zentry\zentryos-worktrees\parental-sync` | `feat/parental-sync-bridge` | `5178` | `npm run dev:parental` |
+| **5. Voice TTS GCP** | `D:\1_jose_angel\1_GitHub\Zentry\zentryos-worktrees\voice-tts` | `feat/neural-tts-gcp` | `5179` | `npm run dev:tts` |
 
 ---
 

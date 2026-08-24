@@ -9,6 +9,7 @@
     "dev:ai": "vite --port 5176",
     "dev:entertainment": "vite --port 5177",
     "dev:parental": "vite --port 5178",
+    "dev:tts": "vite --port 5179",
     "build": "tsc -b && vite build",
     "preview": "vite preview"
   },
