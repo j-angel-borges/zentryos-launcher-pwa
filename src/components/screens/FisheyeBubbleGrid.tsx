@@ -42,31 +42,31 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
     height: 600
   });
 
-  // Espaciado 10% más cercano (de 118px a 106px)
-  const itemSpacing = 106;
-  const maxRadius = Math.min(containerDimensions.width, containerDimensions.height) * 0.52 || 320;
-  const minScale = 0.55; // Escala mínima mayor para que los niños siempre distingan el ícono
+  // Espaciado óptimo y holgado (160px) para separación clara y aireada
+  const itemSpacing = 160;
+  const maxRadius = Math.min(containerDimensions.width, containerDimensions.height) * 0.58 || 350;
+  const minScale = 0.58;
 
-  // Distribución balanceada: 1 central + anillo de 5 circundantes (o círculo simétrico)
+  // Distribución en anillo simétrico armónico (o 1 centro + anillo con radio amplio)
   const itemPositions = useMemo(() => {
     if (items.length <= 1) {
       return [{ item: items[0], xBase: 0, yBase: 0 }];
     }
 
     if (items.length <= 6) {
-      // 1 en el centro + (N-1) en anillo radial uniforme
+      // 1 en el centro + (N-1) alrededor con radio holgado de 160px
       return items.map((item, idx) => {
         if (idx === 0) {
           return { item, xBase: 0, yBase: 0 };
         }
         const angle = ((idx - 1) * 2 * Math.PI) / (items.length - 1) - Math.PI / 2;
-        const xBase = Math.cos(angle) * (itemSpacing * 1.05);
-        const yBase = Math.sin(angle) * (itemSpacing * 1.05);
+        const xBase = Math.cos(angle) * itemSpacing;
+        const yBase = Math.sin(angle) * itemSpacing;
         return { item, xBase, yBase };
       });
     }
 
-    // Si hay más elementos, distribución concéntrica
+    // Para más de 6 elementos
     return items.map((item, idx) => {
       if (idx === 0) return { item, xBase: 0, yBase: 0 };
       const ring = Math.ceil(idx / 6);
@@ -77,10 +77,10 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
     });
   }, [items, itemSpacing]);
 
-  // Límites elásticos holgados para que se quede donde el usuario lo mueva
+  // Límites elásticos amplios para navegación libre
   const panLimits = useMemo(() => {
-    const maxX = Math.max(160, containerDimensions.width * 0.35);
-    const maxY = Math.max(160, containerDimensions.height * 0.35);
+    const maxX = Math.max(180, containerDimensions.width * 0.38);
+    const maxY = Math.max(180, containerDimensions.height * 0.38);
     return {
       minX: -maxX,
       maxX: maxX,
@@ -89,7 +89,7 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
     };
   }, [containerDimensions]);
 
-  // Actualizar dimensiones del viewport
+  // Actualizar dimensiones
   useEffect(() => {
     const updateSize = () => {
       if (containerRef.current) {
@@ -114,7 +114,7 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
     let vx = 0;
     let vy = 0;
     const stiffness = 0.12;
-    const damping = 0.78;
+    const damping = 0.8;
 
     const tick = () => {
       const dx = targetX - currentX;
@@ -139,7 +139,7 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
     animFrameRef.current = requestAnimationFrame(tick);
   }, []);
 
-  // Inercia libre: el mapa SE QUEDA donde se deslice y SOLO rebota si se pasa del límite extremo
+  // Inercia libre: el mapa se queda donde se deslice
   const releaseWithPhysics = useCallback(() => {
     if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
 
@@ -149,7 +149,7 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
     let vy = velocityRef.current.vy * 14;
 
     const { minX, maxX, minY, maxY } = panLimits;
-    const friction = 0.93;
+    const friction = 0.94;
     const springK = 0.08;
 
     const step = () => {
@@ -158,7 +158,6 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
       vx *= friction;
       vy *= friction;
 
-      // Resorte suave solo en bordes exteriores
       let outOfBounds = false;
       if (currentX < minX) {
         vx += (minX - currentX) * springK;
@@ -182,7 +181,6 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
       if (speed > 0.18 || (outOfBounds && speed > 0.04)) {
         animFrameRef.current = requestAnimationFrame(step);
       } else {
-        // Asegurar que quede dentro de los límites cómodos sin forzar snap a (0,0)
         const clampedX = Math.min(Math.max(currentX, minX), maxX);
         const clampedY = Math.min(Math.max(currentY, minY), maxY);
         if (Math.abs(clampedX - currentX) > 1 || Math.abs(clampedY - currentY) > 1) {
@@ -196,7 +194,7 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
     animFrameRef.current = requestAnimationFrame(step);
   }, [panLimits, smoothAnimateTo]);
 
-  // Gestos de puntero táctil / ratón
+  // Gestos de puntero
   const handlePointerDown = (e: React.PointerEvent) => {
     if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     isDraggingRef.current = true;
@@ -237,7 +235,6 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
     releaseWithPhysics();
   };
 
-  // Soporte para rueda de mouse y trackpads
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
     if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
@@ -258,7 +255,7 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
       className="w-full h-full relative overflow-hidden flex items-center justify-center cursor-grab active:cursor-grabbing select-none touch-none"
       style={{ perspective: '1000px' }}
     >
-      {/* Halo de fondo sutil que resalta el domo interactivo */}
+      {/* Halo de fondo sutil */}
       <div
         className="absolute rounded-full pointer-events-none transition-opacity duration-300"
         style={{
@@ -270,28 +267,28 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
         }}
       />
 
-      {/* Burbujas estilo Apple Watch con distorsión ojo de pez para niños (2-5 años) */}
+      {/* Burbujas estilo Apple Watch con espaciado amplio y aireado */}
       {itemPositions.map(({ item, xBase, yBase }) => {
         const virtualX = xBase + offset.x;
         const virtualY = yBase + offset.y;
 
-        // Distancia euclidiana al centro del viewport
+        // Distancia euclidiana al centro
         const dist = Math.hypot(virtualX, virtualY);
         const r = Math.min(Math.max(dist / maxRadius, 0), 1);
 
-        // Escala Coseno suave (1.0 en el centro -> minScale en bordes)
+        // Escala Coseno suave
         const scale = minScale + (1 - minScale) * Math.cos((r * Math.PI) / 2);
 
         // Compresión esférica moderada
-        const compression = 1 - r * 0.26;
+        const compression = 1 - r * 0.22;
         const transX = virtualX * compression;
         const transY = virtualY * compression;
 
         // Opacidad y 3D tilt sutil
-        const opacity = Math.min(1, Math.max(0.45, 1 - r * 0.55));
+        const opacity = Math.min(1, Math.max(0.5, 1 - r * 0.5));
         const zIndex = Math.round((1 - r) * 100);
-        const rotateX = (-virtualY / maxRadius) * 16 * r;
-        const rotateY = (virtualX / maxRadius) * 16 * r;
+        const rotateX = (-virtualY / maxRadius) * 14 * r;
+        const rotateY = (virtualX / maxRadius) * 14 * r;
 
         const Icon = item.icon;
 
@@ -310,44 +307,44 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
               transform: `translate3d(${transX}px, ${transY}px, 0px) scale(${scale}) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
               opacity,
               zIndex,
-              width: '120px',
-              height: '140px',
+              width: '110px',
+              height: '130px',
               transformOrigin: 'center center',
               willChange: 'transform, opacity'
             }}
           >
-            {/* Burbuja Squircle de Vidrio Líquido (Tamaño aumentado para dedos de niños) */}
+            {/* Burbuja Squircle de Vidrio Líquido (Tamaño 84px para proporción perfecta) */}
             <div
-              className={`relative w-24 h-24 rounded-[32px] p-1 flex items-center justify-center transition-transform duration-200 group-hover:scale-108 group-active:scale-92 shadow-2xl ${
+              className={`relative w-21 h-21 rounded-[28px] p-1 flex items-center justify-center transition-transform duration-200 group-hover:scale-110 group-active:scale-92 shadow-2xl ${
                 isDark ? 'zentry-veil-dark' : 'zentry-veil-light'
               }`}
               style={{
                 boxShadow: isDark
-                  ? `0 ${Math.round((1 - r) * 18)}px ${Math.round((1 - r) * 36)}px -6px rgba(0,0,0,0.6), 0 0 ${Math.round((1 - r) * 24)}px rgba(236,72,153,0.3)`
-                  : `0 ${Math.round((1 - r) * 16)}px ${Math.round((1 - r) * 32)}px -6px rgba(236,72,153,0.35), 0 0 ${Math.round((1 - r) * 20)}px rgba(255,255,255,0.9)`
+                  ? `0 ${Math.round((1 - r) * 16)}px ${Math.round((1 - r) * 32)}px -6px rgba(0,0,0,0.6), 0 0 ${Math.round((1 - r) * 20)}px rgba(236,72,153,0.25)`
+                  : `0 ${Math.round((1 - r) * 14)}px ${Math.round((1 - r) * 28)}px -6px rgba(236,72,153,0.3), 0 0 ${Math.round((1 - r) * 18)}px rgba(255,255,255,0.85)`
               }}
             >
               {/* Contenedor del ícono con degradado vibrante */}
               <div
-                className={`w-full h-full rounded-[28px] bg-gradient-to-br ${item.gradient} flex items-center justify-center text-white relative overflow-hidden`}
+                className={`w-full h-full rounded-[24px] bg-gradient-to-br ${item.gradient} flex items-center justify-center text-white relative overflow-hidden`}
               >
                 {/* Reflejo de luz superior */}
-                <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/40 to-transparent pointer-events-none rounded-t-[28px]" />
+                <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/40 to-transparent pointer-events-none rounded-t-[24px]" />
 
-                {/* Ícono de gran visibilidad para niños */}
-                <Icon className="w-12 h-12 drop-shadow-lg transition-transform duration-200 group-hover:scale-110" />
+                {/* Ícono de gran visibilidad */}
+                <Icon className="w-10 h-10 drop-shadow-lg transition-transform duration-200 group-hover:scale-110" />
               </div>
             </div>
 
-            {/* Título claro y directo (sin texto excesivo ni badges) */}
+            {/* Título claro y directo */}
             <div
-              className="mt-2.5 text-center pointer-events-none px-1"
+              className="mt-2 text-center pointer-events-none px-1"
               style={{
-                opacity: Math.max(0.4, 1 - r * 0.7)
+                opacity: Math.max(0.5, 1 - r * 0.6)
               }}
             >
               <span
-                className={`text-sm font-extrabold tracking-tight leading-tight whitespace-nowrap drop-shadow-sm ${
+                className={`text-xs font-black tracking-tight leading-tight whitespace-nowrap drop-shadow-sm ${
                   isDark ? 'text-white' : 'text-[#1E293B]'
                 }`}
               >
@@ -366,7 +363,7 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
           sounds.playTap();
           smoothAnimateTo(0, 0);
         }}
-        className={`absolute bottom-3 right-3 px-4 py-2.5 rounded-[20px] backdrop-blur-xl border flex items-center gap-2 text-xs font-black shadow-lg transition-all zentry-press z-30 ${
+        className={`absolute bottom-3 right-3 px-4 py-2 rounded-[20px] backdrop-blur-xl border flex items-center gap-2 text-xs font-black shadow-lg transition-all zentry-press z-30 ${
           isDark
             ? 'bg-white/10 hover:bg-white/20 border-white/15 text-white'
             : 'bg-white/70 hover:bg-white/90 border-black/10 text-[#1E293B]'
