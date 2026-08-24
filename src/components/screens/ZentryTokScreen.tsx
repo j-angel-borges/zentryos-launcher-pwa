@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import { 
   Heart, 
-  Music, 
+  MessageCircle, 
+  Share2, 
+  Bookmark, 
+  Music2, 
   ChevronUp, 
   ChevronDown, 
-  Sparkles, 
   ArrowLeft,
   Volume2,
-  Smile,
-  Star
+  CheckCircle,
+  Plus
 } from 'lucide-react';
 import { sounds } from '../../services/soundEffects';
 import { voiceService } from '../../services/voiceSpeech';
-import { TIKTOK_SHORTS } from '../../services/entertainmentData';
+import { TIKTOK_SHORTS, UniversalMediaItem } from '../../services/entertainmentData';
 
 interface Props {
   onBack: () => void;
@@ -20,13 +22,20 @@ interface Props {
 }
 
 export const ZentryTokScreen: React.FC<Props> = ({ onBack, isDark }) => {
+  const [selectedFilter, setSelectedFilter] = useState<'Todos' | 'Entretenimiento para Niños' | 'Curiosidades y Naturaleza'>('Todos');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [likedShorts, setLikedShorts] = useState<Record<string, boolean>>({});
+  const [savedShorts, setSavedShorts] = useState<Record<string, boolean>>({});
 
-  const currentShort = TIKTOK_SHORTS[currentIndex] || TIKTOK_SHORTS[0];
+  const filteredShorts = TIKTOK_SHORTS.filter((s) => {
+    if (selectedFilter === 'Todos') return true;
+    return s.category === selectedFilter;
+  });
+
+  const currentShort: UniversalMediaItem = filteredShorts[currentIndex] || filteredShorts[0] || TIKTOK_SHORTS[0];
 
   const handleNext = () => {
-    if (currentIndex < TIKTOK_SHORTS.length - 1) {
+    if (currentIndex < filteredShorts.length - 1) {
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
         try { navigator.vibrate(30); } catch {}
       }
@@ -47,53 +56,84 @@ export const ZentryTokScreen: React.FC<Props> = ({ onBack, isDark }) => {
 
   const handleHeartTap = () => {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      try { navigator.vibrate(40); } catch {}
+      try { navigator.vibrate(45); } catch {}
     }
     sounds.playSuccess();
     setLikedShorts((prev) => ({ ...prev, [currentShort.id]: !prev[currentShort.id] }));
-    voiceService.speakFeedback('¡Qué divertido!');
+    voiceService.speakFeedback('¡Me encanta!');
+  };
+
+  const handleBookmarkTap = () => {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      try { navigator.vibrate(25); } catch {}
+    }
+    sounds.playTap();
+    setSavedShorts((prev) => ({ ...prev, [currentShort.id]: !prev[currentShort.id] }));
   };
 
   return (
-    <div className="w-full h-full flex flex-col p-3 md:p-6 overflow-hidden z-10 select-none relative">
-      {/* Outer Glass Card */}
-      <div className={(isDark ? 'zentry-glass-dark ' : 'zentry-glass-light ') + 'flex-1 rounded-[36px] p-4 md:p-6 flex flex-col items-center justify-between overflow-hidden shadow-2xl relative'}>
+    <div className="w-full h-full flex flex-col p-2 sm:p-4 overflow-hidden z-10 select-none relative bg-black">
+      {/* Outer TikTok Enclosure */}
+      <div className="flex-1 rounded-[32px] sm:rounded-[40px] overflow-hidden flex flex-col items-center justify-between relative shadow-2xl border border-white/10 bg-[#020202]">
         
-        {/* Top Header: Big Back Button, Brand Icon & Voice Trigger */}
-        <div className="w-full flex items-center justify-between z-30 pb-1">
+        {/* Top Header Overlay: Back, TikTok Category Tabs, Voice Assistant */}
+        <div className="w-full flex items-center justify-between p-3 sm:p-4 z-30 relative bg-gradient-to-b from-black/80 via-black/40 to-transparent">
+          {/* Back Button */}
           <button
             onClick={() => {
               sounds.playTap();
               onBack();
             }}
-            className={(isDark ? 'bg-white/15 hover:bg-white/25 text-white ' : 'bg-white/70 hover:bg-white/90 text-[#3B3B58] ') + 'w-12 h-12 rounded-2xl flex items-center justify-center transition-all zentry-press cursor-pointer shadow-md border border-white/30'}
+            className="w-11 h-11 rounded-2xl bg-black/50 backdrop-blur-md text-white flex items-center justify-center transition-all zentry-press cursor-pointer border border-white/20 shadow-md"
             title="Volver"
           >
             <ArrowLeft className="w-6 h-6 stroke-[2.5]" />
           </button>
 
-          {/* Graphic Pill */}
-          <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 text-white shadow-lg border border-pink-300/40">
-            <Music className="w-5 h-5 animate-spin" style={{ animationDuration: '8s' }} />
-            <span className="text-sm font-black tracking-wide">MÚSICA</span>
-            <span className="text-base">💃</span>
+          {/* Authentic TikTok Tab Switcher */}
+          <div className="flex items-center gap-1 bg-black/60 backdrop-blur-md p-1 rounded-full border border-white/20">
+            <button
+              onClick={() => {
+                sounds.playTap();
+                setSelectedFilter('Entretenimiento para Niños');
+                setCurrentIndex(0);
+              }}
+              className={`px-3 py-1 rounded-full text-xs font-black transition-all ${
+                selectedFilter === 'Entretenimiento para Niños' ? 'bg-white text-black shadow' : 'text-slate-300 hover:text-white'
+              }`}
+            >
+              🎭 Juegos
+            </button>
+            <button
+              onClick={() => {
+                sounds.playTap();
+                setSelectedFilter('Curiosidades y Naturaleza');
+                setCurrentIndex(0);
+              }}
+              className={`px-3 py-1 rounded-full text-xs font-black transition-all ${
+                selectedFilter === 'Curiosidades y Naturaleza' ? 'bg-white text-black shadow' : 'text-slate-300 hover:text-white'
+              }`}
+            >
+              🌿 Naturaleza
+            </button>
           </div>
 
+          {/* Voice Prompt Trigger */}
           <button
             onClick={() => {
               sounds.playTap();
-              voiceService.speakFeedback('¡Toca las flechas para ver más videos musicales!');
+              voiceService.speakFeedback('¡Toca las flechas o desliza para ver más videos!');
             }}
-            className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-purple-600 flex items-center justify-center text-white shadow-md border border-cyan-300/40 zentry-press cursor-pointer"
+            className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#00F2FE] to-[#FE2C55] flex items-center justify-center text-white shadow-md border border-white/30 zentry-press cursor-pointer"
             title="Escuchar"
           >
             <Volume2 className="w-6 h-6" />
           </button>
         </div>
 
-        {/* Center: Vertical Video Stage with Giant Floating Buttons */}
-        <div className="relative w-full max-w-sm h-full max-h-[72vh] rounded-[34px] overflow-hidden bg-black shadow-2xl border-2 border-white/30 flex flex-col justify-between my-auto">
-          {/* Embedded Vertical Player */}
+        {/* 9:16 Vertical Video Player Stage */}
+        <div className="relative w-full max-w-sm h-full max-h-[78vh] rounded-[28px] sm:rounded-[36px] overflow-hidden bg-black flex flex-col justify-between my-auto border border-white/15 shadow-2xl">
+          {/* Real Embedded Player */}
           <div className="absolute inset-0 z-0 bg-black">
             <iframe
               key={currentShort.id}
@@ -105,68 +145,124 @@ export const ZentryTokScreen: React.FC<Props> = ({ onBack, isDark }) => {
             />
           </div>
 
-          {/* Gentle Gradient Shadows */}
-          <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-black/40 via-transparent to-black/70 z-10" />
+          {/* Ambient Video Vignette */}
+          <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-black/50 via-transparent to-black/80 z-10" />
 
-          {/* Top Emoji Indicator */}
-          <div className="relative z-20 p-3 flex items-center justify-between">
-            <div className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-black flex items-center gap-1.5 border border-white/20">
-              <span className="text-base">✨</span>
-              <span>{currentIndex + 1} / {TIKTOK_SHORTS.length}</span>
+          {/* Counter Badge */}
+          <div className="relative z-20 p-3 flex justify-start">
+            <div className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] font-black border border-white/20">
+              {currentIndex + 1} / {filteredShorts.length}
             </div>
           </div>
 
-          {/* Right Giant Floating Touch Bubbles */}
-          <div className="absolute right-3 bottom-14 z-20 flex flex-col items-center gap-3">
-            {/* Giant Heart Button */}
-            <button
-              onClick={handleHeartTap}
-              className={`w-14 h-14 rounded-full flex items-center justify-center cursor-pointer zentry-press shadow-2xl transition-all border-2 border-white/60 ${
-                likedShorts[currentShort.id]
-                  ? 'bg-gradient-to-tr from-pink-500 to-rose-600 text-white scale-110 shadow-[0_0_20px_rgba(244,63,94,0.8)]'
-                  : 'bg-black/60 backdrop-blur-md text-white hover:bg-black/80'
-              }`}
-            >
-              <Heart className={`w-8 h-8 ${likedShorts[currentShort.id] ? 'fill-white' : ''}`} />
-            </button>
-
-            {/* Sparkle Cheer Button */}
-            <button
-              onClick={() => {
-                sounds.playSuccess();
-                voiceService.speakFeedback('¡A bailar!');
-              }}
-              className="w-13 h-13 rounded-full bg-gradient-to-tr from-cyan-400 to-blue-500 text-white flex items-center justify-center shadow-lg border-2 border-white/50 zentry-press cursor-pointer"
-            >
-              <Sparkles className="w-7 h-7" />
-            </button>
-          </div>
-
-          {/* Left/Right Floating Navigation Arrows */}
-          <div className="absolute left-3 bottom-14 z-20 flex flex-col gap-2.5">
+          {/* Left Navigation Buttons (Large Toddler-Friendly Chevrons) */}
+          <div className="absolute left-3 bottom-24 z-20 flex flex-col gap-3">
             <button
               onClick={handlePrev}
               disabled={currentIndex === 0}
-              className="w-13 h-13 rounded-full bg-white/25 backdrop-blur-md border-2 border-white/60 text-white flex items-center justify-center hover:bg-white/40 disabled:opacity-20 cursor-pointer shadow-lg zentry-press"
+              className="w-12 h-12 rounded-full bg-black/60 backdrop-blur-md border border-white/30 text-white flex items-center justify-center hover:bg-black/80 disabled:opacity-20 cursor-pointer shadow-xl zentry-press"
               title="Anterior"
             >
-              <ChevronUp className="w-8 h-8 stroke-[3]" />
+              <ChevronUp className="w-7 h-7 stroke-[3]" />
             </button>
 
             <button
               onClick={handleNext}
-              disabled={currentIndex === TIKTOK_SHORTS.length - 1}
-              className="w-13 h-13 rounded-full bg-white/25 backdrop-blur-md border-2 border-white/60 text-white flex items-center justify-center hover:bg-white/40 disabled:opacity-20 cursor-pointer shadow-lg zentry-press"
+              disabled={currentIndex === filteredShorts.length - 1}
+              className="w-12 h-12 rounded-full bg-black/60 backdrop-blur-md border border-white/30 text-white flex items-center justify-center hover:bg-black/80 disabled:opacity-20 cursor-pointer shadow-xl zentry-press"
               title="Siguiente"
             >
-              <ChevronDown className="w-8 h-8 stroke-[3]" />
+              <ChevronDown className="w-7 h-7 stroke-[3]" />
             </button>
           </div>
 
-          {/* Minimalist Bottom Bar */}
-          <div className="relative z-20 p-3 flex items-center justify-center">
-            <div className="px-4 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white text-xs font-black truncate max-w-[220px]">
+          {/* Right Action Rail: Authentic TikTok Icons */}
+          <div className="absolute right-3 bottom-8 z-20 flex flex-col items-center gap-4">
+            {/* Creator Avatar with Follow Plus Badge */}
+            <div className="relative">
+              <img
+                src={currentShort.creatorAvatar}
+                alt={currentShort.creator}
+                className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-lg"
+              />
+              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-[#FE2C55] text-white flex items-center justify-center shadow-md">
+                <Plus className="w-3.5 h-3.5 stroke-[3]" />
+              </div>
+            </div>
+
+            {/* Heart Like Button */}
+            <div className="flex flex-col items-center">
+              <button
+                onClick={handleHeartTap}
+                className={`w-12 h-12 rounded-full flex items-center justify-center cursor-pointer zentry-press shadow-2xl transition-all ${
+                  likedShorts[currentShort.id]
+                    ? 'bg-[#FE2C55] text-white scale-110 shadow-[0_0_20px_rgba(254,44,85,0.8)]'
+                    : 'bg-black/50 backdrop-blur-md text-white hover:bg-black/70'
+                }`}
+              >
+                <Heart className={`w-7 h-7 ${likedShorts[currentShort.id] ? 'fill-white' : ''}`} />
+              </button>
+              <span className="text-[11px] font-black text-white mt-1 shadow-sm">{currentShort.viewsOrLikes}</span>
+            </div>
+
+            {/* Comment Button */}
+            <div className="flex flex-col items-center">
+              <button
+                onClick={() => {
+                  sounds.playTap();
+                  voiceService.speakFeedback('¡Comentarios amigables!');
+                }}
+                className="w-12 h-12 rounded-full bg-black/50 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/70 shadow-lg cursor-pointer zentry-press"
+              >
+                <MessageCircle className="w-6 h-6 fill-white/20" />
+              </button>
+              <span className="text-[11px] font-black text-white mt-1">4.2K</span>
+            </div>
+
+            {/* Bookmark Button */}
+            <button
+              onClick={handleBookmarkTap}
+              className={`w-12 h-12 rounded-full flex items-center justify-center cursor-pointer zentry-press shadow-lg transition-all ${
+                savedShorts[currentShort.id]
+                  ? 'bg-amber-400 text-black scale-110 shadow-[0_0_15px_rgba(251,191,36,0.8)]'
+                  : 'bg-black/50 backdrop-blur-md text-white hover:bg-black/70'
+              }`}
+            >
+              <Bookmark className={`w-6 h-6 ${savedShorts[currentShort.id] ? 'fill-black' : ''}`} />
+            </button>
+
+            {/* Share Arrow */}
+            <button
+              onClick={() => {
+                sounds.playSuccess();
+                voiceService.speakFeedback('¡Compartir con papá y mamá!');
+              }}
+              className="w-12 h-12 rounded-full bg-black/50 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/70 shadow-lg cursor-pointer zentry-press"
+            >
+              <Share2 className="w-6 h-6" />
+            </button>
+
+            {/* Spinning Vinyl Record with Music Disc */}
+            <div className="w-11 h-11 rounded-full p-1.5 bg-gradient-to-tr from-[#050505] to-[#252525] border border-white/40 shadow-xl flex items-center justify-center animate-spin" style={{ animationDuration: '4s' }}>
+              <div className="w-5 h-5 rounded-full bg-[#FE2C55] flex items-center justify-center text-white shadow-inner">
+                <Music2 className="w-3 h-3" />
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Info Overlay: Handle, Title & Music Marquee */}
+          <div className="relative z-20 p-4 flex flex-col gap-1 text-white max-w-[240px]">
+            <div className="flex items-center gap-1.5 font-black text-sm">
+              <span>{currentShort.handle}</span>
+              <CheckCircle className="w-3.5 h-3.5 text-[#00F2FE]" />
+            </div>
+            <p className="text-xs font-bold text-slate-200 line-clamp-2 leading-tight">
               {currentShort.title}
+            </p>
+            {/* Music Sound Ticker */}
+            <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-300 font-semibold truncate">
+              <Music2 className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">Sonido Original - {currentShort.creator}</span>
             </div>
           </div>
         </div>
@@ -175,4 +271,3 @@ export const ZentryTokScreen: React.FC<Props> = ({ onBack, isDark }) => {
     </div>
   );
 };
-
