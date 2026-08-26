@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Home, Sparkles, Mic, Send, ExternalLink, X } from 'lucide-react';
+import { ArrowLeft, Home, Sparkles, Mic, Send, X, ExternalLink } from 'lucide-react';
 import type { ScreenId, AgeTier } from '../../types/zentry';
 import { sounds } from '../../services/soundEffects';
 import { voiceService } from '../../services/voiceSpeech';
 import { processVoiceAgentCommand, matchLocalVoiceCommand } from '../../services/voiceAgentService';
+import { ZentryRecentAppsModal } from './ZentryRecentAppsModal';
+import { ZentryAiDrawer } from './ZentryAiDrawer';
 
 interface Props {
   currentScreen: ScreenId;
@@ -24,13 +26,20 @@ export const ZentryNavBar: React.FC<Props> = ({
 }) => {
   const canGoBack = currentScreen !== 'launcher';
 
-  // Agent State
+  // Navigation and UI state
+  const [isAiMode, setIsAiMode] = useState(false);
+  const [isAiDrawerOpen, setIsAiDrawerOpen] = useState(false);
+  const [isRecentAppsOpen, setIsRecentAppsOpen] = useState(false);
+
+  // Voice & Input state
   const [isListening, setIsListening] = useState(false);
   const [inputText, setInputText] = useState('');
   const [agentStatus, setAgentStatus] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [clarificationOptions, setClarificationOptions] = useState<{ label: string; screen: ScreenId }[] | null>(null);
 
+  // References
+  const longPressTimerRef = useRef<any>(null);
+  const isLongPressTriggered = useRef(false);
   const recognitionRef = useRef<any | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -63,7 +72,7 @@ export const ZentryNavBar: React.FC<Props> = ({
     }
   }, []);
 
-  // Execute Agent Command
+  // Execute Voice / Text Command
   const handleExecuteCommand = async (textToProcess?: string) => {
     const query = (textToProcess || inputText).trim();
     if (!query) return;
@@ -71,7 +80,7 @@ export const ZentryNavBar: React.FC<Props> = ({
     setIsProcessing(true);
     setAgentStatus('Analizando...');
 
-    // Fast-path instant local execution
+    // 1. Fast-path local instant execution
     const fastDecision = matchLocalVoiceCommand(query);
     if (fastDecision && fastDecision.action === 'navigate' && fastDecision.targetScreen) {
       sounds.playSuccess();
@@ -81,11 +90,12 @@ export const ZentryNavBar: React.FC<Props> = ({
         setInputText('');
         setAgentStatus(null);
         setIsProcessing(false);
+        setIsAiMode(false);
       }, 600);
       return;
     }
 
-    // AI agent fallback
+    // 2. AI agent decision fallback
     try {
       const decision = await processVoiceAgentCommand(query);
       sounds.playSuccess();
@@ -97,194 +107,285 @@ export const ZentryNavBar: React.FC<Props> = ({
           setInputText('');
           setAgentStatus(null);
           setIsProcessing(false);
+          setIsAiMode(false);
         }, 700);
-      } else if (decision.action === 'clarify' && decision.clarificationOptions) {
-        setClarificationOptions(decision.clarificationOptions);
-        setIsProcessing(false);
       } else {
         setIsProcessing(false);
       }
-    } catch (e) {
-      setAgentStatus('No pude procesar el comando.');
+    } catch {
+      setAgentStatus('Listo');
       setIsProcessing(false);
     }
   };
 
-  const handleMicClick = () => {
-    if (isListening) {
-      sounds.playTap();
-      try {
-        recognitionRef.current?.stop();
-      } catch {}
-      setIsListening(false);
-      if (inputText.trim()) {
-        handleExecuteCommand();
+  // Back Button Handlers (Tap = Back, Long Press = Recent Apps Modal)
+  const handleBackTouchStart = () => {
+    isLongPressTriggered.current = false;
+    longPressTimerRef.current = setTimeout(() => {
+      isLongPressTriggered.current = true;
+      sounds.playInterventionShield();
+      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        navigator.vibrate([25, 50, 25]);
       }
+      setIsRecentAppsOpen(true);
+    }, 380);
+  };
+
+  const handleBackTouchEnd = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
+
+  const handleBackClick = () => {
+    if (isLongPressTriggered.current) {
+      isLongPressTriggered.current = false;
       return;
     }
+    sounds.playTap();
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate(15);
+    }
+    if (canGoBack) {
+      onBack();
+    } else {
+      setIsRecentAppsOpen(true);
+    }
+  };
 
+  // Home Button Handler
+  const handleHomeClick = () => {
+    sounds.playTap();
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate(15);
+    }
+    setIsAiMode(false);
+    setIsAiDrawerOpen(false);
+    setIsRecentAppsOpen(false);
+    onHome();
+  };
+
+  // AI Button Click (Expands bar & opens AI drawer)
+  const handleAiButtonClick = () => {
+    sounds.playSuccess();
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate(20);
+    }
+    setIsAiMode(true);
+    setIsAiDrawerOpen(true);
+    if (ageTier === 'toddler') {
+      voiceService.speakFeedback('¡Hola! Soy Zentry. ¿Qué quieres explorar o aprender hoy?');
+    }
+  };
+
+  // Mic Button (Hold / Tap for Speech-to-Text)
+  const handleStartMic = () => {
     sounds.playTap();
     setInputText('');
     setAgentStatus(null);
-    setClarificationOptions(null);
     setIsListening(true);
-
-    if (ageTier === 'toddler') {
-      voiceService.speakFeedback('¡Hola! ¿Qué quieres explorar o aprender hoy?');
-    }
 
     try {
       recognitionRef.current?.start();
     } catch (e) {
-      console.log('Mic start catch:', e);
+      console.log('Mic start:', e);
+    }
+  };
+
+  const handleStopMic = () => {
+    try {
+      recognitionRef.current?.stop();
+    } catch {}
+    setIsListening(false);
+    if (inputText.trim()) {
+      handleExecuteCommand();
     }
   };
 
   const hasText = inputText.trim().length > 0;
 
   return (
-    <nav className="w-full py-2 px-3 md:px-6 flex flex-col items-center justify-center gap-1.5 z-40 select-none">
-      <div className="w-full max-w-lg flex items-center gap-2">
-        {/* Left Navigation Buttons: Back & Home */}
+    <>
+      <nav className="w-full py-2.5 px-4 flex items-center justify-center z-40 select-none">
+        {/* CONTAINER WITH BOUNCE & SPRING MORPHING PHYSICS */}
         <div
           className={
             (isDark ? 'zentry-glass-dark ' : 'zentry-glass-light ') +
-            'flex items-center gap-1 p-1 rounded-full shadow-lg border border-white/30 shrink-0'
+            'transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] rounded-full shadow-2xl border border-white/40 backdrop-blur-2xl ' +
+            (isAiMode ? 'w-full max-w-md px-3 py-1.5' : 'w-auto px-2 py-1.5')
           }
         >
-          {canGoBack && (
-            <button
-              onClick={() => {
-                sounds.playTap();
-                onBack();
+          {/* STATE A: EXPANDED AI CHAT & SPEECH-TO-TEXT BAR */}
+          {isAiMode ? (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleExecuteCommand();
               }}
-              className={
-                (isDark ? 'text-white hover:bg-white/10 ' : 'text-[#1E293B] hover:bg-black/5 ') +
-                'p-2 rounded-full transition-all zentry-press cursor-pointer'
-              }
-              title="Atrás"
+              className="w-full flex items-center gap-2 animate-in slide-in-from-right-4 duration-300"
             >
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-          )}
+              {/* Mic / Speech-to-Text Button with Waves */}
+              <button
+                type="button"
+                onMouseDown={handleStartMic}
+                onMouseUp={handleStopMic}
+                onTouchStart={handleStartMic}
+                onTouchEnd={handleStopMic}
+                onClick={() => {
+                  if (isListening) handleStopMic();
+                  else handleStartMic();
+                }}
+                className={
+                  (isListening
+                    ? 'bg-red-500 text-white animate-pulse scale-110 ring-4 ring-red-400/40 '
+                    : 'bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 text-white hover:scale-105 ') +
+                  'w-9 h-9 rounded-full flex items-center justify-center shrink-0 shadow-lg cursor-pointer transition-all zentry-press relative'
+                }
+                title="Mantén presionado para hablar"
+              >
+                <Mic className="w-4 h-4" />
+                {isListening && (
+                  <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-amber-400 animate-ping" />
+                )}
+              </button>
 
-          <button
-            onClick={() => {
-              sounds.playTap();
-              onHome();
-            }}
-            className={
-              (isDark ? 'text-white hover:bg-white/10 ' : 'text-[#1E293B] hover:bg-black/5 ') +
-              'p-2 rounded-full transition-all zentry-press cursor-pointer'
-            }
-            title="Inicio"
-          >
-            <Home className="w-4 h-4" />
-          </button>
-        </div>
+              {/* Text Input with Live Waves when listening */}
+              <div className="flex-1 flex items-center gap-2 min-w-0">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  placeholder={isListening ? 'Escuchando tu voz...' : 'Escribe o habla a Zentry...'}
+                  className={
+                    (isDark ? 'text-white placeholder-slate-400 ' : 'text-slate-900 placeholder-slate-500 ') +
+                    'w-full bg-transparent text-xs font-bold focus:outline-none'
+                  }
+                  autoFocus
+                />
 
-        {/* Center/Right Unified Interactive Voice & Text Bar */}
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleExecuteCommand();
-          }}
-          className={
-            (isDark ? 'zentry-glass-dark text-white ' : 'zentry-glass-light text-[#1E293B] ') +
-            'flex-1 flex items-center gap-2 px-3 py-1.5 rounded-full shadow-lg border border-white/40 backdrop-blur-xl transition-all min-w-0'
-          }
-        >
-          {/* Mic Button: Tocar para hablar */}
-          <button
-            type="button"
-            onClick={handleMicClick}
-            className={
-              (isListening
-                ? 'bg-red-500 text-white animate-pulse '
-                : 'bg-gradient-to-tr from-indigo-500 to-purple-600 text-white hover:scale-105 ') +
-              'w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-md cursor-pointer transition-all zentry-press'
-            }
-            title={isListening ? 'Detener dictado' : 'Toca para hablar con Zentry'}
-          >
-            <Mic className="w-4 h-4" />
-          </button>
-
-          {/* Text Input: Escribir pregunta */}
-          <div className="flex-1 flex items-center gap-1.5 min-w-0">
-            <input
-              ref={inputRef}
-              type="text"
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              placeholder={isListening ? 'Escuchando...' : 'Habla o escribe a Zentry...'}
-              className={
-                (isDark ? 'text-white placeholder-slate-400 ' : 'text-slate-900 placeholder-slate-500 ') +
-                'w-full bg-transparent text-xs md:text-sm font-bold focus:outline-none'
-              }
-            />
-
-            {isListening && (
-              <div className="flex items-center gap-0.5 shrink-0 pr-1">
-                <div className="w-0.5 h-2.5 bg-red-400 rounded-full animate-bounce" />
-                <div className="w-0.5 h-4 bg-purple-400 rounded-full animate-bounce [animation-delay:0.1s]" />
-                <div className="w-0.5 h-3 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.2s]" />
+                {/* Animated Speech Equalizer Waves */}
+                {isListening && (
+                  <div className="flex items-center gap-1 shrink-0 pr-1">
+                    <span className="w-1 h-3 bg-red-400 rounded-full animate-bounce [animation-delay:0s]" />
+                    <span className="w-1 h-5 bg-purple-400 rounded-full animate-bounce [animation-delay:0.15s]" />
+                    <span className="w-1 h-3.5 bg-cyan-400 rounded-full animate-bounce [animation-delay:0.3s]" />
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          {/* Status badge if processing */}
-          {agentStatus && (
-            <span className="text-[10px] font-extrabold text-indigo-500 truncate max-w-[90px] animate-in fade-in">
-              {agentStatus}
-            </span>
-          )}
+              {/* Status if processing */}
+              {agentStatus && (
+                <span className="text-[10px] font-black text-indigo-400 truncate max-w-[80px] animate-in fade-in">
+                  {agentStatus}
+                </span>
+              )}
 
-          {/* Send or Fullscreen AI Chat Button */}
-          {hasText ? (
-            <button
-              type="submit"
-              disabled={isProcessing}
-              className="p-1.5 rounded-full bg-indigo-600 text-white shadow-md hover:bg-indigo-500 cursor-pointer zentry-press shrink-0 disabled:opacity-50"
-              title="Enviar comando"
-            >
-              <Send className="w-3.5 h-3.5" />
-            </button>
+              {/* Action Button: Send when text typed, or Open Drawer / Close */}
+              {hasText ? (
+                <button
+                  type="submit"
+                  disabled={isProcessing}
+                  className="p-2 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-white shadow-md hover:scale-105 cursor-pointer zentry-press shrink-0"
+                  title="Enviar"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsAiDrawerOpen(true)}
+                  className="p-2 rounded-full text-indigo-400 hover:text-indigo-300 hover:bg-white/10 cursor-pointer zentry-press shrink-0"
+                  title="Desplegar chat Zentry AI"
+                >
+                  <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
+                </button>
+              )}
+
+              {/* Close Bar Button (Returns to 3-button pill) */}
+              <button
+                type="button"
+                onClick={() => {
+                  sounds.playTap();
+                  setIsAiMode(false);
+                }}
+                className="p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-white/10 cursor-pointer shrink-0"
+                title="Volver a botones de navegación"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </form>
           ) : (
-            <button
-              type="button"
-              onClick={() => {
-                sounds.playTap();
-                onNavigate('ai');
-              }}
-              className="p-1.5 rounded-full text-indigo-400 hover:text-indigo-300 hover:bg-white/10 cursor-pointer zentry-press shrink-0 group"
-              title="Abrir Tutor Zentry AI en pantalla completa"
-            >
-              <Sparkles className="w-4 h-4 text-amber-300 group-hover:scale-110 transition-transform" />
-            </button>
-          )}
-        </form>
-      </div>
+            /* STATE B: SLEEK 3-BUTTON LIQUID GLASS FLOATING CAPSULE */
+            <div className="flex items-center gap-4 px-2">
+              {/* 1. BOTÓN RETROCESO (IZQUIERDA) - Click: Back | Long-press: Recent Apps */}
+              <button
+                onClick={handleBackClick}
+                onMouseDown={handleBackTouchStart}
+                onMouseUp={handleBackTouchEnd}
+                onTouchStart={handleBackTouchStart}
+                onTouchEnd={handleBackTouchEnd}
+                className={
+                  (isDark
+                    ? 'text-white hover:bg-white/15 '
+                    : 'text-[#1E293B] hover:bg-black/10 ') +
+                  'w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 zentry-press cursor-pointer active:scale-90 hover:scale-108 relative group'
+                }
+                title="Atrás (Mantén presionado para ver Procesos en Segundo Plano)"
+              >
+                <ArrowLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
+              </button>
 
-      {/* Clarification Chips if ambiguous */}
-      {clarificationOptions && (
-        <div className="flex flex-wrap items-center justify-center gap-1.5 px-2 animate-in fade-in">
-          <span className="text-[10px] font-medium text-white/90">¿A cuál te refieres?:</span>
-          {clarificationOptions.map((opt, idx) => (
-            <button
-              key={idx}
-              onClick={() => {
-                sounds.playSuccess();
-                onNavigate(opt.screen);
-                setClarificationOptions(null);
-                setInputText('');
-              }}
-              className="px-3 py-1 rounded-full bg-white/95 text-[#1E293B] text-[11px] font-black shadow-md hover:bg-white cursor-pointer zentry-press"
-            >
-              {opt.label}
-            </button>
-          ))}
+              {/* 2. BOTÓN INICIO (CENTRO) - Click: Home */}
+              <button
+                onClick={handleHomeClick}
+                className={
+                  (isDark
+                    ? 'text-white hover:bg-white/15 '
+                    : 'text-[#1E293B] hover:bg-black/10 ') +
+                  'w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 zentry-press cursor-pointer active:scale-90 hover:scale-108 group'
+                }
+                title="Pantalla de Inicio"
+              >
+                <Home className="w-5 h-5 group-hover:scale-110 transition-transform" />
+              </button>
+
+              {/* 3. BOTÓN INTELIGENCIA ARTIFICIAL (DERECHA) - Click: Morph into AI Chat */}
+              <button
+                onClick={handleAiButtonClick}
+                className="w-11 h-11 rounded-full bg-gradient-to-tr from-indigo-500/20 via-purple-500/20 to-pink-500/20 hover:from-indigo-500/35 hover:to-pink-500/35 flex items-center justify-center transition-all duration-200 zentry-press cursor-pointer active:scale-90 hover:scale-108 border border-white/30 shadow-sm relative group"
+                title="Hablar o Chatear con Zentry AI"
+              >
+                <Sparkles className="w-5 h-5 text-amber-300 group-hover:rotate-12 group-hover:scale-115 transition-transform animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-purple-400 absolute -top-0.5 -right-0.5 animate-ping" />
+              </button>
+            </div>
+          )}
         </div>
-      )}
-    </nav>
+      </nav>
+
+      {/* RECENT APPS / PROCESOS EN SEGUNDO PLANO MODAL (Hold Back Button) */}
+      <ZentryRecentAppsModal
+        isOpen={isRecentAppsOpen}
+        onClose={() => setIsRecentAppsOpen(false)}
+        onNavigate={onNavigate}
+        currentScreen={currentScreen}
+        isDark={isDark}
+        ageTier={ageTier}
+      />
+
+      {/* ZENTRY AI CHAT & SUGGESTIONS DRAWER (Click AI Button) */}
+      <ZentryAiDrawer
+        isOpen={isAiDrawerOpen}
+        onClose={() => {
+          setIsAiDrawerOpen(false);
+          setIsAiMode(false);
+        }}
+        onNavigate={onNavigate}
+        isDark={isDark}
+        ageTier={ageTier}
+      />
+    </>
   );
 };
