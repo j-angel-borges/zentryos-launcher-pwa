@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Play, Camera, Palette, Clock, Gamepad2, Sparkles, Trash2, CheckCircle2 } from 'lucide-react';
 import type { ScreenId, AgeTier } from '../../types/zentry';
 import { sounds } from '../../services/soundEffects';
+import { ZentryLogoIcon } from '../ui/ZentryLogoIcon';
 
 interface RecentAppItem {
   id: ScreenId;
@@ -117,7 +118,7 @@ export const ZentryRecentAppsModal: React.FC<Props> = ({
         <div className="flex items-center justify-between border-b border-white/10 pb-3">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-md">
-              <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
+              <ZentryLogoIcon className="w-4 h-4" />
             </div>
             <div>
               <h3 className="text-sm font-black tracking-tight">Procesos en Segundo Plano</h3>

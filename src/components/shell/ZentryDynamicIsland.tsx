@@ -26,6 +26,7 @@ import { voiceService } from '../../services/voiceSpeech';
 import { mediaPlaybackService, ActiveMediaItem } from '../../services/mediaPlaybackService';
 import { agencyService, AgencyState, CreativeIntervention } from '../../services/agencyService';
 import { askZentryAi } from '../../services/aiService';
+import { ZentryLogoIcon } from '../ui/ZentryLogoIcon';
 
 interface Props {
   currentScreen: ScreenId;
@@ -332,10 +333,10 @@ Si está viendo un video o juego, o en una app escolar, dale una recomendación 
             </span>
           </div>
         ) : (
-          /* CASE C: Default ZENTRY Liquid Glass Pill (Solo texto ZENTRY con destello) */
+          /* CASE C: Default ZENTRY Liquid Glass Pill (Solo texto ZENTRY con logo Z) */
           <div className="flex items-center justify-center w-full gap-2 py-0.5">
-            <div className="w-5 h-5 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-amber-300 shadow-sm shrink-0">
-              <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+            <div className="w-5 h-5 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-sm shrink-0">
+              <ZentryLogoIcon className="w-3.5 h-3.5" />
             </div>
             <span className="text-xs font-black tracking-widest text-white drop-shadow-md uppercase">
               ZENTRY
@@ -365,7 +366,7 @@ Si está viendo un video o juego, o en una app escolar, dale una recomendación 
             <div className="flex items-center justify-between border-b border-white/10 pb-2">
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white shadow-md">
-                  <Sparkles className="w-4 h-4 animate-pulse" />
+                  <ZentryLogoIcon className="w-4 h-4" />
                 </div>
                 <div>
                   <div className="text-xs font-black tracking-tight text-white flex items-center gap-1.5">

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Palette, Play, Camera, Clock, Sparkles } from 'lucide-react';
+import { Palette, Play, Camera, Clock } from 'lucide-react';
 import type { ScreenId } from '../../../types/zentry';
 import { sounds } from '../../../services/soundEffects';
 import { voiceService } from '../../../services/voiceSpeech';
@@ -69,7 +69,7 @@ export const ToddlerHomeView: React.FC<Props> = ({ isDark, onNavigate }) => {
           </div>
 
           <div className="space-y-0.5 mb-1">
-            <div className="flex items-center justify-center gap-1.5">
+            <div className="flex items-center justify-center">
               <span
                 className={
                   (isDark
@@ -80,7 +80,6 @@ export const ToddlerHomeView: React.FC<Props> = ({ isDark, onNavigate }) => {
               >
                 Crear
               </span>
-              <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
             </div>
             <p
               className={
