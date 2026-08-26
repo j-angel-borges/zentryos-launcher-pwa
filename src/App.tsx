@@ -239,8 +239,8 @@ export const App: React.FC = () => {
         onNavigate={navigateTo}
       />
 
-      {/* 3. Screen Viewport */}
-      <div className="flex-1 w-full h-full relative overflow-hidden flex flex-col items-center justify-center">
+      {/* 3. Screen Viewport with Spring Zoom Transition */}
+      <div key={currentScreen} className="flex-1 w-full h-full relative overflow-hidden flex flex-col items-center justify-center animate-app-open">
         {currentScreen === 'launcher' && (
           <ZentryHomeScreen
             wallpaper={currentWallpaper}

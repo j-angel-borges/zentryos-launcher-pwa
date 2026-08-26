@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Sparkles, 
   Tv, 
   Radio, 
   Flame, 
@@ -16,9 +15,10 @@ import {
   CheckCircle2, 
   Activity, 
   Send,
-  HelpCircle,
-  Clock,
-  ChevronRight
+  Clock, 
+  ChevronUp,
+  Sparkles,
+  RefreshCw
 } from 'lucide-react';
 import type { ScreenId, AgeTier } from '../../types/zentry';
 import { sounds } from '../../services/soundEffects';
@@ -41,11 +41,11 @@ export const ZentryDynamicIsland: React.FC<Props> = ({
   onNavigate,
   isDark
 }) => {
-  // Global Media & Agency Subscriptions
+  // Subscriptions
   const [activeMedia, setActiveMedia] = useState<ActiveMediaItem | null>(null);
   const [agencyState, setAgencyState] = useState<AgencyState>(agencyService.getState());
   
-  // Dynamic Island UI States
+  // UI In-Place Transformation State
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<'quick' | 'camera' | 'voice' | 'memory'>('quick');
 
@@ -53,7 +53,6 @@ export const ZentryDynamicIsland: React.FC<Props> = ({
   const [voiceQuery, setVoiceQuery] = useState('');
   const [voiceResponse, setVoiceResponse] = useState<string | null>(null);
   const [isProcessingAi, setIsProcessingAi] = useState(false);
-  const [screenAnalysis, setScreenAnalysis] = useState<string | null>(null);
 
   // Direct Camera State inside Island
   const [cameraStreamActive, setCameraStreamActive] = useState(false);
@@ -62,8 +61,7 @@ export const ZentryDynamicIsland: React.FC<Props> = ({
   const islandVideoRef = useRef<HTMLVideoElement | null>(null);
   const islandStreamRef = useRef<MediaStream | null>(null);
 
-  // Click & Double-click timer
-  const clickTimerRef = useRef<any>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const unsubMedia = mediaPlaybackService.subscribe((media) => {
@@ -78,13 +76,11 @@ export const ZentryDynamicIsland: React.FC<Props> = ({
     };
   }, []);
 
-  // Update current screen in agency service
   useEffect(() => {
     agencyService.setApp(currentScreen);
-    setScreenAnalysis(null);
   }, [currentScreen]);
 
-  // Clean camera stream when unmounted or closed
+  // Clean camera stream when collapsed or switching tab
   useEffect(() => {
     if (!isExpanded || activeTab !== 'camera') {
       if (islandStreamRef.current) {
@@ -95,36 +91,35 @@ export const ZentryDynamicIsland: React.FC<Props> = ({
     }
   }, [isExpanded, activeTab]);
 
-  // Handle Pill Clicks (1 Tap = Expand / Controls, 2 Taps = Multimodal AI Assistant)
-  const handlePillClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (clickTimerRef.current) {
-      clearTimeout(clickTimerRef.current);
-      clickTimerRef.current = null;
-      // Double tap triggered!
-      sounds.playSuccess();
-      setIsExpanded(true);
-      setActiveTab('quick');
-      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-        navigator.vibrate([20, 40, 20]);
+  // Handle clicking outside to collapse the island seamlessly
+  useEffect(() => {
+    const handleDocumentClick = (e: MouseEvent | TouchEvent) => {
+      if (isExpanded && containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        sounds.playTap();
+        setIsExpanded(false);
       }
-      if (ageTier === 'toddler') {
-        voiceService.speakFeedback('¡Hola! Soy tu Isla Dinámica Zentry. ¿Qué exploramos?');
-      }
-      return;
-    }
+    };
 
-    clickTimerRef.current = setTimeout(() => {
-      clickTimerRef.current = null;
-      sounds.playTap();
-      setIsExpanded((prev) => !prev);
-      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-        navigator.vibrate(15);
-      }
-    }, 240);
+    if (isExpanded) {
+      document.addEventListener('mousedown', handleDocumentClick);
+      document.addEventListener('touchstart', handleDocumentClick);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleDocumentClick);
+      document.removeEventListener('touchstart', handleDocumentClick);
+    };
+  }, [isExpanded]);
+
+  // Toggle in-place expansion
+  const handleToggleIsland = () => {
+    sounds.playTap();
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate(15);
+    }
+    setIsExpanded((prev) => !prev);
   };
 
-  // Launch direct camera stream
+  // Launch camera inside island
   const handleStartIslandCamera = async () => {
     sounds.playTap();
     setActiveTab('camera');
@@ -145,16 +140,16 @@ export const ZentryDynamicIsland: React.FC<Props> = ({
         }
       }
     } catch (e) {
-      console.warn('Island camera stream error:', e);
-      setCameraAiInsight('No se pudo acceder a la cámara. Abriendo la app de Cámara...');
+      console.warn('Island camera error:', e);
+      setCameraAiInsight('Abriendo cámara completa...');
       setTimeout(() => {
         setIsExpanded(false);
         onNavigate('camera');
-      }, 900);
+      }, 700);
     }
   };
 
-  // Capture photo in island and analyze with Multimodal Gemini
+  // Capture photo in island and analyze
   const handleCaptureAndAsk = async () => {
     sounds.playTap();
     if (!islandVideoRef.current) return;
@@ -172,70 +167,13 @@ export const ZentryDynamicIsland: React.FC<Props> = ({
 
     try {
       const prompt = `Eres el Asistente Multimodal en la Isla Dinámica de ZentryOS para un niño (${ageTier === 'toddler' ? '2-5 años' : '5-10+ años'}).
-Analiza la imagen que el niño acaba de enfocar en el mundo real. Explícale qué es de forma divertida, cálida y socrática en 2 oraciones breves.`;
+Analiza la imagen que el niño acaba de capturar. Explícale qué es en 2 oraciones divertidas, cálidas y socráticas.`;
       const response = await askZentryAi('camera_vision', prompt, base64);
       sounds.playSuccess();
-      try {
-        const parsed = JSON.parse(response.trim().replace(/^```json/, '').replace(/```$/, ''));
-        const text = parsed.observation ? `${parsed.title}: ${parsed.observation} ${parsed.step || ''}` : response;
-        setCameraAiInsight(text);
-        voiceService.speakFeedback(text);
-      } catch {
-        setCameraAiInsight(response);
-        voiceService.speakFeedback(response);
-      }
-    } catch (err) {
-      setCameraAiInsight('¡Veo algo fascinante! Exploremos más en el estudio creativo.');
-    } finally {
-      setIsProcessingAi(false);
-    }
-  };
-
-  // Screen analysis helper (Multimodal system awareness)
-  const handleAnalyzeScreen = async () => {
-    sounds.playTap();
-    setIsProcessingAi(true);
-    try {
-      const screenNames: Record<ScreenId, string> = {
-        launcher: 'Pantalla de Inicio con widgets y microapps',
-        ai: 'Tutor Socrático Zentry AI',
-        creation: 'Centro de Creación y Estudio',
-        tutor_hub: 'Centro de Tutoría y Asistencia',
-        safe_search: 'Buscador de Conocimiento Seguro',
-        calculator: 'Calculadora Matemática',
-        camera: 'Cámara Multimodal con Visión Artificial',
-        reloj: 'Reloj Circadiano y Alarmas',
-        calendar: 'Calendario Escolar',
-        files: 'Bóveda de Archivos y Tareas',
-        phone: 'Teléfono y Contactos Seguros',
-        settings: 'Ajustes del Sistema y Fondos',
-        neuro_art: 'Lienzo de Dibujo NeuroArt',
-        world_generator: 'Generador de Mundos y Misiones',
-        characters: 'Taller de Personajes y Avatares Mágicos',
-        free_canvas: 'Lienzo de Dibujo Libre y Expresión Artística',
-        real_missions: 'Misiones Reales y Retos de Movimiento Físico',
-        monsters: 'Monstruos Amigables y Expresión de Emociones',
-        study_assistant: 'Asistente de Estudio Escolar',
-        deep_research: 'Investigador de Curiosidades Científicas',
-        redactor: 'Redactor Creativo de Cuentos y Ensayos',
-        workspace_app: 'Aplicación Escolar en Pantalla',
-        entertainment_hub: 'Hub de Medios Curados Zentry',
-        zentry_tube: 'ZentryTube con 50 videos educativos STEM',
-        zentry_tok: 'ZentryTok con microcápsulas científicas',
-        zentry_gram: 'ZentryGram con fotografías de ciencia y naturaleza',
-        zentry_stream: 'ZentryStream con directos educativos'
-      };
-
-      const currentDesc = screenNames[currentScreen] || currentScreen;
-      const prompt = `El estudiante está actualmente en la pantalla "${currentDesc}".
-Si está viendo un video o juego, o en una app escolar, dale una recomendación o pista socrática de 1 o 2 frases motivadoras y amigables en español.`;
-
-      const res = await askZentryAi('general_ai', prompt);
-      sounds.playSuccess();
-      setScreenAnalysis(res);
-      voiceService.speakFeedback(res);
+      setCameraAiInsight(response);
+      voiceService.speakFeedback(response);
     } catch {
-      setScreenAnalysis('Estoy observando tu pantalla. ¡Estás haciendo un gran trabajo explorando ZentryOS!');
+      setCameraAiInsight('¡Veo algo fascinante! Exploremos más en el estudio de arte.');
     } finally {
       setIsProcessingAi(false);
     }
@@ -255,18 +193,20 @@ Si está viendo un video o juego, o en una app escolar, dale una recomendación 
 
   // Execute Voice Query inside Island
   const handleExecuteVoiceQuery = async (queryText: string) => {
-    if (!queryText.trim()) return;
+    const text = queryText.trim();
+    if (!text) return;
     setIsProcessingAi(true);
     setVoiceResponse(null);
+
     try {
-      const res = await askZentryAi(
-        'general_ai',
-        `Responde a esta pregunta de un niño (${ageTier === 'toddler' ? '2 a 5 años' : '5 a 10+ años'}): "${queryText}". Máximo 2 oraciones, de forma socrática, cariñosa y clara.`
-      );
+      const prompt = `Eres Zentry AI, asistente cariñoso y socrático para un niño (${ageTier === 'toddler' ? '2 a 5 años' : '5 a 10+ años'}).
+Responde a esta pregunta: "${text}".
+Mantén la respuesta en 2 oraciones breves, comprensibles, alegres y socráticas.`;
+      const response = await askZentryAi('general_ai', prompt);
       sounds.playSuccess();
-      setVoiceResponse(res);
-      voiceService.speakFeedback(res);
-      agencyService.addMemoryLog('user_voice', `Pregunta de voz: "${queryText}" -> Respuesta: "${res}"`);
+      setVoiceResponse(response);
+      voiceService.speakFeedback(response);
+      setVoiceQuery('');
     } catch {
       setVoiceResponse('Estoy aquí para ayudarte. ¿Quieres que abramos el Tutor Zentry AI?');
     } finally {
@@ -274,7 +214,6 @@ Si está viendo un video o juego, o en una app escolar, dale una recomendación 
     }
   };
 
-  // Get Media icon
   const getMediaIcon = () => {
     if (!activeMedia) return null;
     switch (activeMedia.type) {
@@ -290,480 +229,365 @@ Si está viendo un video o juego, o en una app escolar, dale una recomendación 
   };
 
   return (
-    <>
-      {/* 1. LIQUID GLASS DYNAMIC ISLAND PILL (Rendered centrally in ZentryStatusBar) */}
-      <div
-        onClick={handlePillClick}
-        className={
-          'relative z-30 flex items-center justify-between gap-2.5 px-3.5 py-1.5 rounded-full cursor-pointer select-none transition-all duration-300 shadow-md backdrop-blur-xl border ' +
-          (isExpanded
-            ? 'bg-slate-950/95 text-white border-purple-400/80 ring-2 ring-purple-500/50 scale-105 min-w-[140px] '
-            : activeMedia && activeMedia.isPlaying
-            ? 'bg-black/90 text-white border-red-500/60 hover:border-red-400 min-w-[140px] max-w-[210px] '
-            : agencyState.currentIntervention
-            ? 'bg-gradient-to-r from-purple-900/90 to-indigo-900/90 text-white border-amber-400/80 animate-pulse min-w-[140px] '
-            : /* Default Idle Liquid Glass representation with ZENTRY branding */
-              'bg-gradient-to-r from-[#C8B6FF]/30 via-[#E0C3FC]/25 to-[#B3E5FC]/30 hover:from-[#C8B6FF]/45 hover:to-[#B3E5FC]/45 text-white border-white/60 shadow-[0_4px_16px_rgba(200,182,255,0.35)] min-w-[130px] max-w-[160px] ')
-        }
-        title="Isla Dinámica Zentry • Toca para expandir o 2 clics para Asistencia Multimodal"
-      >
-        {/* CASE A: Active Background Media */}
-        {activeMedia && activeMedia.isPlaying ? (
-          <div className="flex items-center justify-between w-full gap-2">
-            <div className="flex items-center gap-1.5 min-w-0">
-              {getMediaIcon()}
-              <span className="text-[10px] font-bold text-slate-100 truncate max-w-[80px]">
-                {activeMedia.title}
+    <div ref={containerRef} className="relative z-50 flex justify-center w-full max-w-sm select-none">
+      {/* ─────────────────────────────────────────────────────────────
+          STATE A: COMPACT FLOATING LIQUID GLASS PILL
+      ────────────────────────────────────────────────────────────── */}
+      {!isExpanded ? (
+        <div
+          onClick={handleToggleIsland}
+          className={
+            'flex items-center justify-between gap-2.5 px-3.5 py-1.5 rounded-full cursor-pointer transition-all duration-300 shadow-lg backdrop-blur-2xl border zentry-spring-press ' +
+            (activeMedia && activeMedia.isPlaying
+              ? 'bg-black/90 text-white border-red-500/60 min-w-[140px] max-w-[210px] '
+              : agencyState.currentIntervention
+              ? 'bg-gradient-to-r from-purple-900/90 to-indigo-900/90 text-white border-amber-400/80 animate-pulse min-w-[140px] '
+              : 'bg-gradient-to-r from-[#C8B6FF]/35 via-[#E0C3FC]/30 to-[#B3E5FC]/35 hover:from-[#C8B6FF]/50 hover:to-[#B3E5FC]/50 text-white border-white/60 shadow-[0_4px_16px_rgba(200,182,255,0.4)] min-w-[130px] max-w-[160px] ')
+          }
+          title="Toca para desplegar la Isla Dinámica Zentry"
+        >
+          {/* Active Media Preview */}
+          {activeMedia && activeMedia.isPlaying ? (
+            <div className="flex items-center justify-between w-full gap-2">
+              <div className="flex items-center gap-1.5 min-w-0">
+                {getMediaIcon()}
+                <span className="text-[10px] font-bold text-slate-100 truncate max-w-[80px]">
+                  {activeMedia.title}
+                </span>
+              </div>
+              <div className="flex items-center gap-0.5 shrink-0">
+                <span className="w-0.5 h-3 bg-red-400 rounded-full animate-bounce [animation-delay:0s]" />
+                <span className="w-0.5 h-4 bg-purple-400 rounded-full animate-bounce [animation-delay:0.15s]" />
+                <span className="w-0.5 h-2.5 bg-cyan-400 rounded-full animate-bounce [animation-delay:0.3s]" />
+              </div>
+            </div>
+          ) : agencyState.currentIntervention ? (
+            <div className="flex items-center gap-1.5 w-full justify-center">
+              <ZentryLogoIcon className="w-3.5 h-3.5 shrink-0 animate-spin" />
+              <span className="text-[10px] font-black text-amber-200 truncate">
+                {ageTier === 'toddler' ? '¡Hora de Crear! 🎨' : 'Reto Práctico 🚀'}
               </span>
             </div>
-
-            {/* Animated Equalizer Wave Bars */}
-            <div className="flex items-center gap-0.5 shrink-0">
-              <span className="w-0.5 h-3 bg-red-400 rounded-full animate-bounce [animation-delay:0s]" />
-              <span className="w-0.5 h-4 bg-purple-400 rounded-full animate-bounce [animation-delay:0.15s]" />
-              <span className="w-0.5 h-2.5 bg-cyan-400 rounded-full animate-bounce [animation-delay:0.3s]" />
+          ) : (
+            <div className="flex items-center justify-center w-full gap-2 py-0.5">
+              <div className="w-5 h-5 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-sm shrink-0">
+                <ZentryLogoIcon className="w-3.5 h-3.5" />
+              </div>
+              <span className="text-xs font-black tracking-widest text-white drop-shadow-md uppercase">
+                ZENTRY
+              </span>
             </div>
-          </div>
-        ) : agencyState.currentIntervention ? (
-          /* CASE B: Attention Governance Creative Intervention Alert */
-          <div className="flex items-center gap-1.5 w-full justify-center">
-            <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-spin shrink-0" />
-            <span className="text-[10px] font-black text-amber-200 truncate">
-              {ageTier === 'toddler' ? '¡Hora de Crear! 🎨' : 'Reto Práctico 🚀'}
-            </span>
-          </div>
-        ) : (
-          /* CASE C: Default ZENTRY Liquid Glass Pill (Solo texto ZENTRY con logo Z) */
-          <div className="flex items-center justify-center w-full gap-2 py-0.5">
-            <div className="w-5 h-5 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-sm shrink-0">
-              <ZentryLogoIcon className="w-3.5 h-3.5" />
-            </div>
-            <span className="text-xs font-black tracking-widest text-white drop-shadow-md uppercase">
-              ZENTRY
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* 2. EXPANDED DYNAMIC ISLAND MODAL (Rich Floating Command Center) */}
-      {isExpanded && (
+          )}
+        </div>
+      ) : (
+        /* ─────────────────────────────────────────────────────────────
+            STATE B: IN-PLACE EXPANDED DYNAMIC ISLAND WITH BOUNCE PHYSICS
+        ────────────────────────────────────────────────────────────── */
         <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex flex-col items-center justify-start pt-3 px-3 animate-in fade-in duration-200"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              sounds.playTap();
-              setIsExpanded(false);
-            }
-          }}
+          className={
+            (isDark ? 'zentry-glass-dark text-white ' : 'zentry-glass-light text-[#1E293B] ') +
+            'w-full rounded-[30px] p-3.5 shadow-2xl border border-purple-400/50 backdrop-blur-2xl space-y-3 animate-spring-morph relative overflow-hidden'
+          }
         >
-          <div
-            className={
-              (isDark ? 'zentry-glass-dark text-white ' : 'zentry-glass-light text-[#1E293B] ') +
-              'w-full max-w-lg rounded-[32px] p-4 shadow-2xl space-y-3.5 border border-purple-400/40 animate-in slide-in-from-top-4 duration-300 overflow-hidden relative'
-            }
-          >
-            {/* Top Bar with Mode & Close */}
-            <div className="flex items-center justify-between border-b border-white/10 pb-2">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white shadow-md">
-                  <ZentryLogoIcon className="w-4 h-4" />
+          {/* Header of Island: Logo + Title + Collapse Button */}
+          <div className="flex items-center justify-between border-b border-white/10 pb-2">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white shadow-md">
+                <ZentryLogoIcon className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="text-xs font-black tracking-tight flex items-center gap-1.5">
+                  <span>Isla Dinámica</span>
+                  <span className="px-2 py-0.2 rounded-full bg-purple-500/20 text-[8px] text-purple-300 font-bold border border-purple-500/30">
+                    {ageTier === 'toddler' ? '2-5 Años' : '5-10+ Años'}
+                  </span>
                 </div>
-                <div>
-                  <div className="text-xs font-black tracking-tight text-white flex items-center gap-1.5">
-                    <span>Isla Dinámica Zentry</span>
-                    <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-[9px] text-purple-300 font-bold border border-purple-500/30">
-                      {ageTier === 'toddler' ? '2-5 Años' : '5-10+ Años'}
-                    </span>
-                  </div>
-                  <div className="text-[10px] text-slate-400">
-                    Gobernanza de Atención & Multimodalidad Activa
-                  </div>
+                <div className="text-[9px] text-slate-400 font-medium">Gobernanza & Multimodalidad</div>
+              </div>
+            </div>
+
+            <button
+              onClick={handleToggleIsland}
+              className="p-1.5 rounded-full hover:bg-white/15 text-slate-400 hover:text-white cursor-pointer zentry-spring-press"
+              title="Contraer Isla"
+            >
+              <ChevronUp className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Active Background Media Player (If playing) */}
+          {activeMedia && activeMedia.isPlaying && (
+            <div className="flex items-center justify-between p-2.5 rounded-2xl bg-black/40 border border-white/15 animate-spring-unfold">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-7 h-7 rounded-xl bg-red-500/20 flex items-center justify-center">
+                  {getMediaIcon()}
+                </div>
+                <div className="min-w-0">
+                  <div className="text-xs font-black text-white truncate max-w-[150px]">{activeMedia.title}</div>
+                  <div className="text-[9px] text-slate-400">{activeMedia.category}</div>
                 </div>
               </div>
 
-              <button
-                onClick={() => {
-                  sounds.playTap();
-                  setIsExpanded(false);
-                }}
-                className="p-1.5 rounded-full hover:bg-white/10 text-slate-400 hover:text-white cursor-pointer"
-                title="Cerrar Isla Dinámica"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => mediaPlaybackService.togglePlayPause()}
+                  className="p-1.5 rounded-full bg-white/20 hover:bg-white/30 text-white cursor-pointer"
+                >
+                  {activeMedia.isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                </button>
+                <button
+                  onClick={() => {
+                    setIsExpanded(false);
+                    onNavigate(activeMedia.sourceScreen);
+                  }}
+                  className="p-1.5 rounded-full bg-purple-500/30 hover:bg-purple-500/50 text-purple-200 cursor-pointer"
+                  title="Ir al reproductor"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
+          )}
 
-            {/* Quick Action Navigation Tabs inside Island */}
-            <div className="grid grid-cols-4 gap-1.5">
-              {/* Botón 1: Multimodalidad & Acciones */}
-              <button
-                onClick={() => {
-                  sounds.playTap();
-                  setActiveTab('quick');
-                }}
-                className={
-                  (activeTab === 'quick'
-                    ? 'bg-purple-600 text-white shadow-md font-bold '
-                    : 'bg-white/10 text-slate-300 hover:text-white ') +
-                  'py-2 px-1 rounded-2xl text-[11px] flex flex-col items-center gap-1 cursor-pointer transition-all zentry-press'
-                }
-              >
-                <Bot className="w-4 h-4" />
-                <span>Acciones</span>
-              </button>
+          {/* 4 Action Buttons Row */}
+          <div className="grid grid-cols-4 gap-2">
+            {/* 1. ACCIONES */}
+            <button
+              onClick={() => {
+                sounds.playTap();
+                setActiveTab('quick');
+              }}
+              className={
+                (activeTab === 'quick'
+                  ? 'bg-gradient-to-tr from-purple-600 to-indigo-600 text-white shadow-lg ring-1 ring-white/40 '
+                  : 'bg-white/10 hover:bg-white/15 text-slate-300 ') +
+                'py-2 px-1 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all zentry-spring-press cursor-pointer'
+              }
+            >
+              <Activity className="w-4 h-4" />
+              <span className="text-[9px] font-bold">Acciones</span>
+            </button>
 
-              {/* Botón 2: Cámara Multimodal Directa */}
-              <button
-                onClick={handleStartIslandCamera}
-                className={
-                  (activeTab === 'camera'
-                    ? 'bg-purple-600 text-white shadow-md font-bold '
-                    : 'bg-white/10 text-slate-300 hover:text-white ') +
-                  'py-2 px-1 rounded-2xl text-[11px] flex flex-col items-center gap-1 cursor-pointer transition-all zentry-press'
-                }
-              >
-                <Camera className="w-4 h-4 text-amber-300" />
-                <span>Ver Mundo</span>
-              </button>
+            {/* 2. VER MUNDO (CÁMARA) */}
+            <button
+              onClick={handleStartIslandCamera}
+              className={
+                (activeTab === 'camera'
+                  ? 'bg-gradient-to-tr from-amber-500 to-orange-500 text-white shadow-lg ring-1 ring-white/40 '
+                  : 'bg-white/10 hover:bg-white/15 text-slate-300 ') +
+                'py-2 px-1 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all zentry-spring-press cursor-pointer'
+              }
+            >
+              <Camera className="w-4 h-4" />
+              <span className="text-[9px] font-bold">Ver Mundo</span>
+            </button>
 
-              {/* Botón 3: Preguntas por Voz */}
-              <button
-                onClick={() => {
-                  sounds.playTap();
-                  setActiveTab('voice');
-                }}
-                className={
-                  (activeTab === 'voice'
-                    ? 'bg-purple-600 text-white shadow-md font-bold '
-                    : 'bg-white/10 text-slate-300 hover:text-white ') +
-                  'py-2 px-1 rounded-2xl text-[11px] flex flex-col items-center gap-1 cursor-pointer transition-all zentry-press'
-                }
-              >
-                <Mic className="w-4 h-4 text-sky-400" />
-                <span>Voz IA</span>
-              </button>
+            {/* 3. VOZ IA */}
+            <button
+              onClick={() => {
+                sounds.playTap();
+                setActiveTab('voice');
+              }}
+              className={
+                (activeTab === 'voice'
+                  ? 'bg-gradient-to-tr from-pink-500 to-rose-500 text-white shadow-lg ring-1 ring-white/40 '
+                  : 'bg-white/10 hover:bg-white/15 text-slate-300 ') +
+                'py-2 px-1 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all zentry-spring-press cursor-pointer'
+              }
+            >
+              <Mic className="w-4 h-4" />
+              <span className="text-[9px] font-bold">Voz IA</span>
+            </button>
 
-              {/* Botón 4: Memoria & Bitácora de Agencia */}
-              <button
-                onClick={() => {
-                  sounds.playTap();
-                  setActiveTab('memory');
-                }}
-                className={
-                  (activeTab === 'memory'
-                    ? 'bg-purple-600 text-white shadow-md font-bold '
-                    : 'bg-white/10 text-slate-300 hover:text-white ') +
-                  'py-2 px-1 rounded-2xl text-[11px] flex flex-col items-center gap-1 cursor-pointer transition-all zentry-press'
-                }
-              >
-                <Activity className="w-4 h-4 text-emerald-400" />
-                <span>Memoria</span>
-              </button>
-            </div>
+            {/* 4. MEMORIA */}
+            <button
+              onClick={() => {
+                sounds.playTap();
+                setActiveTab('memory');
+              }}
+              className={
+                (activeTab === 'memory'
+                  ? 'bg-gradient-to-tr from-emerald-500 to-teal-600 text-white shadow-lg ring-1 ring-white/40 '
+                  : 'bg-white/10 hover:bg-white/15 text-slate-300 ') +
+                'py-2 px-1 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all zentry-spring-press cursor-pointer'
+              }
+            >
+              <Clock className="w-4 h-4" />
+              <span className="text-[9px] font-bold">Memoria</span>
+            </button>
+          </div>
 
-            {/* TAB CONTENT 1: ACCIONES & AGENCIA (TUTOR PROACTIVO) */}
+          {/* ─────────────────────────────────────────────────────────────
+              SEQUENTIAL FUNCTION DISPLAY UNFOLDS UNDERNEATH WITH BOUNCE
+          ────────────────────────────────────────────────────────────── */}
+          <div className="pt-1 animate-spring-unfold">
+            {/* SUB-VIEW 1: ACCIONES & ATENCIÓN SALUDABLE */}
             {activeTab === 'quick' && (
-              <div className="space-y-3 animate-in fade-in duration-150">
-                {/* Active Background Media Player Card (If Playing) */}
-                {activeMedia && (
-                  <div className="p-3.5 rounded-[22px] bg-gradient-to-r from-slate-900/90 to-purple-950/90 border border-purple-400/40 space-y-2 shadow-lg">
+              <div className="space-y-2.5">
+                {agencyState.currentIntervention ? (
+                  <div className="p-3 rounded-2xl bg-gradient-to-tr from-purple-900/60 to-indigo-900/60 border border-amber-400/60 shadow-lg space-y-2">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        {getMediaIcon()}
-                        <span className="text-xs font-bold text-white truncate max-w-[190px]">
-                          {activeMedia.title}
-                        </span>
-                      </div>
-                      <span className="text-[10px] text-slate-300 font-mono">
-                        {activeMedia.creator}
+                      <span className="text-[10px] font-black text-amber-300 uppercase tracking-wider">
+                        Reto Creativo Proactivo
                       </span>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-1">
                       <button
-                        onClick={() => {
-                          sounds.playTap();
-                          mediaPlaybackService.togglePlayPause();
-                        }}
-                        className="px-3 py-1.5 rounded-full bg-white/20 hover:bg-white/30 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer zentry-press"
+                        onClick={() => agencyService.clearIntervention()}
+                        className="text-slate-400 hover:text-white text-xs cursor-pointer"
                       >
-                        {activeMedia.isPlaying ? (
-                          <>
-                            <Pause className="w-3.5 h-3.5 fill-white" />
-                            <span>Pausar</span>
-                          </>
-                        ) : (
-                          <>
-                            <Play className="w-3.5 h-3.5 fill-white" />
-                            <span>Reanudar</span>
-                          </>
-                        )}
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          sounds.playTap();
-                          setIsExpanded(false);
-                          onNavigate(activeMedia.sourceScreen);
-                        }}
-                        className="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer zentry-press shadow-md"
-                      >
-                        <span>Volver a la App</span>
-                        <ChevronRight className="w-3.5 h-3.5" />
+                        ✕
                       </button>
                     </div>
-                  </div>
-                )}
-
-                {/* Proactive Attention Governance Card */}
-                <div className="p-3.5 rounded-[22px] bg-gradient-to-r from-indigo-950/80 to-purple-950/80 border border-indigo-500/40 space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs font-bold text-indigo-300">
-                      <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
-                      <span>Agencia de Atención Activa</span>
-                    </div>
-
+                    <p className="text-xs font-bold text-white leading-relaxed">
+                      {agencyState.currentIntervention.title}: {agencyState.currentIntervention.explanation}
+                    </p>
                     <button
                       onClick={() => {
-                        sounds.playTap();
-                        agencyService.toggleAgency();
+                        const target = agencyState.currentIntervention?.targetScreen || 'creation';
+                        agencyService.clearIntervention();
+                        setIsExpanded(false);
+                        onNavigate(target);
                       }}
-                      className={
-                        (agencyState.isActive
-                          ? 'bg-emerald-500 text-white '
-                          : 'bg-white/10 text-slate-400 ') +
-                        'px-2.5 py-0.5 rounded-full text-[10px] font-black transition-all cursor-pointer'
-                      }
+                      className="w-full py-2 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 text-xs font-black shadow-md hover:scale-102 transition-transform cursor-pointer"
                     >
-                      {agencyState.isActive ? 'ACTIVADA' : 'PAUSADA'}
+                      {agencyState.currentIntervention.actionButtonLabel || '¡Aceptar Reto y Crear! 🎨'}
                     </button>
                   </div>
-
-                  <div className="text-[11px] text-slate-300 leading-snug">
-                    {agencyState.isActive
-                      ? 'ZentryOS observa tus momentos de consumo y te propondrá retos del mundo real (dibujar, modelar o construir) tras ver videos.'
-                      : 'La agencia está en pausa. Actívala para recibir guía interactiva y retos prácticos.'}
-                  </div>
-
-                  {/* Pending or Active Creative Intervention */}
-                  {agencyState.currentIntervention ? (
-                    <div className="p-3 rounded-2xl bg-amber-500/20 border border-amber-400/40 space-y-2 animate-in zoom-in-95">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-black text-amber-200">
-                          {agencyState.currentIntervention.title}
-                        </span>
-                        <span className="text-[9px] text-amber-300 font-mono">
-                          {agencyState.currentIntervention.timestamp}
-                        </span>
-                      </div>
-                      <p className="text-xs text-white font-medium leading-tight">
-                        {agencyState.currentIntervention.explanation}
-                      </p>
-                      <div className="flex items-center gap-2 pt-1">
-                        <button
-                          onClick={() => {
-                            sounds.playSuccess();
-                            const target = agencyState.currentIntervention?.targetScreen || 'neuro_art';
-                            setIsExpanded(false);
-                            onNavigate(target);
-                          }}
-                          className="flex-1 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs shadow-md flex items-center justify-center gap-1.5 cursor-pointer zentry-press"
-                        >
-                          <Palette className="w-4 h-4" />
-                          <span>{agencyState.currentIntervention.actionButtonLabel}</span>
-                        </button>
-                        <button
-                          onClick={() => {
-                            sounds.playTap();
-                            agencyService.clearIntervention();
-                          }}
-                          className="p-2 rounded-xl bg-white/10 text-slate-300 hover:text-white cursor-pointer"
-                          title="Descartar reto"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
+                ) : (
+                  <div className="p-3 rounded-2xl bg-white/10 border border-white/15 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-200">Enfoque y Tiempo de Pantalla</span>
+                      <span className="text-[10px] font-bold text-emerald-400">Saludable 🟢</span>
                     </div>
-                  ) : (
-                    <div className="flex items-center justify-between pt-1">
-                      <span className="text-[10px] text-slate-400">
-                        {activeMedia
-                          ? `Viendo contenido (${Math.round(agencyState.elapsedSecondsOnMedia)}s)`
-                          : 'Listo para transformar consumo en creación'}
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-2 rounded-full bg-white/15 overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"
+                          style={{ width: `${Math.min(100, Math.round(agencyState.elapsedSecondsOnMedia / 2))}%` }}
+                        />
+                      </div>
+                      <span className="text-[10px] font-mono text-slate-300">
+                        {Math.round(agencyState.elapsedSecondsOnMedia / 60)}m
                       </span>
-                      <button
-                        onClick={handleTriggerIntervention}
-                        disabled={isProcessingAi}
-                        className="px-3 py-1.5 rounded-full bg-indigo-600/80 hover:bg-indigo-500 text-white text-[11px] font-bold flex items-center gap-1.5 cursor-pointer zentry-press disabled:opacity-50"
-                      >
-                        <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                        <span>{isProcessingAi ? 'Pensando...' : 'Proponer Reto Real'}</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Multimodal Screen Awareness Button */}
-                <div className="p-3 rounded-[22px] bg-white/5 border border-white/10 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs font-bold text-white">
-                      <Eye className="w-4 h-4 text-cyan-400" />
-                      <span>Visión de Pantalla Activa</span>
                     </div>
                     <button
-                      onClick={handleAnalyzeScreen}
+                      onClick={handleTriggerIntervention}
                       disabled={isProcessingAi}
-                      className="px-3 py-1 rounded-full bg-cyan-600/80 hover:bg-cyan-500 text-white text-[11px] font-bold flex items-center gap-1 cursor-pointer zentry-press disabled:opacity-50"
+                      className="w-full py-2 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white text-xs font-bold shadow-md hover:scale-102 transition-transform cursor-pointer disabled:opacity-50"
                     >
-                      <Sparkles className="w-3 h-3" />
-                      <span>{isProcessingAi ? 'Analizando...' : '¿Qué hay en pantalla?'}</span>
+                      {isProcessingAi ? 'Generando reto...' : '💡 Sugerir Reto Creativo'}
                     </button>
                   </div>
-
-                  {screenAnalysis && (
-                    <div className="text-xs text-cyan-200 bg-cyan-950/40 p-2.5 rounded-xl border border-cyan-500/30 leading-snug animate-in fade-in">
-                      💡 {screenAnalysis}
-                    </div>
-                  )}
-                </div>
+                )}
               </div>
             )}
 
-            {/* TAB CONTENT 2: CÁMARA MULTIMODAL DIRECTA */}
+            {/* SUB-VIEW 2: VER MUNDO (CÁMARA MULTIMODAL) */}
             {activeTab === 'camera' && (
-              <div className="space-y-3 animate-in fade-in duration-150">
-                <div className="relative aspect-video w-full rounded-[24px] overflow-hidden bg-black flex items-center justify-center border border-white/20 shadow-lg">
-                  {cameraCapturedImg ? (
-                    <img src={cameraCapturedImg} alt="Captura" className="w-full h-full object-cover" />
-                  ) : (
-                    <video
-                      ref={islandVideoRef}
-                      autoPlay
-                      playsInline
-                      muted
-                      className="w-full h-full object-cover"
-                    />
-                  )}
-
+              <div className="space-y-2">
+                <div className="relative w-full h-36 rounded-2xl overflow-hidden bg-black border border-white/20 flex items-center justify-center">
+                  <video
+                    ref={islandVideoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover"
+                  />
                   {!cameraStreamActive && !cameraCapturedImg && (
-                    <div className="p-4 text-center text-xs text-slate-300">
-                      Iniciando visor rápido de cámara...
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 gap-1">
+                      <Camera className="w-6 h-6 animate-pulse" />
+                      <span className="text-[10px]">Iniciando visor del mundo...</span>
                     </div>
+                  )}
+                  {cameraCapturedImg && (
+                    <img
+                      src={cameraCapturedImg}
+                      alt="Captura"
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
                   )}
                 </div>
 
-                <div className="flex items-center justify-center gap-3">
+                <div className="flex items-center gap-2">
                   <button
                     onClick={handleCaptureAndAsk}
                     disabled={isProcessingAi}
-                    className="px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 text-white text-xs font-extrabold shadow-lg flex items-center gap-2 cursor-pointer zentry-press disabled:opacity-50"
+                    className="flex-1 py-2 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white text-xs font-black shadow-md cursor-pointer disabled:opacity-50"
                   >
-                    <Camera className="w-4 h-4" />
-                    <span>{isProcessingAi ? 'Examinando con Gemini...' : 'Capturar y Preguntar a la IA'}</span>
+                    {isProcessingAi ? 'Analizando...' : '📸 ¿Qué es esto?'}
                   </button>
-
                   <button
                     onClick={() => {
                       setIsExpanded(false);
                       onNavigate('camera');
                     }}
-                    className="px-3.5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold flex items-center gap-1 cursor-pointer"
-                    title="Abrir pantalla completa de cámara"
+                    className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white cursor-pointer"
+                    title="Cámara completa"
                   >
                     <ExternalLink className="w-4 h-4" />
                   </button>
                 </div>
 
                 {cameraAiInsight && (
-                  <div className="p-3 rounded-2xl bg-purple-950/60 border border-purple-400/40 text-xs text-purple-200 leading-snug animate-in fade-in">
-                    🎯 {cameraAiInsight}
+                  <div className="p-2.5 rounded-xl bg-white/15 border border-white/20 text-xs text-slate-100 font-medium">
+                    {cameraAiInsight}
                   </div>
                 )}
               </div>
             )}
 
-            {/* TAB CONTENT 3: PREGUNTAS POR VOZ IA */}
+            {/* SUB-VIEW 3: VOZ IA */}
             {activeTab === 'voice' && (
-              <div className="space-y-3 animate-in fade-in duration-150">
-                <div className="p-3.5 rounded-[22px] bg-white/5 border border-white/10 space-y-2">
-                  <div className="text-xs font-bold text-white flex items-center gap-2">
-                    <Mic className="w-4 h-4 text-sky-400" />
-                    <span>Pregúntale lo que quieras a Zentry AI</span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={voiceQuery}
-                      onChange={(e) => setVoiceQuery(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleExecuteVoiceQuery(voiceQuery)}
-                      placeholder={ageTier === 'toddler' ? '¿Por qué brilla el sol?...' : '¿Cómo se forman los agujeros negros?...'}
-                      className="flex-1 px-3.5 py-2 rounded-xl bg-white/10 text-xs font-medium text-white placeholder-slate-400 border border-white/15 focus:outline-none focus:border-purple-400"
-                    />
-                    <button
-                      onClick={() => handleExecuteVoiceQuery(voiceQuery)}
-                      disabled={isProcessingAi || !voiceQuery.trim()}
-                      className="p-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer disabled:opacity-40 zentry-press"
-                    >
-                      <Send className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
+              <div className="space-y-2">
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleExecuteVoiceQuery(voiceQuery);
+                  }}
+                  className="flex items-center gap-2 p-2 rounded-2xl bg-white/10 border border-white/20"
+                >
+                  <input
+                    type="text"
+                    value={voiceQuery}
+                    onChange={(e) => setVoiceQuery(e.target.value)}
+                    placeholder="Haz una pregunta a Zentry..."
+                    className="flex-1 bg-transparent text-xs font-bold text-white placeholder-slate-400 focus:outline-none"
+                    autoFocus
+                  />
+                  <button
+                    type="submit"
+                    disabled={!voiceQuery.trim() || isProcessingAi}
+                    className="p-2 rounded-xl bg-gradient-to-tr from-pink-500 to-rose-500 text-white cursor-pointer disabled:opacity-40"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                  </button>
+                </form>
 
                 {voiceResponse && (
-                  <div className="p-3.5 rounded-[22px] bg-indigo-950/60 border border-indigo-400/40 text-xs text-indigo-200 space-y-1.5 animate-in fade-in">
-                    <div className="font-bold text-white flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                      <span>Respuesta Socrática:</span>
-                    </div>
-                    <p className="leading-relaxed">{voiceResponse}</p>
+                  <div className="p-2.5 rounded-xl bg-purple-500/20 border border-purple-400/30 text-xs text-purple-100 font-medium leading-relaxed">
+                    {voiceResponse}
                   </div>
                 )}
               </div>
             )}
 
-            {/* TAB CONTENT 4: BITÁCORA Y MEMORIA DE SESIÓN */}
+            {/* SUB-VIEW 4: MEMORIA & HISTORIAL */}
             {activeTab === 'memory' && (
-              <div className="space-y-2.5 animate-in fade-in duration-150">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                    <Activity className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Memoria Viva de la Sesión</span>
-                  </span>
-                  <span className="text-[10px] text-slate-400 font-mono">
-                    {agencyState.memoryLogs.length} eventos
-                  </span>
+              <div className="p-2.5 rounded-2xl bg-white/10 border border-white/15 space-y-1.5">
+                <div className="text-[11px] font-black text-slate-200">Bitácora de Sesión Activa</div>
+                <div className="text-[10px] text-slate-300 font-mono">
+                  • Pantalla actual: <span className="text-purple-300 font-bold">{currentScreen}</span>
                 </div>
-
-                <div className="max-h-56 overflow-y-auto space-y-2 pr-1 no-scrollbar">
-                  {agencyState.memoryLogs.slice().reverse().map((log) => (
-                    <div
-                      key={log.id}
-                      className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-[11px] space-y-1"
-                    >
-                      <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono">
-                        <span
-                          className={
-                            log.type === 'recommendation'
-                              ? 'text-amber-300 font-bold'
-                              : log.type === 'user_voice'
-                              ? 'text-sky-300 font-bold'
-                              : 'text-indigo-300'
-                          }
-                        >
-                          {log.type.toUpperCase()}
-                        </span>
-                        <span>{log.timestamp}</span>
-                      </div>
-                      <p className="text-slate-200 leading-snug">{log.content}</p>
-                    </div>
-                  ))}
+                <div className="text-[10px] text-slate-300 font-mono">
+                  • Registros de atención: <span className="text-emerald-400 font-bold">{agencyState.memoryLogs.length} eventos</span>
+                </div>
+                <div className="text-[10px] text-slate-300 font-mono">
+                  • Tiempo activo en medios: <span className="text-amber-300 font-bold">{Math.round(agencyState.elapsedSecondsOnMedia / 60)} min</span>
                 </div>
               </div>
             )}
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
