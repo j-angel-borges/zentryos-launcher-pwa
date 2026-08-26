@@ -4,6 +4,7 @@ import type { ScreenId, AgeTier } from '../../types/zentry';
 import { sounds } from '../../services/soundEffects';
 import { voiceService } from '../../services/voiceSpeech';
 import { askZentryAi } from '../../services/aiService';
+import { ZentryLogoIcon } from '../ui/ZentryLogoIcon';
 
 interface ChatMessage {
   id: string;
@@ -128,7 +129,7 @@ Mantén la respuesta en 2 oraciones breves, comprensibles, alegres y socráticas
         <div className="flex items-center justify-between border-b border-white/10 pb-3 shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white shadow-lg relative">
-              <Sparkles className="w-5 h-5 animate-pulse" />
+              <ZentryLogoIcon className="w-5 h-5" />
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 absolute -top-0.5 -right-0.5 animate-ping" />
             </div>
             <div>

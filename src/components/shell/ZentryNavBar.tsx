@@ -6,6 +6,7 @@ import { voiceService } from '../../services/voiceSpeech';
 import { processVoiceAgentCommand, matchLocalVoiceCommand } from '../../services/voiceAgentService';
 import { ZentryRecentAppsModal } from './ZentryRecentAppsModal';
 import { ZentryAiDrawer } from './ZentryAiDrawer';
+import { ZentryLogoIcon } from '../ui/ZentryLogoIcon';
 
 interface Props {
   currentScreen: ScreenId;
@@ -299,7 +300,7 @@ export const ZentryNavBar: React.FC<Props> = ({
                   className="p-2 rounded-full text-indigo-400 hover:text-indigo-300 hover:bg-white/10 cursor-pointer zentry-press shrink-0"
                   title="Desplegar chat Zentry AI"
                 >
-                  <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
+                  <ZentryLogoIcon className="w-4 h-4 animate-pulse" />
                 </button>
               )}
 
@@ -354,10 +355,10 @@ export const ZentryNavBar: React.FC<Props> = ({
               {/* 3. BOTÓN INTELIGENCIA ARTIFICIAL (DERECHA) - Click: Morph into AI Chat */}
               <button
                 onClick={handleAiButtonClick}
-                className="w-11 h-11 rounded-full bg-gradient-to-tr from-indigo-500/20 via-purple-500/20 to-pink-500/20 hover:from-indigo-500/35 hover:to-pink-500/35 flex items-center justify-center transition-all duration-200 zentry-press cursor-pointer active:scale-90 hover:scale-108 border border-white/30 shadow-sm relative group"
+                className="w-11 h-11 rounded-full bg-gradient-to-tr from-indigo-500/25 via-purple-500/25 to-pink-500/25 hover:from-indigo-500/40 hover:to-pink-500/40 flex items-center justify-center transition-all duration-200 zentry-press cursor-pointer active:scale-90 hover:scale-108 border border-white/40 shadow-sm relative group"
                 title="Hablar o Chatear con Zentry AI"
               >
-                <Sparkles className="w-5 h-5 text-amber-300 group-hover:rotate-12 group-hover:scale-115 transition-transform animate-pulse" />
+                <ZentryLogoIcon className="w-5 h-5 group-hover:scale-115 transition-transform" />
                 <span className="w-2 h-2 rounded-full bg-purple-400 absolute -top-0.5 -right-0.5 animate-ping" />
               </button>
             </div>
