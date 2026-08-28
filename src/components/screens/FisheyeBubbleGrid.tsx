@@ -47,32 +47,17 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
   const maxRadius = Math.min(containerDimensions.width, containerDimensions.height) * 0.58 || 350;
   const minScale = 0.58;
 
-  // Distribución en anillo simétrico armónico (o 1 centro + anillo con radio amplio)
+  // Distribución en anillo simétrico con centro libre
   const itemPositions = useMemo(() => {
     if (items.length <= 1) {
       return [{ item: items[0], xBase: 0, yBase: 0 }];
     }
 
-    if (items.length <= 6) {
-      // 1 en el centro + (N-1) alrededor con radio holgado de 160px
-      return items.map((item, idx) => {
-        if (idx === 0) {
-          return { item, xBase: 0, yBase: 0 };
-        }
-        const angle = ((idx - 1) * 2 * Math.PI) / (items.length - 1) - Math.PI / 2;
-        const xBase = Math.cos(angle) * itemSpacing;
-        const yBase = Math.sin(angle) * itemSpacing;
-        return { item, xBase, yBase };
-      });
-    }
-
-    // Para más de 6 elementos
+    // Anillo simétrico alrededor del centro vacío (distribución armónica a 160px)
     return items.map((item, idx) => {
-      if (idx === 0) return { item, xBase: 0, yBase: 0 };
-      const ring = Math.ceil(idx / 6);
-      const angle = (idx * 2 * Math.PI) / 6 - Math.PI / 2;
-      const xBase = Math.cos(angle) * (itemSpacing * ring);
-      const yBase = Math.sin(angle) * (itemSpacing * ring);
+      const angle = (idx * 2 * Math.PI) / items.length - Math.PI / 2;
+      const xBase = Math.cos(angle) * itemSpacing;
+      const yBase = Math.sin(angle) * itemSpacing;
       return { item, xBase, yBase };
     });
   }, [items, itemSpacing]);
