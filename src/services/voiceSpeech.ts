@@ -58,7 +58,7 @@ export interface VoicePersonaInfo {
 }
 
 export const VOICE_PERSONAS: Record<VoicePersona, VoicePersonaInfo> = {
-  // 1. Femenina 1: Jovial
+  // 1. Femenina 1: Jovial (Sofía)
   female_jovial: {
     id: 'female_jovial',
     name: 'Sofía Urbana (Femenina Jovial)',
@@ -67,12 +67,12 @@ export const VOICE_PERSONAS: Record<VoicePersona, VoicePersonaInfo> = {
     gcpModel: 'es-US-Neural2-A',
     edgeVoice: 'es-MX-DaliaNeural',
     gender: 'FEMALE',
-    defaultPitch: 2.2, // +2.2st brillante y fresca
-    defaultRate: 1.07, // 1.07x ágil conversacional
+    defaultPitch: 3.2, // +3.2st brillante, aguda y fresca
+    defaultRate: 1.12, // 1.12x ágil y vivaz
     defaultGain: 1.2
   },
 
-  // 2. Femenina 2: Adulta
+  // 2. Femenina 2: Adulta (Elena)
   female_adult: {
     id: 'female_adult',
     name: 'Elena Valdés (Femenina Adulta)',
@@ -81,12 +81,12 @@ export const VOICE_PERSONAS: Record<VoicePersona, VoicePersonaInfo> = {
     gcpModel: 'es-ES-Studio-C',
     edgeVoice: 'es-ES-ElviraNeural',
     gender: 'FEMALE',
-    defaultPitch: -0.8, // -0.8st elegante y cálida
-    defaultRate: 0.98, // 0.98x cadencia profesional
+    defaultPitch: -0.6, // -0.6st elegante, tono medio cálido
+    defaultRate: 0.96, // 0.96x cadencia pedagógica y pausada
     defaultGain: 0.8
   },
 
-  // 3. Masculina 1: Jovial
+  // 3. Masculina 1: Jovial (Lucas)
   male_jovial: {
     id: 'male_jovial',
     name: 'Lucas Vega (Masculino Jovial)',
@@ -95,12 +95,12 @@ export const VOICE_PERSONAS: Record<VoicePersona, VoicePersonaInfo> = {
     gcpModel: 'es-US-Neural2-B',
     edgeVoice: 'es-MX-JorgeNeural',
     gender: 'MALE',
-    defaultPitch: 1.6, // +1.6st joven y dinámico
-    defaultRate: 1.06, // 1.06x cadencia ágil
+    defaultPitch: 1.8, // +1.8st joven, dinámico y festivo
+    defaultRate: 1.08, // 1.08x cadencia rápida
     defaultGain: 1.4
   },
 
-  // 4. Masculina 2: Adulta
+  // 4. Masculina 2: Adulta (Carlos)
   male_adult: {
     id: 'male_adult',
     name: 'Carlos Mendoza (Masculino Adulto)',
@@ -109,12 +109,12 @@ export const VOICE_PERSONAS: Record<VoicePersona, VoicePersonaInfo> = {
     gcpModel: 'es-ES-Studio-F',
     edgeVoice: 'es-ES-DarioNeural',
     gender: 'MALE',
-    defaultPitch: -2.0, // -2.0st profunda y firme
-    defaultRate: 0.96, // 0.96x ritmo seguro
+    defaultPitch: -3.8, // -3.8st barítono profundo y firme
+    defaultRate: 0.92, // 0.92x ritmo seguro y formal
     defaultGain: 1.0
   },
 
-  // 5. Mentor: Socrático & Sabio
+  // 5. Mentor: Socrático & Sabio (Maestro Aurelius)
   socratic_mentor: {
     id: 'socratic_mentor',
     name: 'Maestro Aurelius (Mentor Socrático)',
@@ -123,8 +123,8 @@ export const VOICE_PERSONAS: Record<VoicePersona, VoicePersonaInfo> = {
     gcpModel: 'es-ES-Studio-F',
     edgeVoice: 'es-ES-AlvaroNeural',
     gender: 'MALE',
-    defaultPitch: -1.2, // -1.2st
-    defaultRate: 0.92, // 0.92x pausada para la reflexión
+    defaultPitch: -2.8, // -2.8st solemne
+    defaultRate: 0.84, // 0.84x pausada y filosófica con aire
     defaultGain: 1.0
   },
 
@@ -934,15 +934,38 @@ export class VoiceSpeechService {
         utterance.voice = naturalVoice;
       }
 
-      // Calibrate pitch & rate from persona defaults
-      const persona = config.personaId ? VOICE_PERSONAS[config.personaId] : null;
-      const basePitch = persona
-        ? (persona.gender === 'FEMALE' ? (persona.id === 'female_jovial' ? 1.20 : 1.05) : (persona.id === 'male_jovial' ? 1.08 : 0.92))
-        : 1.10;
-      const baseRate = persona ? persona.defaultRate : 1.04;
+      // Calibrate distinct pitch & rate per persona
+      const pId = config.personaId || this.selectedPersona || 'female_jovial';
+      const MALE_INDICATORS = ['jorge', 'alvaro', 'dario', 'nil', 'valerio', 'tristan', 'pablo', 'raul', 'alonso', 'mateo', 'david', 'male', 'hombre'];
+      const voiceIsActuallyMale = naturalVoice ? MALE_INDICATORS.some((m) => naturalVoice.name.toLowerCase().includes(m)) : false;
 
-      utterance.pitch = Math.min(1.35, Math.max(0.85, basePitch + (this.customSettings.pitchOffset ?? 0) * 0.05));
-      utterance.rate = Math.min(1.25, Math.max(0.85, baseRate * (this.customSettings.rateMultiplier ?? 1.0)));
+      let basePitch = 1.0;
+      let baseRate = 1.0;
+
+      if (pId === 'female_jovial' || pId === 'zentry_jovial' || pId === 'toddler_sweet') {
+        // Sofía: Aguda, juvenil, chispeante y rápida
+        basePitch = voiceIsActuallyMale ? 1.65 : 1.40;
+        baseRate = 1.15;
+      } else if (pId === 'female_adult') {
+        // Elena: Femenina madura, tono medio cálido, dicción pausada y profesional
+        basePitch = voiceIsActuallyMale ? 1.25 : 0.96;
+        baseRate = 0.94;
+      } else if (pId === 'male_jovial' || pId === 'companion_spark') {
+        // Lucas: Masculino joven, dinámico, enérgico y vivaz
+        basePitch = voiceIsActuallyMale ? 1.15 : 0.78;
+        baseRate = 1.12;
+      } else if (pId === 'male_adult') {
+        // Carlos: Masculino maduro, barítono profundo, sobrio y firme
+        basePitch = voiceIsActuallyMale ? 0.65 : 0.52;
+        baseRate = 0.88;
+      } else if (pId === 'socratic_mentor') {
+        // Maestro Aurelius: Anciano, ultra grave, lento y reflexivo
+        basePitch = voiceIsActuallyMale ? 0.50 : 0.42;
+        baseRate = 0.74;
+      }
+
+      utterance.pitch = Math.min(2.0, Math.max(0.3, basePitch + (this.customSettings.pitchOffset ?? 0) * 0.1));
+      utterance.rate = Math.min(2.0, Math.max(0.4, baseRate * (this.customSettings.rateMultiplier ?? 1.0)));
 
       utterance.volume = 1.0;
 

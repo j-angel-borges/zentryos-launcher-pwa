@@ -274,7 +274,7 @@ Si está viendo un video o juego, o en una app escolar, dale una recomendación 
     };
 
     const phrase = greetings[personaId] || 'Voz seleccionada.';
-    voiceService.speakFeedback(phrase);
+    voiceService.speakFeedback(phrase, { personaId });
   };
 
   // Execute Voice Query inside Island
