@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  Palette,
   Brush,
   Wand2,
   Zap,
@@ -56,6 +55,7 @@ export const ZentryCreationScreen: React.FC<Props> = ({
   ];
 
   // 2. Herramientas Avanzadas de IA Exclusivas para Exploradores Escolares (5 a 10+ años)
+  // Reemplazado Art-Attack por Lienzo
   const explorerCreationApps: FisheyeItemData[] = [
     {
       id: 'imagine_studio',
@@ -90,11 +90,11 @@ export const ZentryCreationScreen: React.FC<Props> = ({
       gradient: 'from-yellow-400 via-amber-500 to-orange-500'
     },
     {
-      id: 'neuro_art',
-      name: 'Art-Attack',
+      id: 'free_canvas',
+      name: 'Lienzo',
       category: 'arte',
-      icon: Palette,
-      screen: 'neuro_art',
+      icon: Brush,
+      screen: 'free_canvas',
       gradient: 'from-pink-500 via-rose-500 to-red-500'
     }
   ];
