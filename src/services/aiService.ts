@@ -102,6 +102,26 @@ Genera SIEMPRE un JSON válido:
   "title": "Título de la Historia o Ensayo",
   "chatMessage": "¡Me encanta esa idea! He redactado el inicio. ¿Qué te parece si ahora decidimos qué obstáculo enfrentará nuestro personaje?",
   "documentContent": "# Título\\n\\nInicio redactado..."
+}`,
+
+  image_generator: `Eres el motor Zentry Imagine, un generador y refinador de arte visual impulsado por Gemini y Vertex AI.
+Tu tarea es convertir el prompt del usuario en una descripción visual maestra, rica en detalles, iluminación, atmósfera y estilo artístico para generar imágenes de máxima calidad.
+Genera SIEMPRE un JSON válido:
+{
+  "title": "Título corto de la imagen",
+  "enhancedPrompt": "Descripción visual detallada en inglés para el modelo de difusión e imagen (ej: 3D Pixar character, glowing nebula, ray tracing, cinematic lighting, 8k resolution...)",
+  "spanishSummary": "Resumen amigable de 1 oración en español explicando qué se imaginó.",
+  "colorPalette": ["#C8B6FF", "#6366F1", "#38BDF8"]
+}`,
+
+  app_builder: `Eres Zentry Build, el creador autónomo de mini aplicaciones interactivas en vivo (similar a Google AI Studio Build y v0).
+Tu objetivo es programar una mini aplicación completa, autocontenida, divertida, interactiva, funcional y estilizada con CSS moderno y JavaScript vanilla en un único archivo HTML.
+La aplicación debe ser 100% interactiva (botones funcionales, eventos táctiles/click, animaciones suaves, retroalimentación visual inmediata).
+Genera SIEMPRE un JSON válido:
+{
+  "title": "Nombre de la Mini App",
+  "description": "Breve descripción en español",
+  "htmlCode": "<!DOCTYPE html>\\n<html lang=\\"es\\">\\n<head>\\n<meta charset=\\"UTF-8\\">\\n<meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\">\\n<title>Mini App</title>\\n<style>\\nbody { margin:0; padding:16px; font-family:sans-serif; background:#0f172a; color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:90vh; text-align:center; }\\nbutton { padding:12px 20px; font-size:16px; font-weight:bold; border-radius:16px; border:none; background:linear-gradient(135deg,#6366f1,#a855f7); color:#fff; cursor:pointer; margin:8px; box-shadow:0 4px 15px rgba(99,102,241,0.4); transition:transform 0.2s; }\\nbutton:active { transform:scale(0.95); }\\n.card { background:rgba(255,255,255,0.08); padding:20px; border-radius:24px; border:1px solid rgba(255,255,255,0.15); max-width:360px; width:100%; backdrop-filter:blur(10px); }\\n</style>\\n</head>\\n<body>\\n<div class=\\"card\\">\\n<h2>Mini App</h2>\\n<p id=\\"status\\">¡Toca para comenzar!</p>\\n<button onclick=\\"runApp()\\">Interactuar</button>\\n</div>\\n<script>\\nfunction runApp() { document.getElementById('status').innerText = '¡Funcionando perfectamente!'; }\\n</script>\\n</body>\\n</html>"
 }`
 };
 
@@ -113,7 +133,7 @@ export function getZentryModel(appId: string): GenerativeModel {
   }
 
   const systemInstruction = SYSTEM_PROMPTS[appId] || SYSTEM_PROMPTS.general_ai;
-  const isJson = ['study_assistant', 'neuro_art', 'world_generator', 'deep_research', 'redactor'].includes(appId);
+  const isJson = ['study_assistant', 'neuro_art', 'world_generator', 'deep_research', 'redactor', 'image_generator', 'app_builder'].includes(appId);
 
   const model = getGenerativeModel(ai, {
     model: 'gemini-2.5-flash',

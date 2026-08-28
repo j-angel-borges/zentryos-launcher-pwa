@@ -43,6 +43,8 @@ import { ZentryMonsterScreen } from './components/screens/ZentryMonsterScreen';
 import { ZentryStudyAssistantScreen } from './components/screens/ZentryStudyAssistantScreen';
 import { ZentryResearchScreen } from './components/screens/ZentryResearchScreen';
 import { ZentryRedactorScreen } from './components/screens/ZentryRedactorScreen';
+import { ZentryImagineScreen } from './components/screens/ZentryImagineScreen';
+import { ZentryBuildScreen } from './components/screens/ZentryBuildScreen';
 import { ZentryEmbeddedAppScreen } from './components/screens/ZentryEmbeddedAppScreen';
 
 import { subscribeToDeviceState, simulateDeviceState } from './services/firebase';
@@ -383,6 +385,21 @@ export const App: React.FC = () => {
 
         {currentScreen === 'redactor' && (
           <ZentryRedactorScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
+        )}
+
+        {currentScreen === 'image_generator' && (
+          <ZentryImagineScreen
+            onBack={handleBack}
+            onNavigate={navigateTo}
+            isDark={currentWallpaper.isDark}
+          />
+        )}
+
+        {currentScreen === 'app_builder' && (
+          <ZentryBuildScreen
+            onBack={handleBack}
+            isDark={currentWallpaper.isDark}
+          />
         )}
 
         {currentScreen === 'workspace_app' && selectedWorkspaceApp && (
