@@ -18,11 +18,14 @@ import {
   Send,
   HelpCircle,
   Clock,
-  ChevronRight
+  ChevronRight,
+  Volume2,
+  GraduationCap,
+  Zap
 } from 'lucide-react';
 import type { ScreenId, AgeTier } from '../../types/zentry';
 import { sounds } from '../../services/soundEffects';
-import { voiceService } from '../../services/voiceSpeech';
+import { voiceService, VOICE_PERSONAS, type VoicePersona } from '../../services/voiceSpeech';
 import { mediaPlaybackService, ActiveMediaItem } from '../../services/mediaPlaybackService';
 import { agencyService, AgencyState, CreativeIntervention } from '../../services/agencyService';
 import { askZentryAi } from '../../services/aiService';
@@ -49,6 +52,7 @@ export const ZentryDynamicIsland: React.FC<Props> = ({
   const [activeTab, setActiveTab] = useState<'quick' | 'camera' | 'voice' | 'memory'>('quick');
 
   // Interactive Voice & Vision QA in Island
+  const [selectedPersona, setSelectedPersona] = useState<VoicePersona>(() => voiceService.getPersona());
   const [voiceQuery, setVoiceQuery] = useState('');
   const [voiceResponse, setVoiceResponse] = useState<string | null>(null);
   const [isProcessingAi, setIsProcessingAi] = useState(false);
@@ -252,6 +256,27 @@ Si está viendo un video o juego, o en una app escolar, dale una recomendación 
     }
   };
 
+  // Select voice persona and play sample greeting
+  const handleSelectVoicePersona = (personaId: VoicePersona) => {
+    sounds.playTap();
+    setSelectedPersona(personaId);
+    voiceService.setPersona(personaId);
+
+    const greetings: Record<VoicePersona, string> = {
+      female_jovial: '¡Hola! Soy Sofía. Lista para descubrir cosas increíbles juntos.',
+      female_adult: 'Hola. Soy Elena. Estoy aquí para acompañarte con claridad y rigor.',
+      male_jovial: '¡Ey! Soy Lucas. ¿Preparado para crear y superar retos geniales hoy?',
+      male_adult: 'Buenas tardes. Soy Carlos. Analicemos juntos cualquier proyecto.',
+      socratic_mentor: 'Bienvenido. Soy el Maestro Aurelius. ¿Qué reto exploraremos paso a paso?',
+      zentry_jovial: '¡Hola! Soy Sofía. Lista para descubrir cosas increíbles juntos.',
+      toddler_sweet: '¡Hola! Soy Sofía. Lista para descubrir cosas increíbles juntos.',
+      companion_spark: '¡Ey! Soy Lucas. ¿Preparado para crear y superar retos geniales hoy?'
+    };
+
+    const phrase = greetings[personaId] || 'Voz seleccionada.';
+    voiceService.speakFeedback(phrase);
+  };
+
   // Execute Voice Query inside Island
   const handleExecuteVoiceQuery = async (queryText: string) => {
     if (!queryText.trim()) return;
@@ -425,11 +450,12 @@ Si está viendo un video o juego, o en una app escolar, dale una recomendación 
                 <span>Ver Mundo</span>
               </button>
 
-              {/* Botón 3: Preguntas por Voz */}
+              {/* Botón 3: Audio & Selección de Voz */}
               <button
                 onClick={() => {
                   sounds.playTap();
                   setActiveTab('voice');
+                  setSelectedPersona(voiceService.getPersona());
                 }}
                 className={
                   (activeTab === 'voice'
@@ -438,8 +464,8 @@ Si está viendo un video o juego, o en una app escolar, dale una recomendación 
                   'py-2 px-1 rounded-2xl text-[11px] flex flex-col items-center gap-1 cursor-pointer transition-all zentry-press'
                 }
               >
-                <Mic className="w-4 h-4 text-sky-400" />
-                <span>Voz IA</span>
+                <Volume2 className="w-4 h-4 text-sky-400" />
+                <span>Audio / Voz</span>
               </button>
 
               {/* Botón 4: Memoria & Bitácora de Agencia */}
@@ -681,9 +707,67 @@ Si está viendo un video o juego, o en una app escolar, dale una recomendación 
               </div>
             )}
 
-            {/* TAB CONTENT 3: PREGUNTAS POR VOZ IA */}
+            {/* TAB CONTENT 3: AUDIO & SELECCIÓN DE VOZ NEURONAL */}
             {activeTab === 'voice' && (
               <div className="space-y-3 animate-in fade-in duration-150">
+                {/* 1. Selector de Personalidad Vocal (5 Voces Hiperrealistas) */}
+                <div className="p-3.5 rounded-[22px] bg-white/5 border border-white/10 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-xs font-bold text-white">
+                      <Volume2 className="w-4 h-4 text-purple-400" />
+                      <span>Elegir Voz de Zentry</span>
+                    </div>
+                    <span className="text-[9px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-bold border border-purple-500/30">
+                      5 Voces HD
+                    </span>
+                  </div>
+
+                  <p className="text-[10px] text-slate-400 leading-tight">
+                    Toca una voz para activarla y escuchar una muestra al instante:
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+                    {(['female_jovial', 'female_adult', 'male_jovial', 'male_adult', 'socratic_mentor'] as VoicePersona[]).map((pKey) => {
+                      const persona = VOICE_PERSONAS[pKey];
+                      const isSelected = selectedPersona === pKey || (pKey === 'female_jovial' && selectedPersona === 'zentry_jovial');
+                      return (
+                        <button
+                          key={pKey}
+                          onClick={() => handleSelectVoicePersona(pKey)}
+                          className={
+                            'p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col gap-1 zentry-press ' +
+                            (isSelected
+                              ? 'bg-purple-600/30 border-purple-400 shadow-md ring-1 ring-purple-400/50'
+                              : 'bg-white/5 border-white/10 hover:bg-white/10')
+                          }
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5 font-bold text-xs text-white">
+                              {pKey === 'female_jovial' && <Sparkles className="w-3.5 h-3.5 text-pink-400" />}
+                              {pKey === 'female_adult' && <GraduationCap className="w-3.5 h-3.5 text-purple-400" />}
+                              {pKey === 'male_jovial' && <Zap className="w-3.5 h-3.5 text-amber-400" />}
+                              {pKey === 'male_adult' && <Volume2 className="w-3.5 h-3.5 text-blue-400" />}
+                              {pKey === 'socratic_mentor' && <Sparkles className="w-3.5 h-3.5 text-emerald-400" />}
+                              <span className="truncate">{persona.name.split(' (')[0]}</span>
+                            </div>
+                            {isSelected ? (
+                              <CheckCircle2 className="w-3.5 h-3.5 text-purple-300 shrink-0" />
+                            ) : (
+                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-slate-400">
+                                {persona.gender === 'FEMALE' ? 'Fem' : 'Masc'}
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-[9px] text-slate-300 line-clamp-1">
+                            {persona.description}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 2. Preguntas por Voz & Chat Socrático */}
                 <div className="p-3.5 rounded-[22px] bg-white/5 border border-white/10 space-y-2">
                   <div className="text-xs font-bold text-white flex items-center gap-2">
                     <Mic className="w-4 h-4 text-sky-400" />
@@ -711,9 +795,19 @@ Si está viendo un video o juego, o en una app escolar, dale una recomendación 
 
                 {voiceResponse && (
                   <div className="p-3.5 rounded-[22px] bg-indigo-950/60 border border-indigo-400/40 text-xs text-indigo-200 space-y-1.5 animate-in fade-in">
-                    <div className="font-bold text-white flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                      <span>Respuesta Socrática:</span>
+                    <div className="font-bold text-white flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                        <span>Respuesta Socrática:</span>
+                      </div>
+                      <button
+                        onClick={() => voiceService.speakFeedback(voiceResponse)}
+                        className="text-[10px] px-2 py-0.5 rounded-lg bg-indigo-500/30 hover:bg-indigo-500/50 text-indigo-200 flex items-center gap-1 cursor-pointer"
+                        title="Repetir audio"
+                      >
+                        <Volume2 className="w-3 h-3" />
+                        <span>Escuchar</span>
+                      </button>
                     </div>
                     <p className="leading-relaxed">{voiceResponse}</p>
                   </div>
