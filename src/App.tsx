@@ -108,8 +108,16 @@ export const App: React.FC = () => {
     return localStorage.getItem('zentry_show_calendar') !== 'false';
   });
   const [ageTier, setAgeTier] = useState<AgeTier>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const urlTier = params.get('tier') || params.get('age');
+      if (urlTier === 'explorer' || urlTier === 'toddler') {
+        return urlTier;
+      }
+    }
     return (localStorage.getItem('zentry_age_tier') as AgeTier) || 'toddler';
   });
+
   const [brightness, setBrightness] = useState(80);
   const [volume, setVolume] = useState(75);
 
