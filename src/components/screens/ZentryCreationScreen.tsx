@@ -6,7 +6,6 @@ import {
   Brush,
   Wand2,
   Zap,
-  Smile,
   Compass,
   BookOpen
 } from 'lucide-react';
@@ -27,31 +26,23 @@ export const ZentryCreationScreen: React.FC<Props> = ({
   ageTier = 'toddler', 
   isDark 
 }) => {
-  // 1. Aplicaciones Sensoriales para Primera Infancia (2 a 5 años) - Sin herramientas complejas
+  // 1. Aplicaciones Sensoriales para Primera Infancia (2 a 5 años): Lienzo, Misiones y Personajes
   const toddlerCreationApps: FisheyeItemData[] = [
-    {
-      id: 'neuro_art',
-      name: 'Art-Attack',
-      category: 'arte',
-      icon: Palette,
-      screen: 'neuro_art',
-      gradient: 'from-pink-500 via-rose-500 to-red-500'
-    },
     {
       id: 'free_canvas',
       name: 'Lienzo',
       category: 'arte',
       icon: Brush,
       screen: 'free_canvas',
-      gradient: 'from-fuchsia-500 via-pink-600 to-rose-600'
+      gradient: 'from-pink-500 via-rose-500 to-red-500'
     },
     {
-      id: 'world_generator',
-      name: 'Mundos',
-      category: 'mundos',
-      icon: Globe,
-      screen: 'world_generator',
-      gradient: 'from-amber-400 via-orange-500 to-red-500'
+      id: 'real_missions',
+      name: 'Misiones',
+      category: 'juegos',
+      icon: Compass,
+      screen: 'real_missions',
+      gradient: 'from-amber-400 via-orange-500 to-yellow-500'
     },
     {
       id: 'characters',
@@ -60,22 +51,6 @@ export const ZentryCreationScreen: React.FC<Props> = ({
       icon: UserCheck,
       screen: 'characters',
       gradient: 'from-purple-500 via-indigo-500 to-blue-600'
-    },
-    {
-      id: 'friendly_monsters',
-      name: 'Monstruos',
-      category: 'personajes',
-      icon: Smile,
-      screen: 'monsters',
-      gradient: 'from-yellow-400 via-amber-500 to-orange-500'
-    },
-    {
-      id: 'real_missions',
-      name: 'Misiones',
-      category: 'mundos',
-      icon: Compass,
-      screen: 'real_missions',
-      gradient: 'from-lime-400 via-emerald-500 to-green-600'
     }
   ];
 
@@ -136,7 +111,7 @@ export const ZentryCreationScreen: React.FC<Props> = ({
   return (
     <ZentrySubPageScaffold
       title="Crear"
-      kicker={ageTier === 'toddler' ? 'ESPACIO SENSORIAL' : 'ESTUDIO DE CREACIÓN AI'}
+      kicker={ageTier === 'toddler' ? 'ESPACIO CREATIVO' : 'ESTUDIO DE CREACIÓN AI'}
       onBack={onBack}
       isDark={isDark}
     >

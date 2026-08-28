@@ -128,3 +128,26 @@ export function subscribeToDeviceState(
     return () => {};
   }
 }
+
+export async function saveCompletedMissionToFirestore(mission: {
+  id: string;
+  name: string;
+  emoji: string;
+  action: string;
+  deviceId?: string;
+}) {
+  try {
+    const deviceId = mission.deviceId || getStoredDeviceId();
+    const missionRef = doc(collection(db, 'devices', deviceId, 'completed_missions'));
+    await setDoc(missionRef, {
+      questId: mission.id,
+      name: mission.name,
+      emoji: mission.emoji,
+      action: mission.action,
+      completedAt: serverTimestamp(),
+      deviceId
+    });
+  } catch (err) {
+    console.warn('[Firestore] Error guardando misión en Firestore:', err);
+  }
+}

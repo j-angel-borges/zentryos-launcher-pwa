@@ -122,6 +122,53 @@ Genera SIEMPRE un JSON válido:
   "title": "Nombre de la Mini App",
   "description": "Breve descripción en español",
   "htmlCode": "<!DOCTYPE html>\\n<html lang=\\"es\\">\\n<head>\\n<meta charset=\\"UTF-8\\">\\n<meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\">\\n<title>Mini App</title>\\n<style>\\nbody { margin:0; padding:16px; font-family:sans-serif; background:#0f172a; color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:90vh; text-align:center; }\\nbutton { padding:12px 20px; font-size:16px; font-weight:bold; border-radius:16px; border:none; background:linear-gradient(135deg,#6366f1,#a855f7); color:#fff; cursor:pointer; margin:8px; box-shadow:0 4px 15px rgba(99,102,241,0.4); transition:transform 0.2s; }\\nbutton:active { transform:scale(0.95); }\\n.card { background:rgba(255,255,255,0.08); padding:20px; border-radius:24px; border:1px solid rgba(255,255,255,0.15); max-width:360px; width:100%; backdrop-filter:blur(10px); }\\n</style>\\n</head>\\n<body>\\n<div class=\\"card\\">\\n<h2>Mini App</h2>\\n<p id=\\"status\\">¡Toca para comenzar!</p>\\n<button onclick=\\"runApp()\\">Interactuar</button>\\n</div>\\n<script>\\nfunction runApp() { document.getElementById('status').innerText = '¡Funcionando perfectamente!'; }\\n</script>\\n</body>\\n</html>"
+}`,
+
+  free_canvas_life: `Eres el motor mágico de dibujo de Zentry AI para niños pequeños de 2 a 5 años.
+Analiza el dibujo o trazo infantil que el niño acaba de realizar.
+Identifica qué quiso dibujar con calidez, ternura e imaginación y genera una descripción visual en inglés para transformar ese dibujo en una ilustración mágica 3D Pixar de alta resolución llena de color, brillo y vida.
+Genera SIEMPRE un JSON válido:
+{
+  "title": "Nombre divertido de la creación",
+  "detectedSubject": "Qué objeto o personaje dibujó el niño",
+  "enhancedPrompt": "3D cute Pixar character style, adorable, vibrant magical lighting, ray tracing, ultra-detailed, whimsical wonderland background",
+  "speechFeedback": "¡Guau! ¡Tu dibujo cobró vida mágica! Mira cómo brilla con alegría."
+}`,
+
+  character_hero_creator: `Eres el creador de Superhéroes y Cómics Zentry AI para niños de 2 a 5 años.
+Recibes las características del superhéroe personalizado por el niño (color, estilo, superpoder, traje, accesorio).
+Genera:
+1. Una imagen principal del superhéroe ("heroPrompt" en inglés estilo 3D Pixar hero infantil).
+2. Una tira cómica de 3 viñetas ("comicPanels") con 1 frase corta en español y el prompt visual de cada viñeta.
+3. Una indicación divertida para que el niño juegue a ser ese héroe en el mundo real ("realWorldPlayPrompt").
+Genera SIEMPRE un JSON válido:
+{
+  "heroName": "Super Nombre del Héroe",
+  "heroPrompt": "3D Pixar cute superhero toddler character, wearing colorful cape, glowing power effects, cinematic lighting, cute cheerful expression, 8k resolution",
+  "comicPanels": [
+    {
+      "caption": "¡Un día tranquilo en la ciudad mágica!",
+      "prompt": "3D cute superhero toddler standing atop a fluffy cloud looking at a magical colorful city"
+    },
+    {
+      "caption": "¡Un gatito espacial necesita ayuda en el árbol de caramelos!",
+      "prompt": "3D cute superhero toddler using glowing powers to rescue a baby space kitten from a candy tree"
+    },
+    {
+      "caption": "¡Misión cumplida con una gran sonrisa y fiesta de estrellas!",
+      "prompt": "3D cute superhero toddler celebrating with floating stars and confetti, happy smiling"
+    }
+  ],
+  "realWorldPlayPrompt": "¡Ponte una toalla como capa de superhéroe, da 3 saltos altos y rescata a tu juguete favorito!"
+}`,
+
+  character_world_generator: `Eres el orientador de juego en el mundo real de Zentry AI.
+Analizas la foto del cuarto o sala de juegos del niño para transformar su espacio físico real en el escenario de aventura de su superhéroe.
+Genera SIEMPRE un JSON válido:
+{
+  "spaceObservation": "Veo tu sala con cojines y una alfombra suave.",
+  "missionIdea": "¡La alfombra es un lago de estrellas y los cojines son montañas mágicas!",
+  "speechFeedback": "¡Tu casa ahora es una base secreta! Camina con cuidado sobre los cojines para salvar el día."
 }`
 };
 
@@ -133,7 +180,18 @@ export function getZentryModel(appId: string): GenerativeModel {
   }
 
   const systemInstruction = SYSTEM_PROMPTS[appId] || SYSTEM_PROMPTS.general_ai;
-  const isJson = ['study_assistant', 'neuro_art', 'world_generator', 'deep_research', 'redactor', 'image_generator', 'app_builder'].includes(appId);
+  const isJson = [
+    'study_assistant', 
+    'neuro_art', 
+    'world_generator', 
+    'deep_research', 
+    'redactor', 
+    'image_generator', 
+    'app_builder',
+    'free_canvas_life',
+    'character_hero_creator',
+    'character_world_generator'
+  ].includes(appId);
 
   const model = getGenerativeModel(ai, {
     model: 'gemini-2.5-flash',
