@@ -13,11 +13,15 @@ import {
   Activity, 
   Send,
   ChevronUp,
-  Sparkles
+  Sparkles,
+  Volume2,
+  GraduationCap,
+  Zap,
+  CheckCircle2
 } from 'lucide-react';
 import type { ScreenId, AgeTier } from '../../types/zentry';
 import { sounds } from '../../services/soundEffects';
-import { voiceService } from '../../services/voiceSpeech';
+import { voiceService, VOICE_PERSONAS, type VoicePersona } from '../../services/voiceSpeech';
 import { mediaPlaybackService, ActiveMediaItem } from '../../services/mediaPlaybackService';
 import { agencyService, AgencyState, CreativeIntervention } from '../../services/agencyService';
 import { askZentryAi } from '../../services/aiService';
@@ -45,6 +49,7 @@ export const ZentryDynamicIsland: React.FC<Props> = ({
   const [activeTab, setActiveTab] = useState<'quick' | 'camera' | 'voice'>('quick');
 
   // Interactive Voice & Vision QA in Island
+  const [selectedPersona, setSelectedPersona] = useState<VoicePersona>(() => voiceService.getPersona());
   const [voiceQuery, setVoiceQuery] = useState('');
   const [voiceResponse, setVoiceResponse] = useState<string | null>(null);
   const [isProcessingAi, setIsProcessingAi] = useState(false);
@@ -184,6 +189,27 @@ Analiza la imagen que el niño acaba de capturar. Explícale qué es en 2 oracio
     } finally {
       setIsProcessingAi(false);
     }
+  };
+
+  // Select voice persona and play sample greeting
+  const handleSelectVoicePersona = (personaId: VoicePersona) => {
+    sounds.playTap();
+    setSelectedPersona(personaId);
+    voiceService.setPersona(personaId);
+
+    const greetings: Record<VoicePersona, string> = {
+      female_adult: 'Hola. Soy Elena. Estoy aquí para acompañarte, cuidarte y guiarte con serenidad.',
+      male_jovial: '¡Ey! Soy Lucas. ¿Preparado para construir ideas geniales y superar retos hoy?',
+      female_jovial: 'Hola. Soy Elena. Estoy aquí para acompañarte, cuidarte y guiarte con serenidad.',
+      male_adult: '¡Ey! Soy Lucas. ¿Preparado para construir ideas geniales y superar retos hoy?',
+      socratic_mentor: '¡Ey! Soy Lucas. ¿Preparado para construir ideas geniales y superar retos hoy?',
+      zentry_jovial: 'Hola. Soy Elena. Estoy aquí para acompañarte, cuidarte y guiarte con serenidad.',
+      toddler_sweet: 'Hola. Soy Elena. Estoy aquí para acompañarte, cuidarte y guiarte con serenidad.',
+      companion_spark: '¡Ey! Soy Lucas. ¿Preparado para construir ideas geniales y superar retos hoy?'
+    };
+
+    const phrase = greetings[personaId] || 'Hola, voz seleccionada.';
+    voiceService.speakFeedback(phrase, { personaId });
   };
 
   // Execute Voice Query inside Island
@@ -368,6 +394,7 @@ Mantén la respuesta en 2 oraciones breves, comprensibles, alegres y socráticas
               <span className="text-xs font-black drop-shadow-sm">Ver</span>
             </button>
 
+<<<<<<< HEAD
             {/* 3. HABLAR (VOZ IA) */}
             <button
               onClick={() => {
@@ -385,6 +412,25 @@ Mantén la respuesta en 2 oraciones breves, comprensibles, alegres y socráticas
               <span className="text-xs font-black drop-shadow-sm">Hablar</span>
             </button>
           </div>
+=======
+              {/* Botón 3: Audio & Selección de Voz */}
+              <button
+                onClick={() => {
+                  sounds.playTap();
+                  setActiveTab('voice');
+                  setSelectedPersona(voiceService.getPersona());
+                }}
+                className={
+                  (activeTab === 'voice'
+                    ? 'bg-purple-600 text-white shadow-md font-bold '
+                    : 'bg-white/10 text-slate-300 hover:text-white ') +
+                  'py-2 px-1 rounded-2xl text-[11px] flex flex-col items-center gap-1 cursor-pointer transition-all zentry-press'
+                }
+              >
+                <Volume2 className="w-4 h-4 text-sky-400" />
+                <span>Audio / Voz</span>
+              </button>
+>>>>>>> feat/neural-tts-gcp
 
           {/* ─────────────────────────────────────────────────────────────
               SEQUENTIAL FUNCTION DISPLAY
@@ -492,36 +538,97 @@ Mantén la respuesta en 2 oraciones breves, comprensibles, alegres y socráticas
               </div>
             )}
 
-            {/* SUB-VIEW 3: HABLAR */}
+            {/* TAB CONTENT 3: AUDIO & SELECCIÓN DE VOZ NEURONAL */}
             {activeTab === 'voice' && (
-              <div className="space-y-2">
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    handleExecuteVoiceQuery(voiceQuery);
-                  }}
-                  className="flex items-center gap-2 p-2 rounded-2xl bg-white/15 border border-white/20"
-                >
-                  <input
-                    type="text"
-                    value={voiceQuery}
-                    onChange={(e) => setVoiceQuery(e.target.value)}
-                    placeholder="Pregunta a Zentry..."
-                    className="flex-1 bg-transparent text-xs font-black text-white placeholder-slate-400 focus:outline-none"
-                    autoFocus
-                  />
-                  <button
-                    type="submit"
-                    disabled={!voiceQuery.trim() || isProcessingAi}
-                    className="p-2 rounded-xl bg-gradient-to-tr from-pink-500 to-rose-500 text-white cursor-pointer disabled:opacity-40 zentry-spring-press"
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                  </button>
-                </form>
+              <div className="space-y-3 animate-in fade-in duration-150">
+                {/* 1. Selector de Voz (Elena y Lucas) */}
+                <div className="p-3.5 rounded-[22px] bg-white/5 border border-white/10 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-xs font-bold text-white">
+                      <Volume2 className="w-4 h-4 text-purple-400" />
+                      <span>Elegir Voz de Zentry</span>
+                    </div>
+                    <span className="text-[9px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-bold border border-purple-500/30">
+                      2 Voces HD
+                    </span>
+                  </div>
+
+                  <p className="text-[10px] text-slate-400 leading-tight">
+                    Toca una voz para activarla y escuchar una muestra al instante:
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    {(['female_adult', 'male_jovial'] as VoicePersona[]).map((pKey) => {
+                      const persona = VOICE_PERSONAS[pKey];
+                      const isSelected = selectedPersona === pKey || (pKey === 'female_adult' && (selectedPersona === 'female_adult' || selectedPersona === 'female_jovial' || selectedPersona === 'zentry_jovial' || selectedPersona === 'toddler_sweet')) || (pKey === 'male_jovial' && (selectedPersona === 'male_jovial' || selectedPersona === 'male_adult' || selectedPersona === 'socratic_mentor' || selectedPersona === 'companion_spark'));
+                      return (
+                        <button
+                          key={pKey}
+                          onClick={() => handleSelectVoicePersona(pKey)}
+                          className={
+                            'p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between zentry-press ' +
+                            (isSelected
+                              ? 'bg-purple-600/30 border-purple-400 shadow-md ring-1 ring-purple-400/50'
+                              : 'bg-white/5 border-white/10 hover:bg-white/10')
+                          }
+                        >
+                          <div className="flex items-center gap-2 font-bold text-xs text-white">
+                            {pKey === 'female_adult' && <GraduationCap className="w-4 h-4 text-purple-400" />}
+                            {pKey === 'male_jovial' && <Zap className="w-4 h-4 text-amber-400" />}
+                            <span>{persona.name}</span>
+                          </div>
+                          {isSelected && (
+                            <CheckCircle2 className="w-4 h-4 text-purple-300 shrink-0" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 2. Preguntas por Voz & Chat Socrático */}
+                <div className="p-3.5 rounded-[22px] bg-white/5 border border-white/10 space-y-2">
+                  <div className="text-xs font-bold text-white flex items-center gap-2">
+                    <Mic className="w-4 h-4 text-sky-400" />
+                    <span>Pregúntale lo que quieras a Zentry AI</span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={voiceQuery}
+                      onChange={(e) => setVoiceQuery(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleExecuteVoiceQuery(voiceQuery)}
+                      placeholder={ageTier === 'toddler' ? '¿Por qué brilla el sol?...' : '¿Cómo se forman los agujeros negros?...'}
+                      className="flex-1 px-3.5 py-2 rounded-xl bg-white/10 text-xs font-medium text-white placeholder-slate-400 border border-white/15 focus:outline-none focus:border-purple-400"
+                    />
+                    <button
+                      onClick={() => handleExecuteVoiceQuery(voiceQuery)}
+                      disabled={isProcessingAi || !voiceQuery.trim()}
+                      className="p-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer disabled:opacity-40 zentry-press"
+                    >
+                      <Send className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
 
                 {voiceResponse && (
-                  <div className="p-2.5 rounded-xl bg-purple-950/80 border border-purple-400/50 text-xs text-white font-bold leading-relaxed">
-                    {voiceResponse}
+                  <div className="p-3.5 rounded-[22px] bg-indigo-950/60 border border-indigo-400/40 text-xs text-indigo-200 space-y-1.5 animate-in fade-in">
+                    <div className="font-bold text-white flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                        <span>Respuesta Socrática:</span>
+                      </div>
+                      <button
+                        onClick={() => voiceService.speakFeedback(voiceResponse)}
+                        className="text-[10px] px-2 py-0.5 rounded-lg bg-indigo-500/30 hover:bg-indigo-500/50 text-indigo-200 flex items-center gap-1 cursor-pointer"
+                        title="Repetir audio"
+                      >
+                        <Volume2 className="w-3 h-3" />
+                        <span>Escuchar</span>
+                      </button>
+                    </div>
+                    <p className="leading-relaxed">{voiceResponse}</p>
                   </div>
                 )}
               </div>

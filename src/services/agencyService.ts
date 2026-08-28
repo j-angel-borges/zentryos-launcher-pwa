@@ -189,17 +189,21 @@ class AgencyService {
 
     try {
       const prompt = `Eres el Cerebro de Gobernanza de Atención de ZentryOS.
-El niño (${ageTier === 'toddler' ? '2 a 5 años' : '5 a 10+ años'}) ha estado consumiendo este contenido: "${topic}" (${category}).
+El estudiante (${ageTier === 'toddler' ? '2 a 5 años' : '5 a 10+ años'}) ha estado consumiendo este contenido: "${topic}" (${category}).
 Tu misión sagrada es TRANSFORMAR EL CONSUMO PASIVO DE PANTALLA EN CREACIÓN ACTIVA EN EL MUNDO REAL (dibujar con lápices, buscar objetos en casa, modelar plastilina o resolver un reto).
+
+REGLAS DE VOZ Y TONO:
+- En "speechText": Frase corta para decirle por voz (máximo 2 oraciones). Responde en TEXTO PLANO LIMPIO. ESTRICTAMENTE PROHIBIDO usar emojis o símbolos.
+- NO uses apelativos o diminutivos como corazón, mi cielo, mi amor, cariño, bebé, etc. Mantén un trato respetuoso, amigable, jovial y motivador.
 
 Genera un JSON con esta estructura:
 {
   "title": "Título llamativo y motivador",
-  "speechText": "Frase corta para decirle por voz (máx 2 oraciones)",
+  "speechText": "Frase corta para decirle por voz en texto puro sin emojis",
   "explanation": "Propuesta de cómo llevar lo visto a la vida real o al lienzo creativo",
   "targetActivity": "${isToddler ? 'drawing' : 'world_mission'}",
   "targetScreen": "${isToddler ? 'neuro_art' : 'world_generator'}",
-  "actionButtonLabel": "Texto para botón de acción (ej: ¡Vamos a Dibujar! 🎨)"
+  "actionButtonLabel": "Texto para botón de acción (ej: Vamos a Dibujar)"
 }`;
 
       const raw = await askZentryAi('general_ai', prompt);

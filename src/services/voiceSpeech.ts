@@ -2,12 +2,24 @@ import type { VoiceCommandResult } from '../types/zentry';
 
 export type AgeCohort = 'toddler' | 'explorer';
 
+export type VoicePersona = 
+  | 'female_jovial' 
+  | 'female_adult' 
+  | 'male_jovial' 
+  | 'male_adult' 
+  | 'socratic_mentor'
+  | 'zentry_jovial' 
+  | 'toddler_sweet' 
+  | 'companion_spark';
+
 export interface TTSVoiceConfig {
   languageCode: string;
   name: string;
   ssmlGender: 'FEMALE' | 'MALE' | 'NEUTRAL';
-  pitch: number;
-  speakingRate: number;
+  pitch: number; // Pitch en semitonos (-2.5 a +2.5)
+  speakingRate: number; // 0.85 a 1.20
+  volumeGainDb?: number; // 0.0 a 3.0
+  personaId?: VoicePersona;
 }
 
 export interface SpeakOptions {
@@ -15,6 +27,8 @@ export interface SpeakOptions {
   speakingRate?: number;
   voiceName?: string;
   languageCode?: string;
+  volumeGainDb?: number;
+  personaId?: VoicePersona;
   onStart?: () => void;
   onEnd?: () => void;
   onError?: (error: any) => void;
@@ -30,33 +44,160 @@ export interface CachedAudioRecord {
   createdAt: number;
 }
 
+export interface VoicePersonaInfo {
+  id: VoicePersona;
+  name: string;
+  description: string;
+  cohort: AgeCohort;
+  gcpModel: string;
+  edgeVoice?: string;
+  gender: 'FEMALE' | 'MALE';
+  defaultPitch: number;
+  defaultRate: number;
+  defaultGain: number;
+}
+
+export const ACTIVE_VOICE_PERSONAS: VoicePersona[] = ['female_adult', 'male_jovial'];
+
+export const VOICE_PERSONAS: Record<VoicePersona, VoicePersonaInfo> = {
+  // 1. Elena (Femenina / Maternal / Pedagógica / Locutora de Estudio)
+  female_adult: {
+    id: 'female_adult',
+    name: 'Elena',
+    description: '',
+    cohort: 'explorer',
+    gcpModel: 'es-ES-Studio-C',
+    edgeVoice: 'es-ES-ElviraNeural',
+    gender: 'FEMALE',
+    defaultPitch: 0.0, // 0.0st tono natural humano de locutora de estudio
+    defaultRate: 0.96, // 0.96x cadencia clara y pausada
+    defaultGain: 0.9
+  },
+
+  // 2. Lucas (Masculino / Amigo Joven / Dinámico / Actor de Doblaje)
+  male_jovial: {
+    id: 'male_jovial',
+    name: 'Lucas',
+    description: '',
+    cohort: 'toddler',
+    gcpModel: 'es-US-Neural2-B',
+    edgeVoice: 'es-MX-JorgeNeural',
+    gender: 'MALE',
+    defaultPitch: 0.4, // +0.4st tono natural de joven alegre
+    defaultRate: 1.06, // 1.06x ritmo dinámico
+    defaultGain: 1.0
+  },
+
+  // Perfiles de soporte y aliases
+  female_jovial: {
+    id: 'female_jovial',
+    name: 'Elena',
+    description: '',
+    cohort: 'toddler',
+    gcpModel: 'es-US-Neural2-A',
+    edgeVoice: 'es-MX-DaliaNeural',
+    gender: 'FEMALE',
+    defaultPitch: 0.8,
+    defaultRate: 1.08,
+    defaultGain: 1.0
+  },
+  male_adult: {
+    id: 'male_adult',
+    name: 'Lucas',
+    description: '',
+    cohort: 'explorer',
+    gcpModel: 'es-ES-Studio-F',
+    edgeVoice: 'es-ES-DarioNeural',
+    gender: 'MALE',
+    defaultPitch: -0.4,
+    defaultRate: 0.94,
+    defaultGain: 1.0
+  },
+  socratic_mentor: {
+    id: 'socratic_mentor',
+    name: 'Lucas',
+    description: '',
+    cohort: 'explorer',
+    gcpModel: 'es-ES-Studio-F',
+    edgeVoice: 'es-ES-AlvaroNeural',
+    gender: 'MALE',
+    defaultPitch: -0.8,
+    defaultRate: 0.86,
+    defaultGain: 1.0
+  },
+  zentry_jovial: {
+    id: 'zentry_jovial',
+    name: 'Elena',
+    description: '',
+    cohort: 'toddler',
+    gcpModel: 'es-US-Neural2-A',
+    edgeVoice: 'es-MX-DaliaNeural',
+    gender: 'FEMALE',
+    defaultPitch: 0.8,
+    defaultRate: 1.08,
+    defaultGain: 1.0
+  },
+  toddler_sweet: {
+    id: 'toddler_sweet',
+    name: 'Elena',
+    description: '',
+    cohort: 'toddler',
+    gcpModel: 'es-US-Neural2-A',
+    edgeVoice: 'es-MX-DaliaNeural',
+    gender: 'FEMALE',
+    defaultPitch: 0.8,
+    defaultRate: 1.08,
+    defaultGain: 1.0
+  },
+  companion_spark: {
+    id: 'companion_spark',
+    name: 'Lucas',
+    description: '',
+    cohort: 'explorer',
+    gcpModel: 'es-US-Neural2-B',
+    edgeVoice: 'es-MX-JorgeNeural',
+    gender: 'MALE',
+    defaultPitch: 0.4,
+    defaultRate: 1.06,
+    defaultGain: 1.0
+  }
+};
+
 export const AGE_VOICE_PROFILES: Record<AgeCohort, TTSVoiceConfig> = {
   toddler: {
     languageCode: 'es-US',
     name: 'es-US-Neural2-A',
     ssmlGender: 'FEMALE',
-    pitch: 1.5, // Dulce y cálido para infantes
-    speakingRate: 1.08 // Ritmo vivaz y comprensible
+    pitch: 2.2,
+    speakingRate: 1.07,
+    volumeGainDb: 1.2,
+    personaId: 'female_jovial'
   },
   explorer: {
-    languageCode: 'es-US',
-    name: 'es-US-Journey-F',
-    ssmlGender: 'FEMALE',
-    pitch: 0.0, // Tono neutro, natural y socrático
-    speakingRate: 1.02 // Reflexivo y articulado
+    languageCode: 'es-ES',
+    name: 'es-ES-Studio-F',
+    ssmlGender: 'MALE',
+    pitch: -1.2,
+    speakingRate: 0.92,
+    volumeGainDb: 1.0,
+    personaId: 'socratic_mentor'
   }
 };
 
 export const DEFAULT_PRELOAD_PHRASES = [
+  '¡Hola! Soy Zentry. ¡Vamos a descubrir algo genial hoy!',
+  '¡Vamos a crear y dibujar cosas hermosas!',
+  '¡Hora de videos divertidos, cuentos y música!',
+  '¡Sonríe a la cámara, qué linda foto!',
+  '¡Mira qué hora es!',
   'Abriendo el Escudo de Contenido y Algoritmo de Pasiones.',
-  'Activando tu Tutor Socrático de Estudio.',
-  'Iniciando Visión Artificial Multimodal para escanear tu ejercicio.',
+  'Activando tu Tutora Socrática de Estudio.',
+  'Iniciando Visión Artificial Multimodal para ver tu ejercicio.',
   'Abriendo NeuroArt Studio para plasmar tus ideas.',
   'Generando simulación de mundo interactivo.',
   'Abriendo Calculadora Científica Inteligente.',
   'Regresando a la pantalla principal.',
-  '¡Hola! Soy Zentry. ¿Qué te gustaría descubrir o resolver hoy?',
-  'He procesado tu consulta. Vamos a resolverlo paso a paso en tu Tutor de Estudio.'
+  'He procesado tu consulta. Vamos a resolverlo paso a paso juntas.'
 ];
 
 const DB_NAME = 'zentry_tts_db';
@@ -67,6 +208,15 @@ export class VoiceSpeechService {
   private recognition: any = null;
   private isListening: boolean = false;
   private currentCohort: AgeCohort = 'toddler';
+  private selectedPersona: VoicePersona = 'zentry_jovial';
+
+  // Custom persistent overrides
+  private customSettings: {
+    pitchOffset?: number;
+    rateMultiplier?: number;
+    volumeGainDb?: number;
+    preferredPersona?: VoicePersona;
+  } = {};
 
   // Audio playback state & cancellation
   private currentAudio: HTMLAudioElement | null = null;
@@ -75,31 +225,106 @@ export class VoiceSpeechService {
   private audioContext: AudioContext | null = null;
   private isSpeakingActive: boolean = false;
 
+  // Cached system voices for natural offline speech
+  private cachedBrowserVoices: SpeechSynthesisVoice[] = [];
+
   // IndexedDB instance cache
   private dbPromise: Promise<IDBDatabase | null> | null = null;
 
   constructor() {
+    this.loadCustomSettings();
     this.initSpeechRecognition();
     this.initDB();
     this.setupAutoplayUnlockListeners();
+    this.initBrowserVoices();
     this.scheduleDefaultPreload();
   }
 
-  private scheduleDefaultPreload() {
-    if (typeof window === 'undefined') return;
-    const run = () => {
-      this.preloadPhrases(DEFAULT_PRELOAD_PHRASES).catch(() => {});
-    };
-    if ('requestIdleCallback' in window) {
-      (window as any).requestIdleCallback(run);
-    } else {
-      setTimeout(run, 3000);
-    }
+  // ==========================================
+  // SANITIZADOR DE TEXTO (0 EMOJIS & RESPETO)
+  // ==========================================
+
+  public sanitizeSpeechText(text: string): string {
+    if (!text) return '';
+
+    // 1. Filtrar todos los rangos Unicode de emojis, símbolos gráficos y emoticones
+    let clean = text
+      .replace(/[\u{1F600}-\u{1F64F}]/gu, '') // Emoticones
+      .replace(/[\u{1F300}-\u{1F5FF}]/gu, '') // Símbolos y pictogramas varios
+      .replace(/[\u{1F680}-\u{1F6FF}]/gu, '') // Transporte y mapas
+      .replace(/[\u{1F700}-\u{1F77F}]/gu, '') // Símbolos alquímicos
+      .replace(/[\u{1F780}-\u{1F7FF}]/gu, '') // Formas geométricas extendidas
+      .replace(/[\u{1F800}-\u{1F8FF}]/gu, '') // Flechas suplementarias
+      .replace(/[\u{1F900}-\u{1F9FF}]/gu, '') // Símbolos suplementarios
+      .replace(/[\u{1FA00}-\u{1FA6F}]/gu, '') // Símbolos de ajedrez
+      .replace(/[\u{1FA70}-\u{1FAFF}]/gu, '') // Pictogramas extendidos-A
+      .replace(/[\u{2600}-\u{26FF}]/gu, '')   // Símbolos varios (estrellas, destellos)
+      .replace(/[\u{2700}-\u{27BF}]/gu, '')   // Dingbats
+      .replace(/[\u{FE00}-\u{FE0F}]/gu, '')   // Selectores de variación
+      .replace(/[\u{1F1E6}-\u{1F1FF}]/gu, '') // Banderas e indicadores regionales
+      .replace(/[\u{200D}\u{200C}]/gu, '');   // Zero width joiners
+
+    // 2. Eliminar apelativos condescendientes o excesivamente íntimos
+    clean = clean
+      .replace(/\b(mi cielo|mi amor|mi vida|mi corazón|mi reina|mi rey|mi princesa|mi príncipe|corazón|corazon|cariño|carino|bebé|bebe|tesoro|chiquito|chiquita)\b/gi, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+
+    return clean;
   }
 
   // ==========================================
-  // 1. INICIALIZACIÓN & RECONOCIMIENTO DE VOZ
+  // 1. INICIALIZACIÓN & CARGA DE CONFIGURACIÓN
   // ==========================================
+
+  private loadCustomSettings() {
+    if (typeof window === 'undefined') return;
+    try {
+      const raw = localStorage.getItem('zentry_tts_custom_settings');
+      if (raw) {
+        this.customSettings = JSON.parse(raw);
+        if (this.customSettings.preferredPersona && VOICE_PERSONAS[this.customSettings.preferredPersona]) {
+          this.selectedPersona = this.customSettings.preferredPersona;
+          this.currentCohort = VOICE_PERSONAS[this.selectedPersona].cohort;
+        }
+      }
+    } catch {}
+  }
+
+  public saveCustomSettings(settings: {
+    pitchOffset?: number;
+    rateMultiplier?: number;
+    volumeGainDb?: number;
+    preferredPersona?: VoicePersona;
+  }) {
+    this.customSettings = { ...this.customSettings, ...settings };
+    if (settings.preferredPersona && VOICE_PERSONAS[settings.preferredPersona]) {
+      this.selectedPersona = settings.preferredPersona;
+      this.currentCohort = VOICE_PERSONAS[settings.preferredPersona].cohort;
+    }
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('zentry_tts_custom_settings', JSON.stringify(this.customSettings));
+      } catch {}
+    }
+  }
+
+  public getCustomSettings() {
+    return { ...this.customSettings, selectedPersona: this.selectedPersona, currentCohort: this.currentCohort };
+  }
+
+  private initBrowserVoices() {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+
+    const update = () => {
+      this.cachedBrowserVoices = window.speechSynthesis.getVoices();
+    };
+
+    update();
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+      window.speechSynthesis.onvoiceschanged = update;
+    }
+  }
 
   private initSpeechRecognition() {
     if (typeof window !== 'undefined') {
@@ -128,39 +353,87 @@ export class VoiceSpeechService {
     window.addEventListener('keydown', unlockHandler, { passive: true, once: true });
   }
 
+  private scheduleDefaultPreload() {
+    if (typeof window === 'undefined') return;
+    const run = () => {
+      this.preloadPhrases(DEFAULT_PRELOAD_PHRASES).catch(() => {});
+    };
+    if ('requestIdleCallback' in window) {
+      (window as any).requestIdleCallback(run);
+    } else {
+      setTimeout(run, 3000);
+    }
+  }
+
   public isSupported(): boolean {
     return Boolean(this.recognition);
   }
 
   // ==========================================
-  // 2. CONFIGURACIÓN Y PERFILES POR EDAD
+  // 2. CONFIGURACIÓN Y PERFILES POR EDAD / PERSONA
   // ==========================================
 
   public setAgeProfile(cohort: AgeCohort) {
     this.currentCohort = cohort;
+    this.selectedPersona = cohort === 'toddler' ? 'zentry_jovial' : 'socratic_mentor';
   }
 
   public getAgeProfile(): AgeCohort {
     return this.currentCohort;
   }
 
+  public setPersona(persona: VoicePersona) {
+    if (VOICE_PERSONAS[persona]) {
+      this.selectedPersona = persona;
+      this.currentCohort = VOICE_PERSONAS[persona].cohort;
+      this.saveCustomSettings({ preferredPersona: persona });
+    }
+  }
+
+  public getPersona(): VoicePersona {
+    return this.selectedPersona;
+  }
+
   public getVoiceConfig(): TTSVoiceConfig {
-    return { ...AGE_VOICE_PROFILES[this.currentCohort] };
+    const persona = VOICE_PERSONAS[this.selectedPersona] || VOICE_PERSONAS.zentry_jovial;
+    const pitchOffset = this.customSettings.pitchOffset ?? 0;
+    const rateMultiplier = this.customSettings.rateMultiplier ?? 1.0;
+    const volumeGain = this.customSettings.volumeGainDb ?? persona.defaultGain;
+
+    return {
+      languageCode: persona.cohort === 'explorer' && persona.gcpModel.startsWith('es-ES') ? 'es-ES' : 'es-US',
+      name: persona.gcpModel,
+      ssmlGender: persona.gender,
+      pitch: Number((persona.defaultPitch + pitchOffset).toFixed(2)),
+      speakingRate: Number((persona.defaultRate * rateMultiplier).toFixed(2)),
+      volumeGainDb: volumeGain,
+      personaId: this.selectedPersona
+    };
   }
 
   private getEffectiveConfig(options?: SpeakOptions): TTSVoiceConfig {
-    const base = AGE_VOICE_PROFILES[this.currentCohort];
+    const base = this.getVoiceConfig();
+
+    let targetPersona = base.personaId;
+    if (options?.personaId && VOICE_PERSONAS[options.personaId]) {
+      targetPersona = options.personaId;
+    }
+
+    const persona = VOICE_PERSONAS[targetPersona || 'zentry_jovial'];
+
     return {
-      languageCode: options?.languageCode || base.languageCode,
-      name: options?.voiceName || base.name,
-      ssmlGender: base.ssmlGender,
+      languageCode: options?.languageCode || (persona.cohort === 'explorer' && persona.gcpModel.startsWith('es-ES') ? 'es-ES' : base.languageCode),
+      name: options?.voiceName || persona.gcpModel || base.name,
+      ssmlGender: persona.gender || base.ssmlGender,
       pitch: options?.pitch !== undefined ? options.pitch : base.pitch,
-      speakingRate: options?.speakingRate !== undefined ? options.speakingRate : base.speakingRate
+      speakingRate: options?.speakingRate !== undefined ? options.speakingRate : base.speakingRate,
+      volumeGainDb: options?.volumeGainDb !== undefined ? options.volumeGainDb : base.volumeGainDb,
+      personaId: targetPersona
     };
   }
 
   private getCacheKey(text: string, config: TTSVoiceConfig): string {
-    return `${config.languageCode}_${config.name}_${config.pitch}_${config.speakingRate}_${text.trim()}`;
+    return `${config.languageCode}_${config.name}_${config.pitch}_${config.speakingRate}_${config.volumeGainDb}_${text.trim()}`;
   }
 
   // ==========================================
@@ -346,10 +619,43 @@ export class VoiceSpeechService {
   // 6. SÍNTESIS DE VOZ NEURONAL GCP / FALLBACK
   // ==========================================
 
-  public async speakFeedback(text: string, options?: SpeakOptions): Promise<void> {
-    if (!text || !text.trim()) return;
+  private buildNaturalSSML(text: string, config: TTSVoiceConfig): string {
+    // Escape XML characters
+    const escaped = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
 
-    const sanitizedText = text.trim();
+    const personaId = config.personaId || 'female_jovial';
+    const isMentor = personaId === 'socratic_mentor';
+    const isAdult = personaId === 'female_adult' || personaId === 'male_adult';
+
+    // Delimiters adaptados acústicamente por persona
+    const periodMs = isMentor ? '220ms' : isAdult ? '160ms' : '110ms';
+    const commaMs = isMentor ? '130ms' : isAdult ? '80ms' : '60ms';
+    const questionMs = isMentor ? '260ms' : isAdult ? '160ms' : '120ms';
+    const exclamationMs = isMentor ? '180ms' : isAdult ? '130ms' : '110ms';
+
+    // Insert natural conversational micro-pauses at punctuation marks
+    const pacedText = escaped
+      .replace(/\.\s+/g, `. <break time="${periodMs}"/> `)
+      .replace(/!\s+/g, `! <break time="${exclamationMs}"/> `)
+      .replace(/\?\s+/g, `? <break time="${questionMs}"/> `)
+      .replace(/,\s+/g, `, <break time="${commaMs}"/> `)
+      .replace(/:\s+/g, `: <break time="${commaMs}"/> `);
+
+    const pitchStr = config.pitch >= 0 ? `+${config.pitch}st` : `${config.pitch}st`;
+    const rateStr = `${Math.round(config.speakingRate * 100)}%`;
+
+    return `<speak><prosody rate="${rateStr}" pitch="${pitchStr}">${pacedText}</prosody></speak>`;
+  }
+
+  public async speakFeedback(text: string, options?: SpeakOptions): Promise<void> {
+    const sanitizedText = this.sanitizeSpeechText(text);
+    if (!sanitizedText) return;
+
     this.stopSpeaking();
 
     const config = this.getEffectiveConfig(options);
@@ -362,29 +668,33 @@ export class VoiceSpeechService {
       return;
     }
 
-    // 2. Obtener API Key de GCP (desde .env.local o localStorage)
+    // 2. Obtener API Key de GCP (desde .env.local, localStorage o fallback corporativo activo)
     const envKey = (import.meta as any).env?.VITE_GOOGLE_TTS_API_KEY;
     const localKey = typeof window !== 'undefined' ? localStorage.getItem('zentry_tts_api_key') : null;
-    const apiKey = (envKey && !envKey.includes('YourGcpApiKeyHere')) ? envKey : localKey;
+    const activeGcpKey = 'AIzaSyCXF0uagkcGmLkeAddmxSAKQ9SFHsWhDB4';
+    const apiKey = (envKey && !envKey.includes('YourGcpApiKeyHere')) ? envKey : (localKey || activeGcpKey);
 
     if (!apiKey || apiKey.trim() === '') {
-      // Fallback offline directo si no hay API key configurada
+      // Fallback offline directo de alta fidelidad si no hay API key configurada
       this.speakOfflineFallback(sanitizedText, options);
       return;
     }
 
-    // 3. Petición HTTP a Google Cloud Text-to-Speech API
+    // 3. Petición HTTP a Google Cloud Text-to-Speech API con SSML natural
     this.abortController = new AbortController();
     const { signal } = this.abortController;
 
     try {
-      const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`, {
+      const ssml = this.buildNaturalSSML(sanitizedText, config);
+
+      // Attempt primary synthesis
+      let response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          input: { text: sanitizedText },
+          input: { ssml },
           voice: {
             languageCode: config.languageCode,
             name: config.name,
@@ -393,11 +703,42 @@ export class VoiceSpeechService {
           audioConfig: {
             audioEncoding: 'MP3',
             pitch: config.pitch,
-            speakingRate: config.speakingRate
+            speakingRate: config.speakingRate,
+            volumeGainDb: config.volumeGainDb ?? 1.2,
+            sampleRateHertz: 24000,
+            effectsProfileId: ['high-fidelity-headphone-class-device']
           }
         }),
         signal
       });
+
+      // If Studio voice is restricted or unavailable on some GCP quotas, gracefully try Neural2 with exact gender match
+      if (!response.ok && config.name.includes('Studio')) {
+        const isFem = config.ssmlGender === 'FEMALE';
+        const fallbackVoice = isFem ? 'es-US-Neural2-A' : 'es-US-Neural2-B';
+        const fallbackLang = 'es-US';
+        response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            input: { ssml },
+            voice: {
+              languageCode: fallbackLang,
+              name: fallbackVoice,
+              ssmlGender: isFem ? 'FEMALE' : 'MALE'
+            },
+            audioConfig: {
+              audioEncoding: 'MP3',
+              pitch: config.pitch,
+              speakingRate: config.speakingRate,
+              volumeGainDb: config.volumeGainDb ?? 1.2,
+              sampleRateHertz: 24000,
+              effectsProfileId: ['high-fidelity-headphone-class-device']
+            }
+          }),
+          signal
+        });
+      }
 
       if (!response.ok) {
         throw new Error(`GCP TTS Error: ${response.status} ${response.statusText}`);
@@ -420,10 +761,9 @@ export class VoiceSpeechService {
       }
     } catch (err: any) {
       if (err?.name === 'AbortError' || signal.aborted) {
-        // La reproducción fue cancelada por una nueva llamada
         return;
       }
-      console.warn('[VoiceSpeechService] Error en Google Cloud TTS, activando fallback offline:', err);
+      console.warn('[VoiceSpeechService] Error en Google Cloud TTS, activando fallback natural offline:', err);
       this.speakOfflineFallback(sanitizedText, options);
     } finally {
       this.abortController = null;
@@ -490,6 +830,88 @@ export class VoiceSpeechService {
     });
   }
 
+  // ==========================================
+  // 7. SELECCIÓN INTELIGENTE DE VOZ NATURAL OFFLINE
+  // ==========================================
+
+  private getBestNaturalOfflineVoice(cohort: AgeCohort, personaId?: VoicePersona): SpeechSynthesisVoice | null {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return null;
+
+    let voices = this.cachedBrowserVoices;
+    if (!voices || voices.length === 0) {
+      voices = window.speechSynthesis.getVoices();
+      this.cachedBrowserVoices = voices;
+    }
+
+    if (!voices || voices.length === 0) return null;
+
+    const persona = personaId ? VOICE_PERSONAS[personaId] : null;
+    const isFemale = persona ? persona.gender === 'FEMALE' : cohort === 'toddler';
+    const targetEdgeVoice = persona?.edgeVoice?.toLowerCase();
+
+    // Filter Spanish voices
+    const spanishVoices = voices.filter(
+      (v) => v.lang.startsWith('es') || v.lang.startsWith('ES') || v.lang.includes('es-')
+    );
+
+    if (spanishVoices.length === 0) {
+      return voices[0] || null;
+    }
+
+    const FEMALE_NAMES = ['dalia', 'paloma', 'elvira', 'beatriz', 'carlota', 'valeria', 'monica', 'paulina', 'helena', 'sabina', 'lucia', 'laura', 'mia', 'hilda', 'female', 'mujer', 'femenina'];
+    const MALE_NAMES = ['jorge', 'alvaro', 'dario', 'nil', 'valerio', 'tristan', 'pablo', 'raul', 'alonso', 'mateo', 'david', 'male', 'hombre', 'masculino'];
+
+    // Strict gender filtering to prevent gender inversion
+    const genderPureVoices = spanishVoices.filter((v) => {
+      const name = v.name.toLowerCase();
+      if (isFemale) {
+        return !MALE_NAMES.some((m) => name.includes(m));
+      } else {
+        return !FEMALE_NAMES.some((f) => name.includes(f));
+      }
+    });
+
+    const candidateVoices = genderPureVoices.length > 0 ? genderPureVoices : spanishVoices;
+
+    // Score voices according to neural/natural quality and persona alignment
+    const scored = candidateVoices.map((voice) => {
+      let score = 0;
+      const name = voice.name.toLowerCase();
+
+      // Direct match with persona target Edge / Natural Voice
+      if (targetEdgeVoice && name.includes(targetEdgeVoice)) score += 500;
+
+      // Top priority: Modern Edge/Chrome Natural Neural Voices
+      if (name.includes('natural') || name.includes('online')) score += 300;
+      if (name.includes('neural')) score += 250;
+      if (name.includes('google') && name.includes('español')) score += 180;
+
+      // Gender affinity reinforcement
+      if (isFemale) {
+        if (FEMALE_NAMES.some((f) => name.includes(f))) score += 150;
+        if (MALE_NAMES.some((m) => name.includes(m))) score -= 2000;
+      } else {
+        if (MALE_NAMES.some((m) => name.includes(m))) score += 150;
+        if (FEMALE_NAMES.some((f) => name.includes(f))) score -= 2000;
+      }
+
+      // Latin American preference for dynamic cadence
+      if (voice.lang.includes('MX') || voice.lang.includes('US') || voice.lang.includes('PE') || voice.lang.includes('CO')) {
+        score += 40;
+      }
+
+      // Penalize legacy robotic Desktop voices
+      if (name.includes('desktop') || name.includes('mobile') || name.includes('sabina') || name.includes('helena')) {
+        score -= 300;
+      }
+
+      return { voice, score };
+    });
+
+    scored.sort((a, b) => b.score - a.score);
+    return scored[0]?.voice || candidateVoices[0] || spanishVoices[0] || null;
+  }
+
   private speakOfflineFallback(text: string, options?: SpeakOptions): void {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
       options?.onError?.(new Error('SpeechSynthesis not supported'));
@@ -502,27 +924,47 @@ export class VoiceSpeechService {
       const config = this.getEffectiveConfig(options);
 
       utterance.lang = config.languageCode || 'es-US';
-      utterance.pitch = this.currentCohort === 'toddler' ? 1.25 : 1.0;
-      utterance.rate = this.currentCohort === 'toddler' ? 1.08 : 1.02;
 
-      // Buscar voz óptima en español si está disponible
-      const voices = window.speechSynthesis.getVoices();
-      if (voices && voices.length > 0) {
-        const preferred = voices.find((v) =>
-          v.lang.startsWith('es') &&
-          (this.currentCohort === 'toddler'
-            ? v.name.toLowerCase().includes('sabina') ||
-              v.name.toLowerCase().includes('monica') ||
-              v.name.toLowerCase().includes('paulina') ||
-              v.name.toLowerCase().includes('female') ||
-              v.name.toLowerCase().includes('natural')
-            : true)
-        ) || voices.find((v) => v.lang.startsWith('es'));
-
-        if (preferred) {
-          utterance.voice = preferred;
-        }
+      // Select absolute best natural offline voice
+      const naturalVoice = this.getBestNaturalOfflineVoice(this.currentCohort, config.personaId);
+      if (naturalVoice) {
+        utterance.voice = naturalVoice;
       }
+
+      // Calibrate distinct pitch & rate per persona
+      const pId = config.personaId || this.selectedPersona || 'female_jovial';
+      const MALE_INDICATORS = ['jorge', 'alvaro', 'dario', 'nil', 'valerio', 'tristan', 'pablo', 'raul', 'alonso', 'mateo', 'david', 'male', 'hombre'];
+      const voiceIsActuallyMale = naturalVoice ? MALE_INDICATORS.some((m) => naturalVoice.name.toLowerCase().includes(m)) : false;
+
+      let basePitch = 1.0;
+      let baseRate = 1.0;
+
+      if (pId === 'female_jovial' || pId === 'zentry_jovial' || pId === 'toddler_sweet') {
+        // Sofía: Aguda, juvenil, chispeante y rápida
+        basePitch = voiceIsActuallyMale ? 1.65 : 1.40;
+        baseRate = 1.15;
+      } else if (pId === 'female_adult') {
+        // Elena: Femenina madura, tono medio cálido, dicción pausada y profesional
+        basePitch = voiceIsActuallyMale ? 1.25 : 0.96;
+        baseRate = 0.94;
+      } else if (pId === 'male_jovial' || pId === 'companion_spark') {
+        // Lucas: Masculino joven, dinámico, enérgico y vivaz
+        basePitch = voiceIsActuallyMale ? 1.15 : 0.78;
+        baseRate = 1.12;
+      } else if (pId === 'male_adult') {
+        // Carlos: Masculino maduro, barítono profundo, sobrio y firme
+        basePitch = voiceIsActuallyMale ? 0.65 : 0.52;
+        baseRate = 0.88;
+      } else if (pId === 'socratic_mentor') {
+        // Maestro Aurelius: Anciano, ultra grave, lento y reflexivo
+        basePitch = voiceIsActuallyMale ? 0.50 : 0.42;
+        baseRate = 0.74;
+      }
+
+      utterance.pitch = Math.min(2.0, Math.max(0.3, basePitch + (this.customSettings.pitchOffset ?? 0) * 0.1));
+      utterance.rate = Math.min(2.0, Math.max(0.4, baseRate * (this.customSettings.rateMultiplier ?? 1.0)));
+
+      utterance.volume = 1.0;
 
       utterance.onstart = () => {
         this.isSpeakingActive = true;
@@ -547,34 +989,38 @@ export class VoiceSpeechService {
   }
 
   // ==========================================
-  // 7. PRE-CARGA PROACTIVA DE FRASES (BACKGROUND)
+  // 8. PRE-CARGA PROACTIVA DE FRASES (BACKGROUND)
   // ==========================================
 
   public async preloadPhrases(phrases: string[]): Promise<void> {
     const envKey = (import.meta as any).env?.VITE_GOOGLE_TTS_API_KEY;
     const localKey = typeof window !== 'undefined' ? localStorage.getItem('zentry_tts_api_key') : null;
-    const apiKey = (envKey && !envKey.includes('YourGcpApiKeyHere')) ? envKey : localKey;
+    const activeGcpKey = 'AIzaSyCXF0uagkcGmLkeAddmxSAKQ9SFHsWhDB4';
+    const apiKey = (envKey && !envKey.includes('YourGcpApiKeyHere')) ? envKey : (localKey || activeGcpKey);
 
     if (!apiKey || apiKey.trim() === '' || !Array.isArray(phrases) || phrases.length === 0) {
       return;
     }
 
-    const config = AGE_VOICE_PROFILES[this.currentCohort];
+    const config = this.getVoiceConfig();
 
     for (const phrase of phrases) {
-      if (!phrase || !phrase.trim()) continue;
-      const text = phrase.trim();
+      if (!phrase) continue;
+      const text = this.sanitizeSpeechText(phrase);
+      if (!text) continue;
       const cacheKey = this.getCacheKey(text, config);
 
       try {
         const cached = await this.getFromCache(cacheKey);
         if (cached) continue;
 
+        const ssml = this.buildNaturalSSML(text, config);
+
         const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            input: { text },
+            input: { ssml },
             voice: {
               languageCode: config.languageCode,
               name: config.name,
@@ -583,7 +1029,10 @@ export class VoiceSpeechService {
             audioConfig: {
               audioEncoding: 'MP3',
               pitch: config.pitch,
-              speakingRate: config.speakingRate
+              speakingRate: config.speakingRate,
+              volumeGainDb: config.volumeGainDb ?? 1.2,
+              sampleRateHertz: 24000,
+              effectsProfileId: ['high-fidelity-headphone-class-device']
             }
           })
         });
@@ -602,7 +1051,7 @@ export class VoiceSpeechService {
   }
 
   // ==========================================
-  // 8. ESCUCHA ACTIVA & PARSING DE COMANDOS
+  // 9. ESCUCHA ACTIVA & PARSING DE COMANDOS
   // ==========================================
 
   public startListening(
