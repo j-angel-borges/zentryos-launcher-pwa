@@ -263,14 +263,14 @@ Si está viendo un video o juego, o en una app escolar, dale una recomendación 
     voiceService.setPersona(personaId);
 
     const greetings: Record<VoicePersona, string> = {
-      female_jovial: '¡Hola! Soy Sofía. Lista para descubrir cosas increíbles juntos.',
-      female_adult: 'Hola. Soy Elena. Estoy aquí para acompañarte con claridad y rigor.',
-      male_jovial: '¡Ey! Soy Lucas. ¿Preparado para crear y superar retos geniales hoy?',
-      male_adult: 'Buenas tardes. Soy Carlos. Analicemos juntos cualquier proyecto.',
-      socratic_mentor: 'Bienvenido. Soy el Maestro Aurelius. ¿Qué reto exploraremos paso a paso?',
-      zentry_jovial: '¡Hola! Soy Sofía. Lista para descubrir cosas increíbles juntos.',
-      toddler_sweet: '¡Hola! Soy Sofía. Lista para descubrir cosas increíbles juntos.',
-      companion_spark: '¡Ey! Soy Lucas. ¿Preparado para crear y superar retos geniales hoy?'
+      female_jovial: '¡Hola! Soy Sofía. ¡Qué emoción tenerte aquí, vamos a explorar y jugar juntos!',
+      female_adult: 'Hola. Soy Elena. Estoy aquí para acompañarte, cuidarte y guiarte con serenidad.',
+      male_jovial: '¡Ey! Soy Lucas. ¿Preparado para construir ideas geniales y superar retos hoy?',
+      male_adult: 'Buenas tardes. Soy Carlos. Cuenta conmigo para proteger tu progreso y tomar las mejores decisiones.',
+      socratic_mentor: 'Bienvenido. Soy el Maestro Aurelius. Cada pregunta que formules abre una nueva puerta al conocimiento.',
+      zentry_jovial: '¡Hola! Soy Sofía. ¡Qué emoción tenerte aquí, vamos a explorar y jugar juntos!',
+      toddler_sweet: '¡Hola! Soy Sofía. ¡Qué emoción tenerte aquí, vamos a explorar y jugar juntos!',
+      companion_spark: '¡Ey! Soy Lucas. ¿Preparado para construir ideas geniales y superar retos hoy?'
     };
 
     const phrase = greetings[personaId] || 'Voz seleccionada.';

@@ -58,73 +58,73 @@ export interface VoicePersonaInfo {
 }
 
 export const VOICE_PERSONAS: Record<VoicePersona, VoicePersonaInfo> = {
-  // 1. Femenina 1: Jovial (Sofía)
+  // 1. Femenina Juvenil / Amiga (Sofía)
   female_jovial: {
     id: 'female_jovial',
-    name: 'Sofía Urbana (Femenina Jovial)',
-    description: 'Voz femenina juvenil, fresca, luminosa y muy ágil sin fondo grave',
+    name: 'Sofía Urbana (Amiga Juvenil)',
+    description: 'Voz de amiga joven, alegre, dinámica, cercana y luminosa',
     cohort: 'toddler',
     gcpModel: 'es-US-Neural2-A',
     edgeVoice: 'es-MX-DaliaNeural',
     gender: 'FEMALE',
-    defaultPitch: 3.2, // +3.2st brillante, aguda y fresca
-    defaultRate: 1.12, // 1.12x ágil y vivaz
-    defaultGain: 1.2
+    defaultPitch: 0.8, // +0.8st juvenil y fresca natural (sin distorsión)
+    defaultRate: 1.08, // 1.08x cadencia ágil y cercana
+    defaultGain: 1.0
   },
 
-  // 2. Femenina 2: Adulta (Elena)
+  // 2. Femenina Adulta / Madre (Elena)
   female_adult: {
     id: 'female_adult',
-    name: 'Elena Valdés (Femenina Adulta)',
-    description: 'Voz femenina madura, profesional, cálida, asertiva y aterciopelada',
+    name: 'Elena Valdés (Madre / Adulta)',
+    description: 'Voz adulta maternal, protectora, cálida, pedagógica y serena',
     cohort: 'explorer',
     gcpModel: 'es-ES-Studio-C',
     edgeVoice: 'es-ES-ElviraNeural',
     gender: 'FEMALE',
-    defaultPitch: -0.6, // -0.6st elegante, tono medio cálido
-    defaultRate: 0.96, // 0.96x cadencia pedagógica y pausada
-    defaultGain: 0.8
+    defaultPitch: 0.0, // 0.0st tono natural humano de locutora de estudio
+    defaultRate: 0.96, // 0.96x cadencia maternal, clara y pausada
+    defaultGain: 0.9
   },
 
-  // 3. Masculina 1: Jovial (Lucas)
+  // 3. Masculina Juvenil / Amigo (Lucas)
   male_jovial: {
     id: 'male_jovial',
-    name: 'Lucas Vega (Masculino Jovial)',
-    description: 'Voz masculina joven, enérgica, cercana, espontánea y entusiasta',
+    name: 'Lucas Vega (Amigo Juvenil)',
+    description: 'Voz de amigo joven, aventurero, dinámico, entusiasta y espontáneo',
     cohort: 'toddler',
     gcpModel: 'es-US-Neural2-B',
     edgeVoice: 'es-MX-JorgeNeural',
     gender: 'MALE',
-    defaultPitch: 1.8, // +1.8st joven, dinámico y festivo
-    defaultRate: 1.08, // 1.08x cadencia rápida
-    defaultGain: 1.4
+    defaultPitch: 0.4, // +0.4st tono natural de joven alegre
+    defaultRate: 1.06, // 1.06x ritmo dinámico de juego
+    defaultGain: 1.0
   },
 
-  // 4. Masculina 2: Adulta (Carlos)
+  // 4. Masculina Adulta / Padre (Carlos)
   male_adult: {
     id: 'male_adult',
-    name: 'Carlos Mendoza (Masculino Adulto)',
-    description: 'Voz masculina madura, sobria, natural, institucional y segura',
+    name: 'Carlos Mendoza (Padre / Adulto)',
+    description: 'Voz adulta paternal, barítono sobrio, protector, formal y seguro',
     cohort: 'explorer',
     gcpModel: 'es-ES-Studio-F',
     edgeVoice: 'es-ES-DarioNeural',
     gender: 'MALE',
-    defaultPitch: -3.8, // -3.8st barítono profundo y firme
-    defaultRate: 0.92, // 0.92x ritmo seguro y formal
+    defaultPitch: -0.4, // -0.4st barítono natural maduro sin forzar pitch
+    defaultRate: 0.94, // 0.94x ritmo templado, formal y seguro
     defaultGain: 1.0
   },
 
-  // 5. Mentor: Socrático & Sabio (Maestro Aurelius)
+  // 5. Mentor Sabio / Anciano Socrático (Maestro Aurelius)
   socratic_mentor: {
     id: 'socratic_mentor',
-    name: 'Maestro Aurelius (Mentor Socrático)',
-    description: 'Voz sabia, reflexiva, inspiradora, filosófica y socrática',
+    name: 'Maestro Aurelius (Mentor Sabio)',
+    description: 'Voz de hombre sabio de edad avanzada, reflexivo, socrático y pausado',
     cohort: 'explorer',
     gcpModel: 'es-ES-Studio-F',
     edgeVoice: 'es-ES-AlvaroNeural',
     gender: 'MALE',
-    defaultPitch: -2.8, // -2.8st solemne
-    defaultRate: 0.84, // 0.84x pausada y filosófica con aire
+    defaultPitch: -0.8, // -0.8st solemne y reposado
+    defaultRate: 0.86, // 0.86x cadencia filosófica con silencios meditativos
     defaultGain: 1.0
   },
 

@@ -111,15 +111,15 @@ export const ZentrySettingsScreen: React.FC<Props> = ({
       onSelectAgeTier(persona.cohort);
     }
     if (personaId === 'female_jovial' || personaId === 'zentry_jovial' || personaId === 'toddler_sweet') {
-      setTestPhrase('¡Hola! Soy Sofía. ¡Vamos a descubrir cosas increíbles y súper divertidas juntos!');
+      setTestPhrase('¡Hola! Soy Sofía. ¡Qué emoción tenerte aquí, vamos a explorar y jugar juntos!');
     } else if (personaId === 'female_adult') {
-      setTestPhrase('Hola. Soy Elena. Estoy aquí para acompañarte y resolver cualquier desafío con claridad y rigor profesional.');
+      setTestPhrase('Hola. Soy Elena. Estoy aquí para acompañarte, cuidarte y guiarte con serenidad y cariño.');
     } else if (personaId === 'male_jovial' || personaId === 'companion_spark') {
       setTestPhrase('¡Ey, qué tal! Soy Lucas. ¿Listo para armar proyectos geniales y poner a prueba nuestras ideas?');
     } else if (personaId === 'male_adult') {
-      setTestPhrase('Buenas tardes. Soy Carlos. Analicemos juntos la información para tomar las decisiones más acertadas.');
+      setTestPhrase('Buenas tardes. Soy Carlos. Cuenta conmigo para proteger tu progreso y tomar las mejores decisiones.');
     } else if (personaId === 'socratic_mentor') {
-      setTestPhrase('Bienvenido. Soy el Maestro Aurelius. Más que darte una respuesta directa, exploraremos juntos las preguntas correctas.');
+      setTestPhrase('Bienvenido. Soy el Maestro Aurelius. Cada pregunta que formules abre una nueva puerta al conocimiento.');
     }
   };
 
