@@ -22,10 +22,10 @@ describe('F1: 5 Neural Voice Archetypes Matrix', () => {
     service = new VoiceSpeechService();
   });
 
-  it('T1.F1.1: Elena Valdés (Femenina Adulta) is mapped to es-ES-Studio-C, es-ES-ElviraNeural with pedagogical acoustics', () => {
+  it('T1.F1.1: Elena (Femenina Adulta) is mapped to es-ES-Studio-C, es-ES-ElviraNeural with pedagogical acoustics', () => {
     const elena = VOICE_PERSONAS.female_adult;
     expect(elena).toBeDefined();
-    expect(elena.name).toContain('Elena Valdés');
+    expect(elena.name).toBe('Elena');
     expect(elena.gcpModel).toBe('es-ES-Studio-C');
     expect(elena.edgeVoice).toBe('es-ES-ElviraNeural');
     expect(elena.gender).toBe('FEMALE');
@@ -35,10 +35,10 @@ describe('F1: 5 Neural Voice Archetypes Matrix', () => {
     expect(elena.defaultGain).toBe(0.9);
   }, 'F1');
 
-  it('T1.F1.2: Carlos Mendoza (Masculino Adulto) is mapped to es-ES-Studio-F, es-ES-DarioNeural with baritone acoustics', () => {
+  it('T1.F1.2: Carlos Mendoza fallback is mapped to es-ES-Studio-F, es-ES-DarioNeural with baritone acoustics', () => {
     const carlos = VOICE_PERSONAS.male_adult;
     expect(carlos).toBeDefined();
-    expect(carlos.name).toContain('Carlos Mendoza');
+    expect(carlos.name).toBe('Lucas');
     expect(carlos.gcpModel).toBe('es-ES-Studio-F');
     expect(carlos.edgeVoice).toBe('es-ES-DarioNeural');
     expect(carlos.gender).toBe('MALE');
@@ -48,10 +48,10 @@ describe('F1: 5 Neural Voice Archetypes Matrix', () => {
     expect(carlos.defaultGain).toBe(1.0);
   }, 'F1');
 
-  it('T1.F1.3: Sofía Urbana (Femenina Jovial) is mapped to es-US-Neural2-A, es-MX-DaliaNeural with bright youthful acoustics', () => {
+  it('T1.F1.3: Sofía Urbana fallback is mapped to es-US-Neural2-A, es-MX-DaliaNeural with bright youthful acoustics', () => {
     const sofia = VOICE_PERSONAS.female_jovial;
     expect(sofia).toBeDefined();
-    expect(sofia.name).toContain('Sofía Urbana');
+    expect(sofia.name).toBe('Elena');
     expect(sofia.gcpModel).toBe('es-US-Neural2-A');
     expect(sofia.edgeVoice).toBe('es-MX-DaliaNeural');
     expect(sofia.gender).toBe('FEMALE');
@@ -61,10 +61,10 @@ describe('F1: 5 Neural Voice Archetypes Matrix', () => {
     expect(sofia.defaultGain).toBe(1.0);
   }, 'F1');
 
-  it('T1.F1.4: Lucas Vega (Masculino Jovial) is mapped to es-US-Neural2-B, es-MX-JorgeNeural with energetic acoustics', () => {
+  it('T1.F1.4: Lucas (Masculino Jovial) is mapped to es-US-Neural2-B, es-MX-JorgeNeural with energetic acoustics', () => {
     const lucas = VOICE_PERSONAS.male_jovial;
     expect(lucas).toBeDefined();
-    expect(lucas.name).toContain('Lucas Vega');
+    expect(lucas.name).toBe('Lucas');
     expect(lucas.gcpModel).toBe('es-US-Neural2-B');
     expect(lucas.edgeVoice).toBe('es-MX-JorgeNeural');
     expect(lucas.gender).toBe('MALE');
@@ -74,10 +74,10 @@ describe('F1: 5 Neural Voice Archetypes Matrix', () => {
     expect(lucas.defaultGain).toBe(1.0);
   }, 'F1');
 
-  it('T1.F1.5: Maestro Aurelius (Mentor Socrático) is mapped to es-ES-Studio-F, es-ES-AlvaroNeural with deep contemplative cadence', () => {
+  it('T1.F1.5: Maestro Aurelius fallback is mapped to es-ES-Studio-F, es-ES-AlvaroNeural with deep contemplative cadence', () => {
     const aurelius = VOICE_PERSONAS.socratic_mentor;
     expect(aurelius).toBeDefined();
-    expect(aurelius.name).toContain('Maestro Aurelius');
+    expect(aurelius.name).toBe('Lucas');
     expect(aurelius.gcpModel).toBe('es-ES-Studio-F');
     expect(aurelius.edgeVoice).toBe('es-ES-AlvaroNeural');
     expect(aurelius.gender).toBe('MALE');

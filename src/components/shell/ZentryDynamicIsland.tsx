@@ -263,17 +263,17 @@ Si está viendo un video o juego, o en una app escolar, dale una recomendación 
     voiceService.setPersona(personaId);
 
     const greetings: Record<VoicePersona, string> = {
-      female_jovial: '¡Hola! Soy Sofía. ¡Qué emoción tenerte aquí, vamos a explorar y jugar juntos!',
       female_adult: 'Hola. Soy Elena. Estoy aquí para acompañarte, cuidarte y guiarte con serenidad.',
       male_jovial: '¡Ey! Soy Lucas. ¿Preparado para construir ideas geniales y superar retos hoy?',
-      male_adult: 'Buenas tardes. Soy Carlos. Cuenta conmigo para proteger tu progreso y tomar las mejores decisiones.',
-      socratic_mentor: 'Bienvenido. Soy el Maestro Aurelius. Cada pregunta que formules abre una nueva puerta al conocimiento.',
-      zentry_jovial: '¡Hola! Soy Sofía. ¡Qué emoción tenerte aquí, vamos a explorar y jugar juntos!',
-      toddler_sweet: '¡Hola! Soy Sofía. ¡Qué emoción tenerte aquí, vamos a explorar y jugar juntos!',
+      female_jovial: 'Hola. Soy Elena. Estoy aquí para acompañarte, cuidarte y guiarte con serenidad.',
+      male_adult: '¡Ey! Soy Lucas. ¿Preparado para construir ideas geniales y superar retos hoy?',
+      socratic_mentor: '¡Ey! Soy Lucas. ¿Preparado para construir ideas geniales y superar retos hoy?',
+      zentry_jovial: 'Hola. Soy Elena. Estoy aquí para acompañarte, cuidarte y guiarte con serenidad.',
+      toddler_sweet: 'Hola. Soy Elena. Estoy aquí para acompañarte, cuidarte y guiarte con serenidad.',
       companion_spark: '¡Ey! Soy Lucas. ¿Preparado para construir ideas geniales y superar retos hoy?'
     };
 
-    const phrase = greetings[personaId] || 'Voz seleccionada.';
+    const phrase = greetings[personaId] || 'Hola, voz seleccionada.';
     voiceService.speakFeedback(phrase, { personaId });
   };
 
@@ -710,7 +710,7 @@ Si está viendo un video o juego, o en una app escolar, dale una recomendación 
             {/* TAB CONTENT 3: AUDIO & SELECCIÓN DE VOZ NEURONAL */}
             {activeTab === 'voice' && (
               <div className="space-y-3 animate-in fade-in duration-150">
-                {/* 1. Selector de Personalidad Vocal (5 Voces Hiperrealistas) */}
+                {/* 1. Selector de Voz (Elena y Lucas) */}
                 <div className="p-3.5 rounded-[22px] bg-white/5 border border-white/10 space-y-2.5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-xs font-bold text-white">
@@ -718,7 +718,7 @@ Si está viendo un video o juego, o en una app escolar, dale una recomendación 
                       <span>Elegir Voz de Zentry</span>
                     </div>
                     <span className="text-[9px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-bold border border-purple-500/30">
-                      5 Voces HD
+                      2 Voces HD
                     </span>
                   </div>
 
@@ -726,41 +726,29 @@ Si está viendo un video o juego, o en una app escolar, dale una recomendación 
                     Toca una voz para activarla y escuchar una muestra al instante:
                   </p>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
-                    {(['female_jovial', 'female_adult', 'male_jovial', 'male_adult', 'socratic_mentor'] as VoicePersona[]).map((pKey) => {
+                  <div className="grid grid-cols-2 gap-2">
+                    {(['female_adult', 'male_jovial'] as VoicePersona[]).map((pKey) => {
                       const persona = VOICE_PERSONAS[pKey];
-                      const isSelected = selectedPersona === pKey || (pKey === 'female_jovial' && selectedPersona === 'zentry_jovial');
+                      const isSelected = selectedPersona === pKey || (pKey === 'female_adult' && (selectedPersona === 'female_adult' || selectedPersona === 'female_jovial' || selectedPersona === 'zentry_jovial' || selectedPersona === 'toddler_sweet')) || (pKey === 'male_jovial' && (selectedPersona === 'male_jovial' || selectedPersona === 'male_adult' || selectedPersona === 'socratic_mentor' || selectedPersona === 'companion_spark'));
                       return (
                         <button
                           key={pKey}
                           onClick={() => handleSelectVoicePersona(pKey)}
                           className={
-                            'p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col gap-1 zentry-press ' +
+                            'p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between zentry-press ' +
                             (isSelected
                               ? 'bg-purple-600/30 border-purple-400 shadow-md ring-1 ring-purple-400/50'
                               : 'bg-white/5 border-white/10 hover:bg-white/10')
                           }
                         >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1.5 font-bold text-xs text-white">
-                              {pKey === 'female_jovial' && <Sparkles className="w-3.5 h-3.5 text-pink-400" />}
-                              {pKey === 'female_adult' && <GraduationCap className="w-3.5 h-3.5 text-purple-400" />}
-                              {pKey === 'male_jovial' && <Zap className="w-3.5 h-3.5 text-amber-400" />}
-                              {pKey === 'male_adult' && <Volume2 className="w-3.5 h-3.5 text-blue-400" />}
-                              {pKey === 'socratic_mentor' && <Sparkles className="w-3.5 h-3.5 text-emerald-400" />}
-                              <span className="truncate">{persona.name.split(' (')[0]}</span>
-                            </div>
-                            {isSelected ? (
-                              <CheckCircle2 className="w-3.5 h-3.5 text-purple-300 shrink-0" />
-                            ) : (
-                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-slate-400">
-                                {persona.gender === 'FEMALE' ? 'Fem' : 'Masc'}
-                              </span>
-                            )}
+                          <div className="flex items-center gap-2 font-bold text-xs text-white">
+                            {pKey === 'female_adult' && <GraduationCap className="w-4 h-4 text-purple-400" />}
+                            {pKey === 'male_jovial' && <Zap className="w-4 h-4 text-amber-400" />}
+                            <span>{persona.name}</span>
                           </div>
-                          <div className="text-[9px] text-slate-300 line-clamp-1">
-                            {persona.description}
-                          </div>
+                          {isSelected && (
+                            <CheckCircle2 className="w-4 h-4 text-purple-300 shrink-0" />
+                          )}
                         </button>
                       );
                     })}

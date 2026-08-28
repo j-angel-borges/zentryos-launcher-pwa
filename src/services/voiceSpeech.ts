@@ -57,113 +57,109 @@ export interface VoicePersonaInfo {
   defaultGain: number;
 }
 
-export const VOICE_PERSONAS: Record<VoicePersona, VoicePersonaInfo> = {
-  // 1. Femenina Juvenil / Amiga (Sofía)
-  female_jovial: {
-    id: 'female_jovial',
-    name: 'Sofía Urbana (Amiga Juvenil)',
-    description: 'Voz de amiga joven, alegre, dinámica, cercana y luminosa',
-    cohort: 'toddler',
-    gcpModel: 'es-US-Neural2-A',
-    edgeVoice: 'es-MX-DaliaNeural',
-    gender: 'FEMALE',
-    defaultPitch: 0.8, // +0.8st juvenil y fresca natural (sin distorsión)
-    defaultRate: 1.08, // 1.08x cadencia ágil y cercana
-    defaultGain: 1.0
-  },
+export const ACTIVE_VOICE_PERSONAS: VoicePersona[] = ['female_adult', 'male_jovial'];
 
-  // 2. Femenina Adulta / Madre (Elena)
+export const VOICE_PERSONAS: Record<VoicePersona, VoicePersonaInfo> = {
+  // 1. Elena (Femenina / Maternal / Pedagógica / Locutora de Estudio)
   female_adult: {
     id: 'female_adult',
-    name: 'Elena Valdés (Madre / Adulta)',
-    description: 'Voz adulta maternal, protectora, cálida, pedagógica y serena',
+    name: 'Elena',
+    description: '',
     cohort: 'explorer',
     gcpModel: 'es-ES-Studio-C',
     edgeVoice: 'es-ES-ElviraNeural',
     gender: 'FEMALE',
     defaultPitch: 0.0, // 0.0st tono natural humano de locutora de estudio
-    defaultRate: 0.96, // 0.96x cadencia maternal, clara y pausada
+    defaultRate: 0.96, // 0.96x cadencia clara y pausada
     defaultGain: 0.9
   },
 
-  // 3. Masculina Juvenil / Amigo (Lucas)
+  // 2. Lucas (Masculino / Amigo Joven / Dinámico / Actor de Doblaje)
   male_jovial: {
     id: 'male_jovial',
-    name: 'Lucas Vega (Amigo Juvenil)',
-    description: 'Voz de amigo joven, aventurero, dinámico, entusiasta y espontáneo',
+    name: 'Lucas',
+    description: '',
     cohort: 'toddler',
     gcpModel: 'es-US-Neural2-B',
     edgeVoice: 'es-MX-JorgeNeural',
     gender: 'MALE',
     defaultPitch: 0.4, // +0.4st tono natural de joven alegre
-    defaultRate: 1.06, // 1.06x ritmo dinámico de juego
+    defaultRate: 1.06, // 1.06x ritmo dinámico
     defaultGain: 1.0
   },
 
-  // 4. Masculina Adulta / Padre (Carlos)
+  // Perfiles de soporte y aliases
+  female_jovial: {
+    id: 'female_jovial',
+    name: 'Elena',
+    description: '',
+    cohort: 'toddler',
+    gcpModel: 'es-US-Neural2-A',
+    edgeVoice: 'es-MX-DaliaNeural',
+    gender: 'FEMALE',
+    defaultPitch: 0.8,
+    defaultRate: 1.08,
+    defaultGain: 1.0
+  },
   male_adult: {
     id: 'male_adult',
-    name: 'Carlos Mendoza (Padre / Adulto)',
-    description: 'Voz adulta paternal, barítono sobrio, protector, formal y seguro',
+    name: 'Lucas',
+    description: '',
     cohort: 'explorer',
     gcpModel: 'es-ES-Studio-F',
     edgeVoice: 'es-ES-DarioNeural',
     gender: 'MALE',
-    defaultPitch: -0.4, // -0.4st barítono natural maduro sin forzar pitch
-    defaultRate: 0.94, // 0.94x ritmo templado, formal y seguro
+    defaultPitch: -0.4,
+    defaultRate: 0.94,
     defaultGain: 1.0
   },
-
-  // 5. Mentor Sabio / Anciano Socrático (Maestro Aurelius)
   socratic_mentor: {
     id: 'socratic_mentor',
-    name: 'Maestro Aurelius (Mentor Sabio)',
-    description: 'Voz de hombre sabio de edad avanzada, reflexivo, socrático y pausado',
+    name: 'Lucas',
+    description: '',
     cohort: 'explorer',
     gcpModel: 'es-ES-Studio-F',
     edgeVoice: 'es-ES-AlvaroNeural',
     gender: 'MALE',
-    defaultPitch: -0.8, // -0.8st solemne y reposado
-    defaultRate: 0.86, // 0.86x cadencia filosófica con silencios meditativos
+    defaultPitch: -0.8,
+    defaultRate: 0.86,
     defaultGain: 1.0
   },
-
-  // Aliases retrocompatibles
   zentry_jovial: {
     id: 'zentry_jovial',
-    name: 'Sofía Urbana (Femenina Jovial)',
-    description: 'Voz femenina juvenil, fresca, luminosa y muy ágil sin fondo grave',
+    name: 'Elena',
+    description: '',
     cohort: 'toddler',
     gcpModel: 'es-US-Neural2-A',
     edgeVoice: 'es-MX-DaliaNeural',
     gender: 'FEMALE',
-    defaultPitch: 2.2,
-    defaultRate: 1.07,
-    defaultGain: 1.2
+    defaultPitch: 0.8,
+    defaultRate: 1.08,
+    defaultGain: 1.0
   },
   toddler_sweet: {
     id: 'toddler_sweet',
-    name: 'Sofía Dulce (Femenina Jovial)',
-    description: 'Voz femenina suave, alegre y cariñosa para los más pequeños',
+    name: 'Elena',
+    description: '',
     cohort: 'toddler',
     gcpModel: 'es-US-Neural2-A',
     edgeVoice: 'es-MX-DaliaNeural',
     gender: 'FEMALE',
-    defaultPitch: 2.6,
-    defaultRate: 1.04,
-    defaultGain: 1.2
+    defaultPitch: 0.8,
+    defaultRate: 1.08,
+    defaultGain: 1.0
   },
   companion_spark: {
     id: 'companion_spark',
-    name: 'Lucas Vega (Masculino Jovial)',
-    description: 'Voz masculina joven, enérgica y chispeante para retos y misiones',
+    name: 'Lucas',
+    description: '',
     cohort: 'explorer',
     gcpModel: 'es-US-Neural2-B',
     edgeVoice: 'es-MX-JorgeNeural',
     gender: 'MALE',
-    defaultPitch: 1.6,
+    defaultPitch: 0.4,
     defaultRate: 1.06,
-    defaultGain: 1.4
+    defaultGain: 1.0
   }
 };
 

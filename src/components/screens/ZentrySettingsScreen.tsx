@@ -110,16 +110,10 @@ export const ZentrySettingsScreen: React.FC<Props> = ({
     if (onSelectAgeTier) {
       onSelectAgeTier(persona.cohort);
     }
-    if (personaId === 'female_jovial' || personaId === 'zentry_jovial' || personaId === 'toddler_sweet') {
-      setTestPhrase('¡Hola! Soy Sofía. ¡Qué emoción tenerte aquí, vamos a explorar y jugar juntos!');
-    } else if (personaId === 'female_adult') {
+    if (personaId === 'female_adult' || personaId === 'female_jovial' || personaId === 'zentry_jovial' || personaId === 'toddler_sweet') {
       setTestPhrase('Hola. Soy Elena. Estoy aquí para acompañarte, cuidarte y guiarte con serenidad y cariño.');
-    } else if (personaId === 'male_jovial' || personaId === 'companion_spark') {
+    } else {
       setTestPhrase('¡Ey, qué tal! Soy Lucas. ¿Listo para armar proyectos geniales y poner a prueba nuestras ideas?');
-    } else if (personaId === 'male_adult') {
-      setTestPhrase('Buenas tardes. Soy Carlos. Cuenta conmigo para proteger tu progreso y tomar las mejores decisiones.');
-    } else if (personaId === 'socratic_mentor') {
-      setTestPhrase('Bienvenido. Soy el Maestro Aurelius. Cada pregunta que formules abre una nueva puerta al conocimiento.');
     }
   };
 
@@ -278,39 +272,31 @@ export const ZentrySettingsScreen: React.FC<Props> = ({
           </div>
 
           <div className="text-[11px] text-slate-400">
-            Selecciona una de las 5 personalidades de voz hiperrealistas:
+            Selecciona una de las voces de Zentry:
           </div>
 
-          {/* 5 Voice Personas Selector Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {(['female_jovial', 'female_adult', 'male_jovial', 'male_adult', 'socratic_mentor'] as VoicePersona[]).map((pKey) => {
+          {/* 2 Voice Personas Selector Grid (Elena y Lucas) */}
+          <div className="grid grid-cols-2 gap-2">
+            {(['female_adult', 'male_jovial'] as VoicePersona[]).map((pKey) => {
               const persona = VOICE_PERSONAS[pKey];
-              const isSelected = selectedPersona === pKey || (pKey === 'female_jovial' && selectedPersona === 'zentry_jovial');
+              const isSelected = selectedPersona === pKey || (pKey === 'female_adult' && (selectedPersona === 'female_adult' || selectedPersona === 'female_jovial' || selectedPersona === 'zentry_jovial' || selectedPersona === 'toddler_sweet')) || (pKey === 'male_jovial' && (selectedPersona === 'male_jovial' || selectedPersona === 'male_adult' || selectedPersona === 'socratic_mentor' || selectedPersona === 'companion_spark'));
               return (
                 <button
                   key={pKey}
                   onClick={() => handleSelectPersona(pKey)}
                   className={
-                    'p-2.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col gap-1 ' +
+                    'p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between zentry-press ' +
                     (isSelected
                       ? 'bg-purple-500/25 border-purple-400 shadow-md ring-1 ring-purple-400/50'
                       : 'bg-white/5 border-white/10 hover:bg-white/10')
                   }
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 font-bold text-xs">
-                      {persona.id === 'female_jovial' && <Sparkles className="w-3.5 h-3.5 text-pink-400" />}
-                      {persona.id === 'female_adult' && <GraduationCap className="w-3.5 h-3.5 text-purple-400" />}
-                      {persona.id === 'male_jovial' && <Zap className="w-3.5 h-3.5 text-amber-400" />}
-                      {persona.id === 'male_adult' && <Volume2 className="w-3.5 h-3.5 text-blue-400" />}
-                      {persona.id === 'socratic_mentor' && <Sparkles className="w-3.5 h-3.5 text-emerald-400" />}
-                      <span>{persona.name}</span>
-                    </div>
-                    {isSelected && <Check className="w-3 h-3 text-purple-300" />}
+                  <div className="flex items-center gap-2 font-bold text-xs">
+                    {pKey === 'female_adult' && <GraduationCap className="w-4 h-4 text-purple-400" />}
+                    {pKey === 'male_jovial' && <Zap className="w-4 h-4 text-amber-400" />}
+                    <span>{persona.name}</span>
                   </div>
-                  <div className="text-[10px] text-slate-400 leading-tight line-clamp-2">
-                    {persona.description}
-                  </div>
+                  {isSelected && <Check className="w-3.5 h-3.5 text-purple-300" />}
                 </button>
               );
             })}

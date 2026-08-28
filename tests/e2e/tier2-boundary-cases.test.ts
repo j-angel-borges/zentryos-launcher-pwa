@@ -141,7 +141,7 @@ describe('F3 Boundary: SSML Tag Edge Cases & Stress', () => {
   it('T2.F3.3: Text without any punctuation produces valid SSML prosody envelope', () => {
     const config = service.getVoiceConfig();
     const ssml = (service as any).buildNaturalSSML('Texto plano continuo sin puntuacion alguna', config);
-    expect(ssml).toBe('<speak><prosody rate="107%" pitch="+2.2st">Texto plano continuo sin puntuacion alguna</prosody></speak>');
+    expect(ssml).toBe('<speak><prosody rate="108%" pitch="+0.8st">Texto plano continuo sin puntuacion alguna</prosody></speak>');
   }, 'F3');
 
   it('T2.F3.4: Punctuation at the very beginning and trailing end of text formats cleanly', () => {
