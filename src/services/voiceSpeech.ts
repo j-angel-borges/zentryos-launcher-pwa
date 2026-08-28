@@ -672,10 +672,11 @@ export class VoiceSpeechService {
       return;
     }
 
-    // 2. Obtener API Key de GCP (desde .env.local o localStorage)
+    // 2. Obtener API Key de GCP (desde .env.local, localStorage o fallback corporativo activo)
     const envKey = (import.meta as any).env?.VITE_GOOGLE_TTS_API_KEY;
     const localKey = typeof window !== 'undefined' ? localStorage.getItem('zentry_tts_api_key') : null;
-    const apiKey = (envKey && !envKey.includes('YourGcpApiKeyHere')) ? envKey : localKey;
+    const activeGcpKey = 'AIzaSyCXF0uagkcGmLkeAddmxSAKQ9SFHsWhDB4';
+    const apiKey = (envKey && !envKey.includes('YourGcpApiKeyHere')) ? envKey : (localKey || activeGcpKey);
 
     if (!apiKey || apiKey.trim() === '') {
       // Fallback offline directo de alta fidelidad si no hay API key configurada
@@ -998,7 +999,8 @@ export class VoiceSpeechService {
   public async preloadPhrases(phrases: string[]): Promise<void> {
     const envKey = (import.meta as any).env?.VITE_GOOGLE_TTS_API_KEY;
     const localKey = typeof window !== 'undefined' ? localStorage.getItem('zentry_tts_api_key') : null;
-    const apiKey = (envKey && !envKey.includes('YourGcpApiKeyHere')) ? envKey : localKey;
+    const activeGcpKey = 'AIzaSyCXF0uagkcGmLkeAddmxSAKQ9SFHsWhDB4';
+    const apiKey = (envKey && !envKey.includes('YourGcpApiKeyHere')) ? envKey : (localKey || activeGcpKey);
 
     if (!apiKey || apiKey.trim() === '' || !Array.isArray(phrases) || phrases.length === 0) {
       return;
