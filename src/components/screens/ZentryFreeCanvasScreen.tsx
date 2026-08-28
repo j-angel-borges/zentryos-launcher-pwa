@@ -66,19 +66,23 @@ const BRUSH_SIZES = [
   { id: 'jumbo', size: 44, dotSize: 30, label: 'Jumbo' }
 ];
 
-const COLOR_PALETTE = [
-  { id: 'pink', color: '#EC4899' },
-  { id: 'purple', color: '#A855F7' },
-  { id: 'indigo', color: '#6366F1' },
-  { id: 'blue', color: '#3B82F6' },
-  { id: 'cyan', color: '#06B6D4' },
-  { id: 'green', color: '#10B981' },
-  { id: 'yellow', color: '#EAB308' },
-  { id: 'orange', color: '#F97316' },
-  { id: 'red', color: '#EF4444' },
-  { id: 'white', color: '#FFFFFF' },
-  { id: 'black', color: '#1E293B' }
+// 36 Colores Estilo Paint (Matriz Ordenada por Familias)
+const PAINT_PALETTE_MATRIX = [
+  // Fila 1: Neutros y Escala de Grises
+  ['#000000', '#334155', '#64748B', '#94A3B8', '#E2E8F0', '#FFFFFF'],
+  // Fila 2: Rojos y Rosas
+  ['#881337', '#DC2626', '#EF4444', '#F87171', '#EC4899', '#F472B6'],
+  // Fila 3: Naranjas y Amarillos
+  ['#7C2D12', '#EA580C', '#F97316', '#FB923C', '#EAB308', '#FDE047'],
+  // Fila 4: Verdes y Lima
+  ['#14532D', '#16A34A', '#22C55E', '#4ADE80', '#84CC16', '#A3E635'],
+  // Fila 5: Cyan y Azules
+  ['#164E63', '#0891B2', '#06B6D4', '#38BDF8', '#2563EB', '#60A5FA'],
+  // Fila 6: Violeta, Púrpura y Tonos Piel
+  ['#4C1D95', '#7C3AED', '#8B5CF6', '#C084FC', '#92400E', '#FDDFD0']
 ];
+
+const QUICK_COLORS = ['#EC4899', '#3B82F6', '#10B981', '#EAB308', '#000000'];
 
 type ToolMode = 'brush' | 'rainbow' | 'shape' | 'eraser';
 
@@ -103,6 +107,7 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
   const [selectedColor, setSelectedColor] = useState<string>('#EC4899');
   const [brushSize, setBrushSize] = useState<number>(14);
   const [selectedShape, setSelectedShape] = useState<ShapeType>('circle');
+  const [showColorPicker, setShowColorPicker] = useState<boolean>(false);
 
   // Puntos de trazo para suavizado Bézier continuo
   const isDrawingRef = useRef(false);
@@ -674,14 +679,12 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
       <div className="w-full h-full max-w-5xl mx-auto flex flex-col justify-between overflow-hidden gap-2 select-none relative">
         
         {/* ========================================================= */}
-        {/* 1. BARRA SUPERIOR INTEGRADA: HERRAMIENTAS Y ACCIONES      */}
+        {/* 1. BARRA SUPERIOR MINIMALISTA: CERO TEXTO INNECESARIO     */}
         {/* ========================================================= */}
-        <div className="flex flex-col gap-2 p-2 bg-white/30 dark:bg-slate-900/70 backdrop-blur-2xl rounded-[28px] border border-white/40 dark:border-white/15 shadow-xl">
-          
-          {/* Fila 1: Modos de Herramientas y Acciones (100% SVG Icons) */}
-          <div className="flex items-center justify-between gap-1.5 w-full">
-            {/* GRUPO MODOS: Pincel, Arcoíris, Formas, Goma */}
-            <div className="flex items-center gap-1.5 flex-wrap">
+        <div className="flex flex-col gap-1.5 p-2 bg-white/40 dark:bg-slate-900/80 backdrop-blur-2xl rounded-[28px] border border-white/50 dark:border-white/15 shadow-xl">
+          <div className="flex items-center justify-between gap-1 w-full">
+            {/* GRUPO HERRAMIENTAS (Iconos SVG Nítidos sin texto) */}
+            <div className="flex items-center gap-1 sm:gap-1.5">
               {/* Pincel Normal */}
               <button
                 onClick={() => {
@@ -689,51 +692,48 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
                   sounds.vibrate(6);
                   setToolMode('brush');
                 }}
-                className={`px-3 py-2 rounded-2xl flex items-center gap-1.5 text-xs font-black border-2 transition-all cursor-pointer zentry-spring-press ${
+                className={`p-2 sm:p-2.5 rounded-2xl flex items-center justify-center border-2 transition-all cursor-pointer zentry-spring-press ${
                   toolMode === 'brush'
                     ? 'bg-pink-500 text-white scale-105 shadow-md border-white ring-2 ring-pink-300'
-                    : 'bg-white/80 dark:bg-white/10 border-transparent text-slate-700 dark:text-white'
+                    : 'bg-white/80 dark:bg-white/10 border-transparent text-slate-700 dark:text-white hover:bg-white'
                 }`}
                 title="Pincel"
               >
-                <Paintbrush className="w-4 h-4" />
-                <span className="hidden sm:inline">Pincel</span>
+                <Paintbrush className="w-5 h-5 stroke-[2.5]" />
               </button>
 
-              {/* Pincel Arcoíris (SVG Palette / Sparkles) */}
+              {/* Pincel Arcoíris */}
               <button
                 onClick={() => {
                   sounds.playTap();
                   sounds.vibrate(6);
                   setToolMode('rainbow');
                 }}
-                className={`px-3 py-2 rounded-2xl flex items-center gap-1.5 text-xs font-black border-2 transition-all cursor-pointer zentry-spring-press ${
+                className={`p-2 sm:p-2.5 rounded-2xl flex items-center justify-center border-2 transition-all cursor-pointer zentry-spring-press ${
                   toolMode === 'rainbow'
                     ? 'bg-gradient-to-r from-pink-500 via-yellow-400 to-cyan-400 text-slate-950 scale-105 shadow-md border-white ring-2 ring-yellow-300'
-                    : 'bg-white/80 dark:bg-white/10 border-transparent text-slate-700 dark:text-white'
+                    : 'bg-white/80 dark:bg-white/10 border-transparent text-slate-700 dark:text-white hover:bg-white'
                 }`}
                 title="Pincel Arcoíris"
               >
-                <Palette className="w-4 h-4" />
-                <span className="hidden sm:inline">Arcoíris</span>
+                <Sparkles className="w-5 h-5" />
               </button>
 
-              {/* Formas Geométricas (SVG Shapes) */}
+              {/* Formas Geométricas */}
               <button
                 onClick={() => {
                   sounds.playTap();
                   sounds.vibrate(6);
                   setToolMode('shape');
                 }}
-                className={`px-3 py-2 rounded-2xl flex items-center gap-1.5 text-xs font-black border-2 transition-all cursor-pointer zentry-spring-press ${
+                className={`p-2 sm:p-2.5 rounded-2xl flex items-center justify-center border-2 transition-all cursor-pointer zentry-spring-press ${
                   toolMode === 'shape'
                     ? 'bg-amber-400 text-slate-950 scale-105 shadow-md border-white ring-2 ring-amber-300'
-                    : 'bg-white/80 dark:bg-white/10 border-transparent text-slate-700 dark:text-white'
+                    : 'bg-white/80 dark:bg-white/10 border-transparent text-slate-700 dark:text-white hover:bg-white'
                 }`}
                 title="Formas Geométricas"
               >
-                <ActiveShapeIcon className="w-4 h-4" />
-                <span>Formas</span>
+                <ActiveShapeIcon className="w-5 h-5 stroke-[2.5]" />
               </button>
 
               {/* Goma de Borrar */}
@@ -743,108 +743,103 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
                   sounds.vibrate(6);
                   setToolMode('eraser');
                 }}
-                className={`px-3 py-2 rounded-2xl flex items-center gap-1.5 text-xs font-black border-2 transition-all cursor-pointer zentry-spring-press ${
+                className={`p-2 sm:p-2.5 rounded-2xl flex items-center justify-center border-2 transition-all cursor-pointer zentry-spring-press ${
                   toolMode === 'eraser'
                     ? 'bg-purple-600 text-white scale-105 shadow-md border-white ring-2 ring-purple-300'
-                    : 'bg-white/80 dark:bg-white/10 border-transparent text-slate-700 dark:text-white'
+                    : 'bg-white/80 dark:bg-white/10 border-transparent text-slate-700 dark:text-white hover:bg-white'
                 }`}
                 title="Borrador"
               >
-                <Eraser className="w-4 h-4" />
-                <span className="hidden sm:inline">Borrar</span>
+                <Eraser className="w-5 h-5 stroke-[2.5]" />
               </button>
             </div>
 
-            {/* ACCIONES: Deshacer y Limpiar (SVG) */}
-            <div className="flex items-center gap-1.5 shrink-0">
+            {/* Separador */}
+            <div className="h-6 w-px bg-slate-300 dark:bg-white/20" />
+
+            {/* SELECTOR DE 4 TAMAÑOS DE PINCEL (Circulitos Directos) */}
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              {BRUSH_SIZES.map((b) => {
+                const isSelected = brushSize === b.size;
+                return (
+                  <button
+                    key={b.id}
+                    onClick={() => {
+                      sounds.playTap();
+                      sounds.vibrate(6);
+                      setBrushSize(b.size);
+                    }}
+                    className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-all cursor-pointer zentry-spring-press ${
+                      isSelected
+                        ? 'bg-indigo-600 border-2 border-white ring-2 ring-indigo-400 shadow-md scale-110'
+                        : 'bg-white/60 dark:bg-white/15 hover:bg-white/90'
+                    }`}
+                    title={`Tamaño ${b.label}`}
+                  >
+                    <span
+                      style={{
+                        width: `${b.dotSize}px`,
+                        height: `${b.dotSize}px`
+                      }}
+                      className={`rounded-full block transition-colors ${
+                        isSelected ? 'bg-white' : 'bg-slate-700 dark:bg-slate-200'
+                      }`}
+                    />
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Separador */}
+            <div className="h-6 w-px bg-slate-300 dark:bg-white/20" />
+
+            {/* ACCIONES: Deshacer y Limpiar */}
+            <div className="flex items-center gap-1">
               <button
                 onClick={handleUndo}
-                className="p-2 rounded-2xl bg-white/80 dark:bg-white/10 text-slate-700 dark:text-white hover:bg-white active:scale-90 cursor-pointer zentry-spring-press border border-transparent shadow-sm"
+                className="p-2 sm:p-2.5 rounded-2xl bg-white/80 dark:bg-white/10 text-slate-700 dark:text-white hover:bg-white active:scale-90 cursor-pointer zentry-spring-press border border-transparent shadow-sm"
                 title="Deshacer"
               >
-                <Undo2 className="w-4 h-4" />
+                <Undo2 className="w-5 h-5" />
               </button>
 
               <button
                 onClick={handleClear}
-                className="p-2 rounded-2xl bg-white/80 dark:bg-white/10 text-rose-500 hover:bg-rose-50 active:scale-90 cursor-pointer zentry-spring-press border border-transparent shadow-sm"
+                className="p-2 sm:p-2.5 rounded-2xl bg-white/80 dark:bg-white/10 text-rose-500 hover:bg-rose-50 active:scale-90 cursor-pointer zentry-spring-press border border-transparent shadow-sm"
                 title="Limpiar Lienzo"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-5 h-5" />
               </button>
             </div>
           </div>
 
-          {/* Fila 2 Contextual: DOCK DE FORMAS SVG O SELECTOR DE TAMAÑOS */}
-          <div className="w-full pt-1 border-t border-white/15 flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
-            {toolMode === 'shape' ? (
-              /* DOCK DE 8 FORMAS GEOMÉTRICAS CON ICONOS SVG ESTÁNDAR */
-              <div className="flex items-center gap-1.5 w-full justify-around sm:justify-start">
-                <span className="text-[10px] font-black uppercase text-amber-500 dark:text-amber-300 tracking-wider shrink-0 mr-1">
-                  Elegir Forma:
-                </span>
-                {GEOMETRIC_SHAPES.map((s) => {
-                  const isSelected = selectedShape === s.id;
-                  const ShapeIcon = s.Icon;
-                  return (
-                    <button
-                      key={s.id}
-                      onClick={() => {
-                        sounds.playTap();
-                        sounds.vibrate(6);
-                        setSelectedShape(s.id);
-                      }}
-                      className={`py-1.5 px-2.5 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shrink-0 zentry-spring-press ${
-                        isSelected
-                          ? 'bg-amber-400 text-slate-950 scale-108 shadow-md font-black ring-2 ring-white'
-                          : 'bg-white/40 dark:bg-white/10 hover:bg-white/70 text-slate-800 dark:text-slate-200'
-                      }`}
-                      title={s.label}
-                    >
-                      <ShapeIcon className="w-4 h-4 stroke-[2.5]" />
-                      <span className="text-[11px] font-bold hidden md:inline">{s.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            ) : (
-              /* SELECTOR DE 4 TAMAÑOS DE PINCEL CIRCULARES */
-              <div className="flex items-center gap-3 w-full justify-center sm:justify-start">
-                <span className="text-[10px] font-black uppercase text-purple-600 dark:text-purple-300 tracking-wider shrink-0 mr-1">
-                  Grosor:
-                </span>
-                {BRUSH_SIZES.map((b) => {
-                  const isSelected = brushSize === b.size;
-                  return (
-                    <button
-                      key={b.id}
-                      onClick={() => {
-                        sounds.playTap();
-                        sounds.vibrate(6);
-                        setBrushSize(b.size);
-                      }}
-                      className={`w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer zentry-spring-press ${
-                        isSelected
-                          ? 'bg-indigo-600 border-2 border-white ring-2 ring-indigo-400 shadow-lg scale-115'
-                          : 'bg-white/60 dark:bg-white/15 hover:bg-white/90'
-                      }`}
-                      title={`Tamaño: ${b.label} (${b.size}px)`}
-                    >
-                      <span
-                        style={{
-                          width: `${b.dotSize}px`,
-                          height: `${b.dotSize}px`
-                        }}
-                        className={`rounded-full block transition-colors ${
-                          isSelected ? 'bg-white' : 'bg-slate-700 dark:bg-slate-200'
-                        }`}
-                      />
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+          {/* Sub-barra de Formas cuando el modo Forma está activo */}
+          {toolMode === 'shape' && (
+            <div className="w-full pt-1.5 border-t border-white/20 flex items-center justify-around overflow-x-auto no-scrollbar gap-1 animate-spring-in">
+              {GEOMETRIC_SHAPES.map((s) => {
+                const isSelected = selectedShape === s.id;
+                const ShapeIcon = s.Icon;
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => {
+                      sounds.playTap();
+                      sounds.vibrate(6);
+                      setSelectedShape(s.id);
+                    }}
+                    className={`p-2 rounded-xl flex items-center justify-center transition-all cursor-pointer shrink-0 zentry-spring-press ${
+                      isSelected
+                        ? 'bg-amber-400 text-slate-950 scale-110 shadow-md ring-2 ring-white'
+                        : 'bg-white/50 dark:bg-white/10 hover:bg-white text-slate-800 dark:text-slate-200'
+                    }`}
+                    title={s.label}
+                  >
+                    <ShapeIcon className="w-5 h-5 stroke-[2.5]" />
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* ========================================================= */}
@@ -852,7 +847,10 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
         {/* ========================================================= */}
         <div
           ref={containerRef}
-          onPointerDown={handlePointerDown}
+          onPointerDown={(e) => {
+            if (showColorPicker) setShowColorPicker(false);
+            handlePointerDown(e);
+          }}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerUp}
@@ -869,72 +867,180 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
         </div>
 
         {/* ========================================================= */}
-        {/* 3. BARRA INFERIOR: PALETA ESPACIOSA, ROMBO IA Y GUARDAR   */}
+        {/* 3. BARRA INFERIOR: BOTÓN DE COLOR, QUICK COLORS, IA Y SAVE */}
         {/* ========================================================= */}
-        <div className="flex items-center justify-between gap-2 p-2.5 bg-white/30 dark:bg-slate-900/70 backdrop-blur-2xl rounded-[28px] border border-white/40 dark:border-white/15 shadow-xl">
-          {/* Paleta de Colores con espaciado amplio y sin compresión */}
-          <div className="flex-1 flex items-center gap-2 overflow-x-auto no-scrollbar py-1 px-1">
-            {COLOR_PALETTE.map((c) => {
-              const isSelected = selectedColor === c.color && toolMode !== 'eraser';
-              return (
-                <button
-                  key={c.id}
-                  onClick={() => {
-                    sounds.playTap();
-                    sounds.vibrate(5);
-                    setSelectedColor(c.color);
-                    if (toolMode === 'eraser') setToolMode('brush');
-                  }}
-                  style={{ backgroundColor: c.color }}
-                  className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full shrink-0 border-2 transition-all cursor-pointer flex items-center justify-center ${
-                    isSelected
-                      ? 'scale-118 border-white ring-4 ring-pink-500 shadow-xl'
-                      : 'border-white/80 dark:border-white/40 hover:scale-105'
-                  }`}
-                  title={`Color ${c.id}`}
-                >
-                  {isSelected && (
-                    <Check
-                      className={`w-4 h-4 ${
-                        c.color === '#FFFFFF' || c.color === '#EAB308'
-                          ? 'text-slate-900'
-                          : 'text-white'
-                      } stroke-[3]`}
-                    />
-                  )}
-                </button>
-              );
-            })}
+        <div className="relative flex items-center justify-between gap-2 p-2 sm:p-2.5 bg-white/40 dark:bg-slate-900/80 backdrop-blur-2xl rounded-[28px] border border-white/50 dark:border-white/15 shadow-xl">
+          {/* LADO IZQUIERDO: Botón Maestro de Color + Colores Rápidos */}
+          <div className="flex items-center gap-2">
+            {/* BOTÓN MAESTRO DE PALETA / COLOR ACTUAL */}
+            <button
+              onClick={() => {
+                sounds.playTap();
+                sounds.vibrate(6);
+                setShowColorPicker(!showColorPicker);
+              }}
+              className="px-3 py-2 rounded-2xl bg-white/80 dark:bg-white/10 hover:bg-white dark:hover:bg-white/20 border-2 border-white/80 shadow-md flex items-center gap-2 cursor-pointer zentry-spring-press"
+              title="Abrir Gama Completa de Colores"
+            >
+              {/* Swatch de Color Activo */}
+              <div
+                style={{ backgroundColor: selectedColor }}
+                className="w-7 h-7 rounded-full border-2 border-white shadow-[0_0_10px_rgba(0,0,0,0.2)] flex items-center justify-center shrink-0"
+              />
+              <Palette className="w-5 h-5 text-slate-700 dark:text-white" />
+            </button>
+
+            {/* ACCESOS DIRECTOS DE COLORES POPULARES (5 puntos) */}
+            <div className="hidden xs:flex items-center gap-1.5 pl-1 border-l border-slate-300 dark:border-white/20">
+              {QUICK_COLORS.map((hex) => {
+                const isSelected = selectedColor.toLowerCase() === hex.toLowerCase() && toolMode !== 'eraser';
+                return (
+                  <button
+                    key={hex}
+                    onClick={() => {
+                      sounds.playTap();
+                      sounds.vibrate(5);
+                      setSelectedColor(hex);
+                      if (toolMode === 'eraser') setToolMode('brush');
+                    }}
+                    style={{ backgroundColor: hex }}
+                    className={`w-7 h-7 rounded-full border-2 transition-all cursor-pointer shrink-0 flex items-center justify-center ${
+                      isSelected
+                        ? 'scale-120 border-white ring-2 ring-pink-500 shadow-md'
+                        : 'border-white/80 hover:scale-110'
+                    }`}
+                  />
+                );
+              })}
+            </div>
           </div>
 
-          {/* Acciones Principales: Rombo IA Zentry + Guardar SVG */}
-          <div className="flex items-center gap-2 shrink-0 pl-1 border-l border-white/20">
-            {/* BOTÓN INTELIGENCIA ARTIFICIAL (ROMBO ZENTRY) */}
+          {/* LADO DERECHO: Rombo IA Zentry + Guardar */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* BOTÓN IA ZENTRY */}
             <button
               onClick={handleAiGiveLife}
               disabled={isTransformingAi}
-              className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 text-white flex items-center justify-center shadow-xl border-2 border-white active:scale-90 cursor-pointer zentry-spring-press relative group disabled:opacity-50"
-              title="¡Dar Vida Mágica con Zentry AI!"
+              className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 text-white flex items-center justify-center shadow-xl border-2 border-white active:scale-90 cursor-pointer zentry-spring-press relative group disabled:opacity-50"
+              title="Dar Vida con IA"
             >
               {isTransformingAi ? (
-                <RefreshCw className="w-6 h-6 animate-spin text-amber-300" />
+                <RefreshCw className="w-5 h-5 animate-spin text-amber-300" />
               ) : (
                 <>
-                  <ZentryLogoIcon className="w-6 h-6 sm:w-7 sm:h-7 group-hover:scale-112 transition-transform" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-300 absolute -top-1 -right-1 animate-ping" />
+                  <ZentryLogoIcon className="w-5 h-5 sm:w-6 sm:h-6 group-hover:scale-112 transition-transform" />
+                  <span className="w-2 h-2 rounded-full bg-amber-300 absolute -top-0.5 -right-0.5 animate-ping" />
                 </>
               )}
             </button>
 
-            {/* BOTÓN GUARDAR / DESCARGAR PNG CON ICONO SVG */}
+            {/* BOTÓN DESCARGAR */}
             <button
               onClick={handleSave}
-              className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-tr from-emerald-400 to-teal-600 text-white flex items-center justify-center shadow-xl border-2 border-white active:scale-90 cursor-pointer zentry-spring-press"
+              className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gradient-to-tr from-emerald-400 to-teal-600 text-white flex items-center justify-center shadow-xl border-2 border-white active:scale-90 cursor-pointer zentry-spring-press"
               title="Guardar Dibujo"
             >
-              <Download className="w-6 h-6 text-white stroke-[2.5]" />
+              <Download className="w-5 h-5 text-white stroke-[2.5]" />
             </button>
           </div>
+
+          {/* ========================================================= */}
+          {/* POPOVER / MODAL: GAMA COMPLETA DE COLORES ESTILO PAINT    */}
+          {/* ========================================================= */}
+          {showColorPicker && (
+            <div
+              className="absolute bottom-16 left-2 z-40 w-72 sm:w-80 p-3.5 rounded-[28px] bg-[#120E24]/95 backdrop-blur-2xl border-2 border-purple-400/50 shadow-2xl text-white animate-spring-in space-y-3"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Encabezado del Selector */}
+              <div className="flex items-center justify-between pb-1 border-b border-white/15">
+                <div className="flex items-center gap-2">
+                  <Palette className="w-4 h-4 text-pink-400" />
+                  <span className="text-xs font-black uppercase tracking-wider text-white">
+                    Gama de Colores
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div
+                    style={{ backgroundColor: selectedColor }}
+                    className="w-5 h-5 rounded-full border border-white shadow-sm"
+                  />
+                  <button
+                    onClick={() => setShowColorPicker(false)}
+                    className="p-1 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* 1. Matriz de Colores Estilo Paint (6x6 = 36 colores) */}
+              <div className="space-y-1.5">
+                {PAINT_PALETTE_MATRIX.map((row, rIdx) => (
+                  <div key={rIdx} className="grid grid-cols-6 gap-1.5">
+                    {row.map((hex) => {
+                      const isSelected = selectedColor.toLowerCase() === hex.toLowerCase();
+                      return (
+                        <button
+                          key={hex}
+                          onClick={() => {
+                            sounds.playTap();
+                            sounds.vibrate(5);
+                            setSelectedColor(hex);
+                            if (toolMode === 'eraser') setToolMode('brush');
+                          }}
+                          style={{ backgroundColor: hex }}
+                          className={`w-full aspect-square rounded-xl border transition-transform cursor-pointer flex items-center justify-center ${
+                            isSelected
+                              ? 'scale-115 border-white ring-2 ring-pink-400 shadow-lg'
+                              : 'border-white/20 hover:scale-110'
+                          }`}
+                        >
+                          {isSelected && (
+                            <Check
+                              className={`w-3.5 h-3.5 ${
+                                hex === '#FFFFFF' || hex === '#E2E8F0' || hex === '#FDE047'
+                                  ? 'text-slate-950'
+                                  : 'text-white'
+                              } stroke-[3]`}
+                            />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+
+              {/* 2. Selector Personalizado / Espectro Libre */}
+              <div className="pt-2 border-t border-white/15 flex items-center justify-between gap-2">
+                <label
+                  htmlFor="customColorPicker"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-slate-200 cursor-pointer zentry-spring-press"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                  <span>Personalizado</span>
+                  <input
+                    id="customColorPicker"
+                    type="color"
+                    value={selectedColor}
+                    onChange={(e) => {
+                      setSelectedColor(e.target.value);
+                      if (toolMode === 'eraser') setToolMode('brush');
+                    }}
+                    className="sr-only"
+                  />
+                </label>
+
+                <button
+                  onClick={() => setShowColorPicker(false)}
+                  className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 text-white text-xs font-black shadow-md cursor-pointer zentry-spring-press"
+                >
+                  Listo
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* ========================================================= */}
