@@ -11,6 +11,8 @@ import {
 import type { ScreenId, AgeTier } from '../../types/zentry';
 import { ZentrySubPageScaffold } from '../shell/ZentrySubPageScaffold';
 import { FisheyeBubbleGrid, type FisheyeItemData } from './FisheyeBubbleGrid';
+import { sounds } from '../../services/soundEffects';
+import { voiceService } from '../../services/voiceSpeech';
 
 interface Props {
   onBack: () => void;
@@ -97,7 +99,14 @@ export const ZentryCreationScreen: React.FC<Props> = ({
     }
   ];
 
-  const apps = ageTier === 'toddler' ? toddlerCreationApps : explorerCreationApps;
+  const handleOpenToddlerApp = (app: FisheyeItemData) => {
+    sounds.playAppOpen();
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate(15);
+    }
+    voiceService.speakFeedback(`¡${app.name}!`);
+    onNavigate(app.screen);
+  };
 
   return (
     <ZentrySubPageScaffold
@@ -106,14 +115,62 @@ export const ZentryCreationScreen: React.FC<Props> = ({
       onBack={onBack}
       isDark={isDark}
     >
-      <div className="w-full h-full relative overflow-hidden rounded-[28px]">
-        <FisheyeBubbleGrid
-          items={apps}
-          onSelectApp={(app) => {
-            onNavigate(app.screen);
-          }}
-          isDark={isDark}
-        />
+      <div className="w-full h-full relative overflow-hidden rounded-[28px] flex flex-col justify-center items-center">
+        {ageTier === 'toddler' ? (
+          /* Vista Táctil de Alto Impacto para 2-5 Años: 3 Grandes Tarjetas Squircles */
+          <div className="w-full max-w-sm flex flex-col items-center justify-center gap-4 py-2">
+            {toddlerCreationApps.map((app) => {
+              const Icon = app.icon;
+              return (
+                <button
+                  key={app.id}
+                  onClick={() => handleOpenToddlerApp(app)}
+                  className={`w-full py-4 px-5 rounded-[28px] flex items-center gap-4 cursor-pointer transition-all duration-200 zentry-spring-press border shadow-xl group ${
+                    isDark
+                      ? 'bg-[#120E24]/90 hover:bg-[#120E24] border-purple-400/40 text-white'
+                      : 'bg-white/85 hover:bg-white border-pink-300/60 text-[#1E293B]'
+                  }`}
+                >
+                  <div
+                    className={`w-16 h-16 rounded-[22px] bg-gradient-to-br ${app.gradient} flex items-center justify-center text-white shadow-lg shrink-0 group-hover:scale-110 transition-transform`}
+                  >
+                    <Icon className="w-8 h-8 drop-shadow-md" />
+                  </div>
+
+                  <div className="flex-1 text-left min-w-0">
+                    <span className="text-lg font-black tracking-tight block drop-shadow-sm">
+                      {app.name}
+                    </span>
+                    <span
+                      className={`text-xs font-bold uppercase tracking-wider ${
+                        isDark ? 'text-purple-300' : 'text-pink-600'
+                      }`}
+                    >
+                      {app.category}
+                    </span>
+                  </div>
+
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${
+                      isDark ? 'bg-white/10 text-purple-200' : 'bg-pink-100 text-pink-700'
+                    }`}
+                  >
+                    ✨
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          /* Vista Esférica Fisheye para 5-10 Años */
+          <FisheyeBubbleGrid
+            items={explorerCreationApps}
+            onSelectApp={(app) => {
+              onNavigate(app.screen);
+            }}
+            isDark={isDark}
+          />
+        )}
       </div>
     </ZentrySubPageScaffold>
   );

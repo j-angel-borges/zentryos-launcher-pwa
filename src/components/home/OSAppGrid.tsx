@@ -5,14 +5,10 @@ import {
   Clock, 
   Calendar as CalendarIcon, 
   Folder, 
-  GraduationCap, 
+  GraduationCap,
   Palette, 
   Play, 
-  Gamepad2,
-  Zap,
-  Wand2,
-  Sparkles,
-  BookOpen
+  Gamepad2 
 } from 'lucide-react';
 import type { ScreenId, AgeTier } from '../../types/zentry';
 import { sounds } from '../../services/soundEffects';
@@ -65,48 +61,6 @@ export const OSAppGrid: React.FC<Props> = ({ isDark, ageTier = 'explorer', onNav
 
   const explorerApps = [
     { 
-      name: 'Zentry Build', 
-      icon: Zap, 
-      screen: 'app_builder' as ScreenId, 
-      bg: 'bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 text-white', 
-      speech: '' 
-    },
-    { 
-      name: 'Imagine AI', 
-      icon: Wand2, 
-      screen: 'image_generator' as ScreenId, 
-      bg: 'bg-gradient-to-tr from-amber-400 via-orange-500 to-pink-500 text-white', 
-      speech: '' 
-    },
-    { 
-      name: 'Simulador', 
-      icon: Sparkles, 
-      screen: 'simulator' as ScreenId, 
-      bg: 'bg-gradient-to-tr from-emerald-400 via-teal-500 to-cyan-600 text-white', 
-      speech: '' 
-    },
-    { 
-      name: 'Redactor', 
-      icon: BookOpen, 
-      screen: 'redactor' as ScreenId, 
-      bg: 'bg-gradient-to-tr from-yellow-400 via-amber-500 to-orange-500 text-white', 
-      speech: '' 
-    },
-    { 
-      name: 'Tutor AI', 
-      icon: GraduationCap, 
-      screen: 'tutor_hub' as ScreenId, 
-      bg: 'bg-gradient-to-tr from-purple-500 to-indigo-600 text-white', 
-      speech: '' 
-    },
-    { 
-      name: 'Cámara', 
-      icon: Camera, 
-      screen: 'camera' as ScreenId, 
-      bg: 'bg-gradient-to-tr from-rose-500 to-pink-600 text-white', 
-      speech: '' 
-    },
-    { 
       name: 'Calculadora', 
       icon: Calculator, 
       screen: 'calculator' as ScreenId, 
@@ -114,10 +68,38 @@ export const OSAppGrid: React.FC<Props> = ({ isDark, ageTier = 'explorer', onNav
       speech: '' 
     },
     { 
+      name: 'Cámara', 
+      icon: Camera, 
+      screen: 'camera' as ScreenId, 
+      bg: 'bg-gradient-to-tr from-amber-400 to-orange-500 text-white', 
+      speech: '' 
+    },
+    { 
+      name: 'Reloj', 
+      icon: Clock, 
+      screen: 'reloj' as ScreenId, 
+      bg: 'bg-gradient-to-tr from-yellow-400 to-amber-500 text-white', 
+      speech: '' 
+    },
+    { 
+      name: 'Calendario', 
+      icon: CalendarIcon, 
+      screen: 'calendar' as ScreenId, 
+      bg: 'bg-gradient-to-tr from-emerald-400 to-teal-600 text-white', 
+      speech: '' 
+    },
+    { 
       name: 'Archivos', 
       icon: Folder, 
       screen: 'files' as ScreenId, 
-      bg: 'bg-gradient-to-tr from-slate-700 to-slate-900 text-white', 
+      bg: 'bg-gradient-to-tr from-indigo-500 to-purple-600 text-white', 
+      speech: '' 
+    },
+    { 
+      name: 'Tutor', 
+      icon: GraduationCap, 
+      screen: 'tutor_hub' as ScreenId, 
+      bg: 'bg-gradient-to-tr from-purple-500 to-pink-500 text-white', 
       speech: '' 
     }
   ];
