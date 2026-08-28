@@ -190,11 +190,14 @@ Mantén la respuesta en 2 oraciones breves, comprensibles, alegres y socráticas
                 <div className="leading-relaxed drop-shadow-sm">{msg.text}</div>
                 {msg.sender === 'ai' && (
                   <button
-                    onClick={() => voiceService.speakFeedback(msg.text)}
-                    className="flex items-center gap-1 text-[10px] text-purple-300 hover:text-white pt-0.5 cursor-pointer font-bold"
+                    onClick={() => {
+                      sounds.playTap();
+                      voiceService.speakFeedback(msg.text);
+                    }}
+                    className="w-7 h-7 rounded-full bg-white/15 hover:bg-white/25 text-purple-200 hover:text-white flex items-center justify-center cursor-pointer transition-all zentry-spring-press mt-1 shadow-sm"
+                    title="Escuchar"
                   >
-                    <Volume2 className="w-3.5 h-3.5" />
-                    <span>Escuchar</span>
+                    <Volume2 className="w-4 h-4" />
                   </button>
                 )}
               </div>
