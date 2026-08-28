@@ -394,12 +394,12 @@ Mantén la respuesta en 2 oraciones breves, comprensibles, alegres y socráticas
               <span className="text-xs font-black drop-shadow-sm">Ver</span>
             </button>
 
-<<<<<<< HEAD
-            {/* 3. HABLAR (VOZ IA) */}
+            {/* 3. AUDIO & VOZ */}
             <button
               onClick={() => {
                 sounds.playTap();
                 setActiveTab('voice');
+                setSelectedPersona(voiceService.getPersona());
               }}
               className={
                 (activeTab === 'voice'
@@ -408,29 +408,10 @@ Mantén la respuesta en 2 oraciones breves, comprensibles, alegres y socráticas
                 'py-2.5 px-2 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all zentry-spring-press cursor-pointer'
               }
             >
-              <Mic className="w-5 h-5 text-pink-200" />
-              <span className="text-xs font-black drop-shadow-sm">Hablar</span>
+              <Volume2 className="w-5 h-5 text-pink-200" />
+              <span className="text-xs font-black drop-shadow-sm">Audio</span>
             </button>
           </div>
-=======
-              {/* Botón 3: Audio & Selección de Voz */}
-              <button
-                onClick={() => {
-                  sounds.playTap();
-                  setActiveTab('voice');
-                  setSelectedPersona(voiceService.getPersona());
-                }}
-                className={
-                  (activeTab === 'voice'
-                    ? 'bg-purple-600 text-white shadow-md font-bold '
-                    : 'bg-white/10 text-slate-300 hover:text-white ') +
-                  'py-2 px-1 rounded-2xl text-[11px] flex flex-col items-center gap-1 cursor-pointer transition-all zentry-press'
-                }
-              >
-                <Volume2 className="w-4 h-4 text-sky-400" />
-                <span>Audio / Voz</span>
-              </button>
->>>>>>> feat/neural-tts-gcp
 
           {/* ─────────────────────────────────────────────────────────────
               SEQUENTIAL FUNCTION DISPLAY

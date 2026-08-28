@@ -2,6 +2,22 @@
 
 Historial de cambios, fusiones de worktrees y versiones del Launcher PWA.
 
+## [2026-08-28] — Merge: Evolución de Suite Creativa (Lienzo, Simulador, Imagine, Build) & Curación Vocal Elena/Lucas en Isla Dinámica
+- **1. Suite de Creación & UI (`feat/ui-shell-age-tiering` + `feat/microapps-ai-core`):**
+  - **Lienzo (`ZentryFreeCanvasScreen.tsx`):** Trazo anti-pixelado con suavizado Bézier cuadrático, 4 grosores táctiles, dock de 8 formas vectoriales y selector maestro de 36 colores estilo Paint flotante (`z-50`).
+  - **Simulador (`ZentrySimulatorScreen.tsx`):** Estandarización de iconos SVG nativos de `lucide-react`, sustituyendo emojis en accesorios, climas y auras mágicas.
+  - **Imagine AI & Zentry Build (`ZentryImagineScreen.tsx`, `ZentryBuildScreen.tsx`):** Integración de generación visual y constructor de mini apps interactivo en tiempo real con Gemini/Vertex AI para el segmento Explorer (5-10+ años).
+  - **Misiones Reales:** Estandarización visual de la ruleta de retos físicos y badges coleccionables con iconos vectoriales.
+  - **Cajón de Crear & Burbujas:** Desbloqueo de eventos táctiles para apertura instantánea en `FisheyeBubbleGrid.tsx`.
+- **2. Voice TTS GCP & Isla Dinámica (`feat/neural-tts-gcp`):**
+  - **Curación Vocal:** Reducción a 2 voces humanas hiperrealistas de estudio: **Elena** (femenina pedagógica, GCP Studio-C) y **Lucas** (masculino dinámico, GCP Neural2-B) sin apellidos ni textos redundantes.
+  - **Isla Dinámica (Tab Audio):** Selector de 2 columnas de alta fidelidad con muestra de voz inmediata y barra de preguntas socráticas por voz.
+  - **Suite E2E:** 123 tests de síntesis vocal neuronal ejecutados con 100% de éxito.
+- **Estado de Build:** ✓ Compilación exitosa verificada (`npm run build` SingleFile `dist/index.html` ~1.50 MB, código 0).
+- **Estado de Tests:** ✓ 123/123 tests E2E pasando.
+
+---
+
 ## [2026-08-24] — Merge General: Integración de Todas las Verticales (Ramas: feat/ui-shell-age-tiering, feat/microapps-ai-core, feat/entertainment-hub, feat/neural-tts-gcp)
 - **1. UI & Shell (`feat/ui-shell-age-tiering`):**
   - Modularización de vistas por edad: Home Toddler (2-5 años) con cajones simétricos Bento Liquid Glass (`Crear`, `Entretenimiento`, `Cámara`, `Reloj`) y Home Explorer (5-10+ años) con App Grid completo.
