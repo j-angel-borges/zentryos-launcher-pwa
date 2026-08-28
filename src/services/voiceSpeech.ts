@@ -2,14 +2,14 @@ import type { VoiceCommandResult } from '../types/zentry';
 
 export type AgeCohort = 'toddler' | 'explorer';
 
-export type VoicePersona = 'toddler_sweet' | 'socratic_studio' | 'academic_female' | 'explorer_adventurer';
+export type VoicePersona = 'zentry_jovial' | 'toddler_sweet' | 'socratic_mentor' | 'companion_spark';
 
 export interface TTSVoiceConfig {
   languageCode: string;
   name: string;
   ssmlGender: 'FEMALE' | 'MALE' | 'NEUTRAL';
   pitch: number; // Pitch en semitonos (-2.0 a +2.0)
-  speakingRate: number; // 0.85 a 1.20 (óptimo 0.98 a 1.04)
+  speakingRate: number; // 0.85 a 1.20 (óptimo 0.98 a 1.05)
   volumeGainDb?: number; // 0.0 a 3.0 (óptimo 1.2 a 1.8)
   personaId?: VoicePersona;
 }
@@ -49,49 +49,49 @@ export interface VoicePersonaInfo {
 }
 
 export const VOICE_PERSONAS: Record<VoicePersona, VoicePersonaInfo> = {
-  toddler_sweet: {
-    id: 'toddler_sweet',
-    name: 'Zentry Amigo (Dulce)',
-    description: 'Voz femenina cálida, afectuosa y expresiva para infantes',
+  zentry_jovial: {
+    id: 'zentry_jovial',
+    name: 'Zentry Amiga (Jovial)',
+    description: 'Voz femenina alegre, optimista, luminosa y muy cercana',
     cohort: 'toddler',
     gcpModel: 'es-US-Neural2-A',
     gender: 'FEMALE',
-    defaultPitch: 0.8,
-    defaultRate: 1.02,
+    defaultPitch: 1.2,
+    defaultRate: 1.03,
+    defaultGain: 1.6
+  },
+  toddler_sweet: {
+    id: 'toddler_sweet',
+    name: 'Zentry Dulce (Infantil)',
+    description: 'Voz femenina tierna, suave y cariñosa para los más pequeños',
+    cohort: 'toddler',
+    gcpModel: 'es-US-Neural2-A',
+    gender: 'FEMALE',
+    defaultPitch: 1.5,
+    defaultRate: 1.01,
     defaultGain: 1.5
   },
-  socratic_studio: {
-    id: 'socratic_studio',
-    name: 'Tutor Socrático (Studio HD)',
-    description: 'Voz masculina reflexiva, madura y de fidelidad estudio 24kHz',
-    cohort: 'explorer',
-    gcpModel: 'es-US-Studio-B',
-    gender: 'MALE',
-    defaultPitch: 0.0,
-    defaultRate: 0.98,
-    defaultGain: 1.2
-  },
-  academic_female: {
-    id: 'academic_female',
-    name: 'Guía Académica (Studio)',
-    description: 'Voz femenina articulada, clara y motivadora para estudio',
+  socratic_mentor: {
+    id: 'socratic_mentor',
+    name: 'Mentora Socrática (Studio)',
+    description: 'Voz femenina inspiradora, reflexiva, motivadora y cálida',
     cohort: 'explorer',
     gcpModel: 'es-ES-Studio-C',
     gender: 'FEMALE',
-    defaultPitch: 0.2,
+    defaultPitch: 0.7,
     defaultRate: 1.0,
-    defaultGain: 1.3
-  },
-  explorer_adventurer: {
-    id: 'explorer_adventurer',
-    name: 'Amigo Aventurero (Neural2)',
-    description: 'Voz juvenil enérgica y curiosa para retos STEM y misiones',
-    cohort: 'explorer',
-    gcpModel: 'es-US-Neural2-C',
-    gender: 'MALE',
-    defaultPitch: 0.4,
-    defaultRate: 1.04,
     defaultGain: 1.4
+  },
+  companion_spark: {
+    id: 'companion_spark',
+    name: 'Chispa Creativa (Enérgica)',
+    description: 'Voz femenina chispeante y motivadora para retos y creatividad',
+    cohort: 'explorer',
+    gcpModel: 'es-ES-Neural2-C',
+    gender: 'FEMALE',
+    defaultPitch: 1.0,
+    defaultRate: 1.05,
+    defaultGain: 1.5
   }
 };
 
@@ -100,36 +100,36 @@ export const AGE_VOICE_PROFILES: Record<AgeCohort, TTSVoiceConfig> = {
     languageCode: 'es-US',
     name: 'es-US-Neural2-A',
     ssmlGender: 'FEMALE',
-    pitch: 0.8, // Tono dulce y cálido natural (no chillón ni robótico)
-    speakingRate: 1.02, // Cadencia animada y fluida
-    volumeGainDb: 1.5,
-    personaId: 'toddler_sweet'
+    pitch: 1.2, // Tono dulce, alegre y femenino
+    speakingRate: 1.03, // Cadencia jovial y fluida
+    volumeGainDb: 1.6,
+    personaId: 'zentry_jovial'
   },
   explorer: {
-    languageCode: 'es-US',
-    name: 'es-US-Studio-B', // Modelo de ultra-alta fidelidad Studio HD
-    ssmlGender: 'MALE',
-    pitch: 0.0, // Tono neutro, acústica profunda y socrática
-    speakingRate: 0.98, // Ritmo reflexivo y articulado
-    volumeGainDb: 1.2,
-    personaId: 'socratic_studio'
+    languageCode: 'es-ES',
+    name: 'es-ES-Studio-C', // Modelo de estudio femenino de alta fidelidad
+    ssmlGender: 'FEMALE',
+    pitch: 0.7, // Tono femenino inspirador y socrático
+    speakingRate: 1.0, // Ritmo claro y motivador
+    volumeGainDb: 1.4,
+    personaId: 'socratic_mentor'
   }
 };
 
 export const DEFAULT_PRELOAD_PHRASES = [
-  '¡Vamos a crear y dibujar!',
-  '¡Hora de videos, cuentos y música!',
-  '¡Sonríe a la cámara!',
+  '¡Hola! Soy Zentry. ¡Vamos a descubrir algo genial hoy! ✨',
+  '¡Vamos a crear y dibujar cosas hermosas! 🎨',
+  '¡Hora de videos divertidos, cuentos y música! 🌟',
+  '¡Sonríe a la cámara, qué linda foto! 📸',
   '¡Mira qué hora es!',
   'Abriendo el Escudo de Contenido y Algoritmo de Pasiones.',
-  'Activando tu Tutor Socrático de Estudio.',
-  'Iniciando Visión Artificial Multimodal para escanear tu ejercicio.',
+  'Activando tu Tutora Socrática de Estudio.',
+  'Iniciando Visión Artificial Multimodal para ver tu ejercicio.',
   'Abriendo NeuroArt Studio para plasmar tus ideas.',
   'Generando simulación de mundo interactivo.',
   'Abriendo Calculadora Científica Inteligente.',
   'Regresando a la pantalla principal.',
-  '¡Hola! Soy Zentry. ¿Qué te gustaría descubrir o resolver hoy?',
-  'He procesado tu consulta. Vamos a resolverlo paso a paso en tu Tutor de Estudio.'
+  'He procesado tu consulta. Vamos a resolverlo paso a paso juntas.'
 ];
 
 const DB_NAME = 'zentry_tts_db';
@@ -140,7 +140,7 @@ export class VoiceSpeechService {
   private recognition: any = null;
   private isListening: boolean = false;
   private currentCohort: AgeCohort = 'toddler';
-  private selectedPersona: VoicePersona = 'toddler_sweet';
+  private selectedPersona: VoicePersona = 'zentry_jovial';
 
   // Custom persistent overrides
   private customSettings: {
@@ -274,7 +274,7 @@ export class VoiceSpeechService {
 
   public setAgeProfile(cohort: AgeCohort) {
     this.currentCohort = cohort;
-    this.selectedPersona = cohort === 'toddler' ? 'toddler_sweet' : 'socratic_studio';
+    this.selectedPersona = cohort === 'toddler' ? 'zentry_jovial' : 'socratic_mentor';
   }
 
   public getAgeProfile(): AgeCohort {
@@ -294,13 +294,13 @@ export class VoiceSpeechService {
   }
 
   public getVoiceConfig(): TTSVoiceConfig {
-    const persona = VOICE_PERSONAS[this.selectedPersona] || VOICE_PERSONAS.toddler_sweet;
+    const persona = VOICE_PERSONAS[this.selectedPersona] || VOICE_PERSONAS.zentry_jovial;
     const pitchOffset = this.customSettings.pitchOffset ?? 0;
     const rateMultiplier = this.customSettings.rateMultiplier ?? 1.0;
     const volumeGain = this.customSettings.volumeGainDb ?? persona.defaultGain;
 
     return {
-      languageCode: 'es-US',
+      languageCode: persona.cohort === 'explorer' && persona.gcpModel.startsWith('es-ES') ? 'es-ES' : 'es-US',
       name: persona.gcpModel,
       ssmlGender: persona.gender,
       pitch: Number((persona.defaultPitch + pitchOffset).toFixed(2)),
@@ -318,10 +318,10 @@ export class VoiceSpeechService {
       targetPersona = options.personaId;
     }
 
-    const persona = VOICE_PERSONAS[targetPersona || 'toddler_sweet'];
+    const persona = VOICE_PERSONAS[targetPersona || 'zentry_jovial'];
 
     return {
-      languageCode: options?.languageCode || base.languageCode,
+      languageCode: options?.languageCode || (persona.cohort === 'explorer' && persona.gcpModel.startsWith('es-ES') ? 'es-ES' : base.languageCode),
       name: options?.voiceName || persona.gcpModel || base.name,
       ssmlGender: persona.gender || base.ssmlGender,
       pitch: options?.pitch !== undefined ? options.pitch : base.pitch,
@@ -749,32 +749,23 @@ export class VoiceSpeechService {
       const name = voice.name.toLowerCase();
 
       // Top priority: Modern Edge/Chrome Natural Neural Voices
-      if (name.includes('natural') || name.includes('online')) score += 100;
-      if (name.includes('neural')) score += 90;
-      if (name.includes('google') || name.includes('español')) score += 75;
+      if (name.includes('natural') || name.includes('online')) score += 120;
+      if (name.includes('neural')) score += 100;
+      if (name.includes('google') || name.includes('español')) score += 80;
 
-      if (isFemale) {
-        // High quality female voices
-        if (name.includes('dalia') || name.includes('paloma') || name.includes('monica') || name.includes('paulina') || name.includes('valerie') || name.includes('sabina')) {
-          score += 40;
-        }
-        if (name.includes('female') || name.includes('mujer') || name.includes('femenina')) score += 25;
-      } else {
-        // High quality male voices
-        if (name.includes('jorge') || name.includes('alvaro') || name.includes('alonso') || name.includes('carlos') || name.includes('diego') || name.includes('gonzalo')) {
-          score += 40;
-        }
-        if (name.includes('male') || name.includes('hombre') || name.includes('masculino')) score += 25;
+      // Prioritize feminine voices for warm, approachable persona
+      if (isFemale || name.includes('dalia') || name.includes('paloma') || name.includes('carlota') || name.includes('valeria') || name.includes('monica') || name.includes('paulina') || name.includes('sabina') || name.includes('female') || name.includes('mujer') || name.includes('femenina')) {
+        score += 60;
       }
 
-      // Latin American preference
+      // Latin American preference for gentle, friendly melodic cadence
       if (voice.lang.includes('MX') || voice.lang.includes('US') || voice.lang.includes('PE') || voice.lang.includes('CO')) {
-        score += 15;
+        score += 20;
       }
 
       // Penalize legacy robotic Desktop voices when Natural voices are available
       if (name.includes('desktop')) {
-        score -= 40;
+        score -= 50;
       }
 
       return { voice, score };
@@ -803,14 +794,13 @@ export class VoiceSpeechService {
         utterance.voice = naturalVoice;
       }
 
-      // Calibrate human pitch & rate (avoiding screechy pitch shifts)
-      if (this.currentCohort === 'toddler') {
-        utterance.pitch = Math.min(1.15, Math.max(0.9, 1.04 + (this.customSettings.pitchOffset ?? 0) * 0.05));
-        utterance.rate = Math.min(1.2, Math.max(0.85, 1.0 * (this.customSettings.rateMultiplier ?? 1.0)));
-      } else {
-        utterance.pitch = Math.min(1.1, Math.max(0.85, 0.96 + (this.customSettings.pitchOffset ?? 0) * 0.05));
-        utterance.rate = Math.min(1.15, Math.max(0.85, 0.98 * (this.customSettings.rateMultiplier ?? 1.0)));
-      }
+      // Calibrate human pitch & rate (feminine, warm, friendly and cheerful)
+      const isExplorer = this.currentCohort === 'explorer';
+      const basePitch = isExplorer ? 1.06 : 1.12;
+      const baseRate = isExplorer ? 1.0 : 1.03;
+
+      utterance.pitch = Math.min(1.25, Math.max(0.95, basePitch + (this.customSettings.pitchOffset ?? 0) * 0.05));
+      utterance.rate = Math.min(1.20, Math.max(0.90, baseRate * (this.customSettings.rateMultiplier ?? 1.0)));
 
       utterance.volume = 1.0;
 
