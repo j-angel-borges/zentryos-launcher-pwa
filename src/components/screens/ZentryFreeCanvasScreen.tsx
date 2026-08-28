@@ -11,7 +11,9 @@ import {
   Heart,
   Smile,
   Zap,
-  RefreshCw
+  RefreshCw,
+  Layers,
+  MapPin
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ZentrySubPageScaffold } from '../shell/ZentrySubPageScaffold';
@@ -46,7 +48,10 @@ const BACKGROUNDS = [
 
 interface AiLifeResult {
   title: string;
+  category: string;
+  strokesDescription?: string;
   detectedSubject: string;
+  compositionMapping?: string;
   enhancedImageUrl: string;
   speechFeedback: string;
 }
@@ -213,7 +218,7 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
     confetti({ particleCount: 80, spread: 80, origin: { y: 0.6 } });
   };
 
-  // 🤖 DAR VIDA CON INTELIGENCIA ARTIFICIAL ZENTRY
+  // 🤖 DAR VIDA CON INTELIGENCIA ARTIFICIAL ZENTRY (ANÁLISIS DE TRAZOS Y CATEGORÍAS)
   const handleAiGiveLife = async () => {
     if (!canvasRef.current || isTransformingAi) return;
     sounds.playTap();
@@ -225,7 +230,7 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
 
       const response = await askZentryAi(
         'free_canvas_life',
-        'Analiza este dibujo infantil y transforma este trazo en una ilustración mágica 3D Pixar de alta resolución llena de vida y color.',
+        'Analiza minuciosamente los trazos, formas, colores y composición espacial de este dibujo infantil (puede ser un paisaje, personaje, objeto, vehículo o creación mágica) y transfórmalo en una ilustración 3D Pixar de alta resolución fiel a los trazos.',
         base64Img
       );
 
@@ -234,14 +239,17 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
         parsed = JSON.parse(response.trim().replace(/^```json/, '').replace(/```$/, ''));
       } catch {
         parsed = {
-          title: 'Tu Dibujo Mágico',
+          title: 'Tu Obra Mágica',
+          category: 'magic',
+          strokesDescription: 'Trazos alegres llenos de color y luz',
           detectedSubject: 'Creación mágica',
-          enhancedPrompt: '3D cute Pixar style character, magical glowing wonderland, colorful, bright, cheerful',
-          speechFeedback: '¡Mira cómo brilla y cobra vida tu dibujo! ¡Es hermoso!'
+          compositionMapping: 'Trazos convertidos en formas brillantes',
+          enhancedPrompt: '3D cute Pixar style character in a glowing wonderland, magical lighting, colorful, 8k resolution',
+          speechFeedback: '¡Mira cómo brilla y cobra vida tu dibujo!'
         };
       }
 
-      const encodedPrompt = encodeURIComponent(`${parsed.enhancedPrompt}, 3D pixar style, masterpiece, cute, vibrant, 8k resolution`);
+      const encodedPrompt = encodeURIComponent(`${parsed.enhancedPrompt}, 3D pixar style, masterpiece, cute, vibrant, 8k resolution, ray tracing`);
       const seed = Math.floor(Math.random() * 1000000);
       const generatedUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=768&height=768&seed=${seed}&nologo=true`;
 
@@ -258,7 +266,10 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
 
       const resultData: AiLifeResult = {
         title: parsed.title || 'Tu Creación',
+        category: parsed.category || 'magic',
+        strokesDescription: parsed.strokesDescription,
         detectedSubject: parsed.detectedSubject || 'Obra Mágica',
+        compositionMapping: parsed.compositionMapping,
         enhancedImageUrl: generatedUrl,
         speechFeedback: parsed.speechFeedback || '¡Tu dibujo ha cobrado vida mágica!'
       };
@@ -269,6 +280,8 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
       console.warn('Free canvas AI life error:', err);
       const fallbackResult: AiLifeResult = {
         title: 'Tu Dibujo Mágico',
+        category: 'magic',
+        strokesDescription: 'Trazos mágicos de colores brillantes',
         detectedSubject: 'Amigo Mágico',
         enhancedImageUrl: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=800&auto=format&fit=crop&q=80',
         speechFeedback: '¡Tu dibujo se llenó de colores y magia!'
@@ -277,6 +290,19 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
       voiceService.speakFeedback(fallbackResult.speechFeedback);
     } finally {
       setIsTransformingAi(false);
+    }
+  };
+
+  const getCategoryBadge = (category: string) => {
+    switch (category) {
+      case 'landscape':
+        return { label: '🏞️ Paisaje', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' };
+      case 'character':
+        return { label: '🦸 Personaje', color: 'bg-purple-500/20 text-purple-300 border-purple-500/40' };
+      case 'object':
+        return { label: '🚀 Objeto', color: 'bg-blue-500/20 text-blue-300 border-blue-500/40' };
+      default:
+        return { label: '✨ Magia', color: 'bg-amber-500/20 text-amber-300 border-amber-500/40' };
     }
   };
 
@@ -441,28 +467,38 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
           </div>
         </div>
 
-        {/* MODAL: DIBUJO CON VIDA MÁGICA AI */}
+        {/* MODAL: DIBUJO CON VIDA MÁGICA AI (ANÁLISIS DE TRAZOS Y CATEGORÍAS) */}
         {aiResult && (
           <div
             className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xl flex flex-col items-center justify-center p-4 animate-in fade-in select-none"
             onClick={() => setAiResult(null)}
           >
             <div
-              className="relative max-w-sm w-full rounded-[36px] p-4 bg-[#120E24]/95 border border-purple-400/60 shadow-2xl flex flex-col items-center gap-3 animate-spring-in text-center"
+              className="relative max-w-sm w-full rounded-[36px] p-4 bg-[#120E24]/95 border border-purple-400/60 shadow-2xl flex flex-col items-center gap-2.5 animate-spring-in text-center"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Header */}
+              {/* Header con Título y Badge de Categoría */}
               <div className="flex items-center justify-between w-full border-b border-white/10 pb-2">
-                <div className="flex items-center gap-2">
-                  <ZentryLogoIcon className="w-5 h-5 text-amber-300" />
-                  <span className="text-sm font-black text-white">{aiResult.title}</span>
+                <div className="flex items-center gap-2 min-w-0">
+                  <ZentryLogoIcon className="w-5 h-5 text-amber-300 shrink-0" />
+                  <span className="text-sm font-black text-white truncate">{aiResult.title}</span>
                 </div>
-                <button
-                  onClick={() => setAiResult(null)}
-                  className="p-1 rounded-full text-slate-400 hover:text-white cursor-pointer"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {(() => {
+                    const badge = getCategoryBadge(aiResult.category);
+                    return (
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${badge.color}`}>
+                        {badge.label}
+                      </span>
+                    );
+                  })()}
+                  <button
+                    onClick={() => setAiResult(null)}
+                    className="p-1 rounded-full text-slate-400 hover:text-white cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
 
               {/* Enhanced 3D Pixar Image */}
@@ -473,6 +509,13 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
                   className="w-full h-full object-cover"
                 />
               </div>
+
+              {/* Trazos e Interpretación */}
+              {aiResult.strokesDescription && (
+                <div className="text-[11px] text-purple-200 font-bold px-2 line-clamp-2">
+                  🎨 {aiResult.strokesDescription}
+                </div>
+              )}
 
               {/* Voice Feedback Text */}
               <p className="text-xs font-bold text-white leading-relaxed px-1">
