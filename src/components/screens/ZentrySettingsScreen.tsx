@@ -18,7 +18,8 @@ import {
   Copy,
   Sparkles,
   RotateCcw,
-  UserCheck
+  UserCheck,
+  Zap
 } from 'lucide-react';
 import type { WallpaperId, AgeTier } from '../../types/zentry';
 import { ZentrySubPageScaffold } from '../shell/ZentrySubPageScaffold';
@@ -109,14 +110,16 @@ export const ZentrySettingsScreen: React.FC<Props> = ({
     if (onSelectAgeTier) {
       onSelectAgeTier(persona.cohort);
     }
-    if (personaId === 'zentry_jovial') {
-      setTestPhrase('¡Hola! Soy Zentry, qué alegría saludarte. ¿Lista para descubrir cosas increíbles hoy?');
-    } else if (personaId === 'toddler_sweet') {
-      setTestPhrase('¡Hola amiguito! ¿Quieres que dibujemos y cantemos cosas hermosas juntos?');
+    if (personaId === 'female_jovial' || personaId === 'zentry_jovial' || personaId === 'toddler_sweet') {
+      setTestPhrase('¡Hola! Soy Sofía. ¡Vamos a descubrir cosas increíbles y súper divertidas juntos!');
+    } else if (personaId === 'female_adult') {
+      setTestPhrase('Hola. Soy Elena. Estoy aquí para acompañarte y resolver cualquier desafío con claridad y rigor profesional.');
+    } else if (personaId === 'male_jovial' || personaId === 'companion_spark') {
+      setTestPhrase('¡Ey, qué tal! Soy Lucas. ¿Listo para armar proyectos geniales y poner a prueba nuestras ideas?');
+    } else if (personaId === 'male_adult') {
+      setTestPhrase('Buenas tardes. Soy Carlos. Analicemos juntos la información para tomar las decisiones más acertadas.');
     } else if (personaId === 'socratic_mentor') {
-      setTestPhrase('¡Hola! Soy tu mentora socrática. ¿Qué reto o curiosidad exploraremos paso a paso?');
-    } else {
-      setTestPhrase('¡Hola! ¡Vamos a divertirnos creando y superando misiones científicas geniales!');
+      setTestPhrase('Bienvenido. Soy el Maestro Aurelius. Más que darte una respuesta directa, exploraremos juntos las preguntas correctas.');
     }
   };
 
@@ -275,14 +278,14 @@ export const ZentrySettingsScreen: React.FC<Props> = ({
           </div>
 
           <div className="text-[11px] text-slate-400">
-            Selecciona la persona de voz para la guía proactiva y respuestas socráticas:
+            Selecciona una de las 5 personalidades de voz hiperrealistas:
           </div>
 
-          {/* 4 Voice Personas Selector Grid */}
-          <div className="grid grid-cols-2 gap-2">
-            {(Object.keys(VOICE_PERSONAS) as VoicePersona[]).map((pKey) => {
+          {/* 5 Voice Personas Selector Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {(['female_jovial', 'female_adult', 'male_jovial', 'male_adult', 'socratic_mentor'] as VoicePersona[]).map((pKey) => {
               const persona = VOICE_PERSONAS[pKey];
-              const isSelected = selectedPersona === pKey;
+              const isSelected = selectedPersona === pKey || (pKey === 'female_jovial' && selectedPersona === 'zentry_jovial');
               return (
                 <button
                   key={pKey}
@@ -296,11 +299,11 @@ export const ZentrySettingsScreen: React.FC<Props> = ({
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5 font-bold text-xs">
-                      {persona.cohort === 'toddler' ? (
-                        <Baby className="w-3.5 h-3.5 text-pink-400" />
-                      ) : (
-                        <GraduationCap className="w-3.5 h-3.5 text-blue-400" />
-                      )}
+                      {persona.id === 'female_jovial' && <Sparkles className="w-3.5 h-3.5 text-pink-400" />}
+                      {persona.id === 'female_adult' && <GraduationCap className="w-3.5 h-3.5 text-purple-400" />}
+                      {persona.id === 'male_jovial' && <Zap className="w-3.5 h-3.5 text-amber-400" />}
+                      {persona.id === 'male_adult' && <Volume2 className="w-3.5 h-3.5 text-blue-400" />}
+                      {persona.id === 'socratic_mentor' && <Sparkles className="w-3.5 h-3.5 text-emerald-400" />}
                       <span>{persona.name}</span>
                     </div>
                     {isSelected && <Check className="w-3 h-3 text-purple-300" />}

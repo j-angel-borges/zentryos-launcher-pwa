@@ -2,15 +2,23 @@ import type { VoiceCommandResult } from '../types/zentry';
 
 export type AgeCohort = 'toddler' | 'explorer';
 
-export type VoicePersona = 'zentry_jovial' | 'toddler_sweet' | 'socratic_mentor' | 'companion_spark';
+export type VoicePersona = 
+  | 'female_jovial' 
+  | 'female_adult' 
+  | 'male_jovial' 
+  | 'male_adult' 
+  | 'socratic_mentor'
+  | 'zentry_jovial' 
+  | 'toddler_sweet' 
+  | 'companion_spark';
 
 export interface TTSVoiceConfig {
   languageCode: string;
   name: string;
   ssmlGender: 'FEMALE' | 'MALE' | 'NEUTRAL';
-  pitch: number; // Pitch en semitonos (-2.0 a +2.0)
-  speakingRate: number; // 0.85 a 1.20 (óptimo 0.98 a 1.05)
-  volumeGainDb?: number; // 0.0 a 3.0 (óptimo 1.2 a 1.8)
+  pitch: number; // Pitch en semitonos (-2.5 a +2.5)
+  speakingRate: number; // 0.85 a 1.20
+  volumeGainDb?: number; // 0.0 a 3.0
   personaId?: VoicePersona;
 }
 
@@ -42,6 +50,7 @@ export interface VoicePersonaInfo {
   description: string;
   cohort: AgeCohort;
   gcpModel: string;
+  edgeVoice?: string;
   gender: 'FEMALE' | 'MALE';
   defaultPitch: number;
   defaultRate: number;
@@ -49,49 +58,112 @@ export interface VoicePersonaInfo {
 }
 
 export const VOICE_PERSONAS: Record<VoicePersona, VoicePersonaInfo> = {
-  zentry_jovial: {
-    id: 'zentry_jovial',
-    name: 'Zentry Urbana (Joven & Fluida)',
-    description: 'Voz femenina juvenil, fresca, luminosa, ágil y sin resonancias graves',
+  // 1. Femenina 1: Jovial
+  female_jovial: {
+    id: 'female_jovial',
+    name: 'Sofía Urbana (Femenina Jovial)',
+    description: 'Voz femenina juvenil, fresca, luminosa y muy ágil sin fondo grave',
     cohort: 'toddler',
     gcpModel: 'es-US-Neural2-A',
+    edgeVoice: 'es-MX-DaliaNeural',
     gender: 'FEMALE',
-    defaultPitch: 2.2, // Tono semitonal brillante y fresco, elimina sensación grave
-    defaultRate: 1.07, // Cadencia moderna, ágil y conversacional de joven de ciudad
+    defaultPitch: 2.2, // +2.2st brillante y fresca
+    defaultRate: 1.07, // 1.07x ágil conversacional
+    defaultGain: 1.2
+  },
+
+  // 2. Femenina 2: Adulta
+  female_adult: {
+    id: 'female_adult',
+    name: 'Elena Valdés (Femenina Adulta)',
+    description: 'Voz femenina madura, profesional, cálida, asertiva y aterciopelada',
+    cohort: 'explorer',
+    gcpModel: 'es-ES-Studio-C',
+    edgeVoice: 'es-ES-ElviraNeural',
+    gender: 'FEMALE',
+    defaultPitch: -0.8, // -0.8st elegante y cálida
+    defaultRate: 0.98, // 0.98x cadencia profesional
+    defaultGain: 0.8
+  },
+
+  // 3. Masculina 1: Jovial
+  male_jovial: {
+    id: 'male_jovial',
+    name: 'Lucas Vega (Masculino Jovial)',
+    description: 'Voz masculina joven, enérgica, cercana, espontánea y entusiasta',
+    cohort: 'toddler',
+    gcpModel: 'es-US-Neural2-B',
+    edgeVoice: 'es-MX-JorgeNeural',
+    gender: 'MALE',
+    defaultPitch: 1.6, // +1.6st joven y dinámico
+    defaultRate: 1.06, // 1.06x cadencia ágil
+    defaultGain: 1.4
+  },
+
+  // 4. Masculina 2: Adulta
+  male_adult: {
+    id: 'male_adult',
+    name: 'Carlos Mendoza (Masculino Adulto)',
+    description: 'Voz masculina madura, sobria, natural, institucional y segura',
+    cohort: 'explorer',
+    gcpModel: 'es-ES-Studio-F',
+    edgeVoice: 'es-ES-DarioNeural',
+    gender: 'MALE',
+    defaultPitch: -2.0, // -2.0st profunda y firme
+    defaultRate: 0.96, // 0.96x ritmo seguro
+    defaultGain: 1.0
+  },
+
+  // 5. Mentor: Socrático & Sabio
+  socratic_mentor: {
+    id: 'socratic_mentor',
+    name: 'Maestro Aurelius (Mentor Socrático)',
+    description: 'Voz sabia, reflexiva, inspiradora, filosófica y socrática',
+    cohort: 'explorer',
+    gcpModel: 'es-ES-Studio-F',
+    edgeVoice: 'es-ES-AlvaroNeural',
+    gender: 'MALE',
+    defaultPitch: -1.2, // -1.2st
+    defaultRate: 0.92, // 0.92x pausada para la reflexión
+    defaultGain: 1.0
+  },
+
+  // Aliases retrocompatibles
+  zentry_jovial: {
+    id: 'zentry_jovial',
+    name: 'Sofía Urbana (Femenina Jovial)',
+    description: 'Voz femenina juvenil, fresca, luminosa y muy ágil sin fondo grave',
+    cohort: 'toddler',
+    gcpModel: 'es-US-Neural2-A',
+    edgeVoice: 'es-MX-DaliaNeural',
+    gender: 'FEMALE',
+    defaultPitch: 2.2,
+    defaultRate: 1.07,
     defaultGain: 1.2
   },
   toddler_sweet: {
     id: 'toddler_sweet',
-    name: 'Zentry Dulce (Tierna & Clara)',
+    name: 'Sofía Dulce (Femenina Jovial)',
     description: 'Voz femenina suave, alegre y cariñosa para los más pequeños',
     cohort: 'toddler',
     gcpModel: 'es-US-Neural2-A',
+    edgeVoice: 'es-MX-DaliaNeural',
     gender: 'FEMALE',
     defaultPitch: 2.6,
     defaultRate: 1.04,
     defaultGain: 1.2
   },
-  socratic_mentor: {
-    id: 'socratic_mentor',
-    name: 'Mentora Universitaria (Dinámica)',
-    description: 'Voz femenina joven, inspiradora, elocuente y motivadora',
-    cohort: 'explorer',
-    gcpModel: 'es-ES-Studio-C',
-    gender: 'FEMALE',
-    defaultPitch: 1.8,
-    defaultRate: 1.06,
-    defaultGain: 1.2
-  },
   companion_spark: {
     id: 'companion_spark',
-    name: 'Chispa Creativa (Enérgica)',
-    description: 'Voz femenina chispeante y motivadora para retos y creatividad',
+    name: 'Lucas Vega (Masculino Jovial)',
+    description: 'Voz masculina joven, enérgica y chispeante para retos y misiones',
     cohort: 'explorer',
-    gcpModel: 'es-ES-Neural2-C',
-    gender: 'FEMALE',
-    defaultPitch: 2.3,
-    defaultRate: 1.09,
-    defaultGain: 1.2
+    gcpModel: 'es-US-Neural2-B',
+    edgeVoice: 'es-MX-JorgeNeural',
+    gender: 'MALE',
+    defaultPitch: 1.6,
+    defaultRate: 1.06,
+    defaultGain: 1.4
   }
 };
 
@@ -100,18 +172,18 @@ export const AGE_VOICE_PROFILES: Record<AgeCohort, TTSVoiceConfig> = {
     languageCode: 'es-US',
     name: 'es-US-Neural2-A',
     ssmlGender: 'FEMALE',
-    pitch: 2.2, // Tono juvenil fresco, luminoso y femenino
-    speakingRate: 1.07, // Cadencia fluida y ágil
+    pitch: 2.2,
+    speakingRate: 1.07,
     volumeGainDb: 1.2,
-    personaId: 'zentry_jovial'
+    personaId: 'female_jovial'
   },
   explorer: {
     languageCode: 'es-ES',
-    name: 'es-ES-Studio-C', // Modelo de estudio femenino de alta fidelidad
-    ssmlGender: 'FEMALE',
-    pitch: 1.8, // Tono femenino joven, inspirador y dinámico
-    speakingRate: 1.06, // Ritmo ágil y motivador
-    volumeGainDb: 1.2,
+    name: 'es-ES-Studio-F',
+    ssmlGender: 'MALE',
+    pitch: -1.2,
+    speakingRate: 0.92,
+    volumeGainDb: 1.0,
     personaId: 'socratic_mentor'
   }
 };
@@ -560,13 +632,23 @@ export class VoiceSpeechService {
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&apos;');
 
-    // Insert natural conversational micro-pauses at punctuation marks (ágiles y fluidas)
+    const personaId = config.personaId || 'female_jovial';
+    const isMentor = personaId === 'socratic_mentor';
+    const isAdult = personaId === 'female_adult' || personaId === 'male_adult';
+
+    // Delimiters adaptados acústicamente por persona
+    const periodMs = isMentor ? '220ms' : isAdult ? '160ms' : '110ms';
+    const commaMs = isMentor ? '130ms' : isAdult ? '80ms' : '60ms';
+    const questionMs = isMentor ? '260ms' : isAdult ? '160ms' : '120ms';
+    const exclamationMs = isMentor ? '180ms' : isAdult ? '130ms' : '110ms';
+
+    // Insert natural conversational micro-pauses at punctuation marks
     const pacedText = escaped
-      .replace(/\.\s+/g, '. <break time="110ms"/> ')
-      .replace(/!\s+/g, '! <break time="120ms"/> ')
-      .replace(/\?\s+/g, '? <break time="120ms"/> ')
-      .replace(/,\s+/g, ', <break time="60ms"/> ')
-      .replace(/:\s+/g, ': <break time="80ms"/> ');
+      .replace(/\.\s+/g, `. <break time="${periodMs}"/> `)
+      .replace(/!\s+/g, `! <break time="${exclamationMs}"/> `)
+      .replace(/\?\s+/g, `? <break time="${questionMs}"/> `)
+      .replace(/,\s+/g, `, <break time="${commaMs}"/> `)
+      .replace(/:\s+/g, `: <break time="${commaMs}"/> `);
 
     const pitchStr = config.pitch >= 0 ? `+${config.pitch}st` : `${config.pitch}st`;
     const rateStr = `${Math.round(config.speakingRate * 100)}%`;
@@ -766,6 +848,7 @@ export class VoiceSpeechService {
 
     const persona = personaId ? VOICE_PERSONAS[personaId] : null;
     const isFemale = persona ? persona.gender === 'FEMALE' : cohort === 'toddler';
+    const targetEdgeVoice = persona?.edgeVoice?.toLowerCase();
 
     // Filter Spanish voices
     const spanishVoices = voices.filter(
@@ -781,26 +864,39 @@ export class VoiceSpeechService {
       let score = 0;
       const name = voice.name.toLowerCase();
 
-      // Top priority: Modern Edge/Chrome Natural Neural Voices (cristalinas, jóvenes y sin fondo grave)
-      if (name.includes('dalia') && (name.includes('natural') || name.includes('online'))) score += 300;
-      if (name.includes('paloma') && (name.includes('natural') || name.includes('online'))) score += 280;
-      if (name.includes('natural') || name.includes('online')) score += 200;
-      if (name.includes('neural')) score += 180;
+      // Direct match with persona target Edge / Natural Voice
+      if (targetEdgeVoice && name.includes(targetEdgeVoice)) score += 400;
+
+      // Top priority: Modern Edge/Chrome Natural Neural Voices
+      if (name.includes('natural') || name.includes('online')) score += 250;
+      if (name.includes('neural')) score += 200;
       if (name.includes('google') && name.includes('español')) score += 150;
 
-      // Prioritize feminine voices for warm, youthful persona
-      if (isFemale || name.includes('dalia') || name.includes('paloma') || name.includes('carlota') || name.includes('valeria') || name.includes('monica') || name.includes('paulina') || name.includes('female') || name.includes('mujer') || name.includes('femenina')) {
-        score += 80;
+      // Gender affinity
+      if (isFemale) {
+        if (name.includes('dalia') || name.includes('paloma') || name.includes('elvira') || name.includes('beatriz') || name.includes('carlota') || name.includes('valeria') || name.includes('monica') || name.includes('paulina') || name.includes('female') || name.includes('mujer')) {
+          score += 100;
+        }
+        if (name.includes('jorge') || name.includes('alvaro') || name.includes('dario') || name.includes('male') || name.includes('hombre')) {
+          score -= 120;
+        }
+      } else {
+        if (name.includes('jorge') || name.includes('alvaro') || name.includes('dario') || name.includes('nil') || name.includes('valerio') || name.includes('tristan') || name.includes('male') || name.includes('hombre')) {
+          score += 100;
+        }
+        if (name.includes('dalia') || name.includes('paloma') || name.includes('elvira') || name.includes('female') || name.includes('mujer')) {
+          score -= 120;
+        }
       }
 
-      // Latin American preference for dynamic, cheerful melodic cadence
+      // Latin American preference for dynamic cadence
       if (voice.lang.includes('MX') || voice.lang.includes('US') || voice.lang.includes('PE') || voice.lang.includes('CO')) {
         score += 30;
       }
 
-      // Penalize legacy robotic Desktop voices that sound heavy, low-pass filtered or grave
+      // Penalize legacy robotic Desktop voices
       if (name.includes('desktop') || name.includes('mobile') || name.includes('sabina') || name.includes('helena')) {
-        score -= 250;
+        score -= 300;
       }
 
       return { voice, score };
@@ -829,13 +925,15 @@ export class VoiceSpeechService {
         utterance.voice = naturalVoice;
       }
 
-      // Calibrate human pitch & rate (feminine, youthful, clear and agile city tone)
-      const isExplorer = this.currentCohort === 'explorer';
-      const basePitch = isExplorer ? 1.15 : 1.20;
-      const baseRate = isExplorer ? 1.06 : 1.08;
+      // Calibrate pitch & rate from persona defaults
+      const persona = config.personaId ? VOICE_PERSONAS[config.personaId] : null;
+      const basePitch = persona
+        ? (persona.gender === 'FEMALE' ? (persona.id === 'female_jovial' ? 1.20 : 1.05) : (persona.id === 'male_jovial' ? 1.08 : 0.92))
+        : 1.10;
+      const baseRate = persona ? persona.defaultRate : 1.04;
 
-      utterance.pitch = Math.min(1.30, Math.max(1.0, basePitch + (this.customSettings.pitchOffset ?? 0) * 0.05));
-      utterance.rate = Math.min(1.25, Math.max(0.95, baseRate * (this.customSettings.rateMultiplier ?? 1.0)));
+      utterance.pitch = Math.min(1.35, Math.max(0.85, basePitch + (this.customSettings.pitchOffset ?? 0) * 0.05));
+      utterance.rate = Math.min(1.25, Math.max(0.85, baseRate * (this.customSettings.rateMultiplier ?? 1.0)));
 
       utterance.volume = 1.0;
 
