@@ -25,6 +25,9 @@ export type ScreenId =
   | 'study_assistant'
   | 'deep_research'
   | 'redactor'
+  | 'image_generator'
+  | 'app_builder'
+  | 'simulator'
   | 'workspace_app';
 
 export type AgeTier = 'toddler' | 'explorer';

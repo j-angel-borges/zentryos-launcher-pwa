@@ -1,87 +1,87 @@
-import React, { useState, useRef } from 'react';
-import type { ScreenId, WorkspaceAppInfo } from '../../../types/zentry';
+import React from 'react';
+import { Palette, Play } from 'lucide-react';
+import type { ScreenId } from '../../../types/zentry';
 import { OSSearchBar } from '../../home/OSSearchBar';
 import { OSAppGrid } from '../../home/OSAppGrid';
-import { WorkspacePage } from '../../home/WorkspacePage';
 import { sounds } from '../../../services/soundEffects';
 
 interface Props {
   isDark: boolean;
   onNavigate: (screen: ScreenId) => void;
-  onOpenWorkspaceApp?: (app: WorkspaceAppInfo) => void;
+  onOpenWorkspaceApp?: (app: any) => void;
   onSearch: (query: string) => void;
 }
 
 export const ExplorerHomeView: React.FC<Props> = ({
   isDark,
   onNavigate,
-  onOpenWorkspaceApp,
   onSearch
 }) => {
-  const [page, setPage] = useState<0 | 1>(0);
-  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-
-  const handleScroll = () => {
-    if (!scrollContainerRef.current) return;
-    const { scrollLeft, clientWidth } = scrollContainerRef.current;
-    const currentPage = Math.round(scrollLeft / clientWidth) as 0 | 1;
-    if (currentPage !== page && (currentPage === 0 || currentPage === 1)) {
-      setPage(currentPage);
+  const handleOpenCrear = () => {
+    sounds.playAppOpen();
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate(15);
     }
+    onNavigate('creation');
   };
 
-  const scrollToPage = (targetPage: 0 | 1) => {
-    sounds.playTap();
-    setPage(targetPage);
-    if (scrollContainerRef.current) {
-      const width = scrollContainerRef.current.clientWidth;
-      scrollContainerRef.current.scrollTo({
-        left: targetPage * width,
-        behavior: 'smooth'
-      });
+  const handleOpenDivertirse = () => {
+    sounds.playAppOpen();
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate(15);
     }
+    onNavigate('entertainment_hub');
   };
 
   return (
-    <div className="w-full h-full flex flex-col justify-between py-2 px-3 max-w-md mx-auto overflow-hidden select-none">
-      {/* Pager Container */}
-      <div
-        ref={scrollContainerRef}
-        onScroll={handleScroll}
-        className="flex-1 w-full flex overflow-x-auto overflow-y-hidden no-scrollbar snap-x snap-mandatory scroll-smooth touch-pan-x"
-      >
-        {/* Page 0: Core Education Apps */}
-        <div className="w-full shrink-0 h-full snap-center flex flex-col justify-around items-center px-2 py-3">
-          <div className="w-full pt-1">
-            <OSSearchBar 
-              onSearch={onSearch} 
-              onVoiceTrigger={() => onNavigate('ai')}
-              isDark={isDark} 
-              ageTier="explorer" 
-            />
-          </div>
+    <div className="w-full h-full flex flex-col justify-between py-2 px-3.5 max-w-md mx-auto select-none space-y-3">
+      {/* Top Search Bar */}
+      <div className="w-full pt-0.5">
+        <OSSearchBar 
+          onSearch={onSearch} 
+          onVoiceTrigger={() => onNavigate('ai')}
+          isDark={isDark} 
+          ageTier="explorer" 
+        />
+      </div>
 
-          <div className="w-full py-4 flex items-center justify-center flex-1">
-            <OSAppGrid isDark={isDark} ageTier="explorer" onNavigate={onNavigate} />
+      {/* Bento Drawers: CREAR & DIVERTIRSE */}
+      <div className="grid grid-cols-2 gap-3.5 w-full">
+        {/* Drawer 1: CREAR (Imagine AI, Zentry Build, Mundos) */}
+        <div
+          onClick={handleOpenCrear}
+          className="h-26 rounded-[26px] p-3.5 flex items-center gap-3 cursor-pointer backdrop-blur-2xl bg-[#120E24]/90 hover:bg-[#120E24]/98 border border-purple-400/50 shadow-xl transition-all duration-300 zentry-spring-press group"
+        >
+          <div className="w-13 h-13 rounded-[20px] bg-gradient-to-tr from-purple-600 via-indigo-500 to-pink-500 flex items-center justify-center text-white shadow-lg group-hover:scale-108 transition-transform shrink-0">
+            <Palette className="w-6 h-6" />
+          </div>
+          <div className="min-w-0">
+            <span className="text-base font-black tracking-tight text-white drop-shadow-md block">
+              Crear
+            </span>
           </div>
         </div>
 
-        {/* Page 1: Google Workspace Apps */}
-        <div className="w-full shrink-0 h-full snap-center overflow-y-auto px-2 flex flex-col items-center justify-between py-2">
-          <WorkspacePage isDark={isDark} onNavigate={onNavigate} onOpenWorkspaceApp={onOpenWorkspaceApp} />
+        {/* Drawer 2: DIVERTIRSE (Videos & Medios) */}
+        <div
+          onClick={handleOpenDivertirse}
+          className="h-26 rounded-[26px] p-3.5 flex items-center gap-3 cursor-pointer backdrop-blur-2xl bg-[#1E0E1C]/90 hover:bg-[#1E0E1C]/98 border border-pink-400/50 shadow-xl transition-all duration-300 zentry-spring-press group"
+        >
+          <div className="w-13 h-13 rounded-[20px] bg-gradient-to-tr from-rose-500 to-pink-600 flex items-center justify-center text-white shadow-lg relative group-hover:scale-108 transition-transform shrink-0">
+            <Play className="w-6 h-6 fill-white" />
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-300 absolute -top-0.5 -right-0.5 animate-ping" />
+          </div>
+          <div className="min-w-0">
+            <span className="text-base font-black tracking-tight text-white drop-shadow-md block">
+              Divertirse
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Pager Indicator Dots */}
-      <div className="flex items-center justify-center gap-2 py-1 z-20">
-        <button
-          onClick={() => scrollToPage(0)}
-          className={(page === 0 ? 'w-5 h-1.5 bg-white/90 shadow-md ' : 'w-1.5 h-1.5 bg-white/30 ') + 'rounded-full transition-all cursor-pointer'}
-        />
-        <button
-          onClick={() => scrollToPage(1)}
-          className={(page === 1 ? 'w-5 h-1.5 bg-white/90 shadow-md ' : 'w-1.5 h-1.5 bg-white/30 ') + 'rounded-full transition-all cursor-pointer'}
-        />
+      {/* Grid of Core Explorer Apps (Calculadora, Cámara, Reloj, Calendario, Archivos, Tutor) */}
+      <div className="w-full py-1 flex items-center justify-center flex-1">
+        <OSAppGrid isDark={isDark} ageTier="explorer" onNavigate={onNavigate} />
       </div>
     </div>
   );

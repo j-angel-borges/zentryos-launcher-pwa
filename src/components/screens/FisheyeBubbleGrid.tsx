@@ -31,8 +31,10 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
   offsetRef.current = offset;
 
   const isDraggingRef = useRef(false);
+  const hasCapturedRef = useRef(false);
   const dragStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const dragOffsetStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const totalDragDistanceRef = useRef(0);
   const velocityRef = useRef<{ vx: number; vy: number }>({ vx: 0, vy: 0 });
   const lastPointerRef = useRef<{ x: number; y: number; time: number }>({ x: 0, y: 0, time: 0 });
   const animFrameRef = useRef<number | null>(null);
@@ -42,30 +44,53 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
     height: 600
   });
 
-  // Espaciado óptimo y holgado (160px) para separación clara y aireada
+  // Espaciado óptimo
   const itemSpacing = 160;
   const maxRadius = Math.min(containerDimensions.width, containerDimensions.height) * 0.58 || 350;
-  const minScale = 0.58;
+  const minScale = 0.65;
 
-  // Distribución en anillo simétrico con centro libre
+  // Distribución de elementos
   const itemPositions = useMemo(() => {
     if (items.length <= 1) {
       return [{ item: items[0], xBase: 0, yBase: 0 }];
     }
 
-    // Anillo simétrico alrededor del centro vacío (distribución armónica a 160px)
+    if (items.length <= 3) {
+      // 3 items: distribución triangular equilibrada
+      return items.map((item, idx) => {
+        const angle = (idx * 2 * Math.PI) / items.length - Math.PI / 2;
+        const xBase = Math.cos(angle) * (itemSpacing * 0.85);
+        const yBase = Math.sin(angle) * (itemSpacing * 0.85);
+        return { item, xBase, yBase };
+      });
+    }
+
+    if (items.length <= 6) {
+      return items.map((item, idx) => {
+        if (idx === 0) {
+          return { item, xBase: 0, yBase: 0 };
+        }
+        const angle = ((idx - 1) * 2 * Math.PI) / (items.length - 1) - Math.PI / 2;
+        const xBase = Math.cos(angle) * itemSpacing;
+        const yBase = Math.sin(angle) * itemSpacing;
+        return { item, xBase, yBase };
+      });
+    }
+
     return items.map((item, idx) => {
-      const angle = (idx * 2 * Math.PI) / items.length - Math.PI / 2;
-      const xBase = Math.cos(angle) * itemSpacing;
-      const yBase = Math.sin(angle) * itemSpacing;
+      if (idx === 0) return { item, xBase: 0, yBase: 0 };
+      const ring = Math.ceil(idx / 6);
+      const angle = (idx * 2 * Math.PI) / 6 - Math.PI / 2;
+      const xBase = Math.cos(angle) * (itemSpacing * ring);
+      const yBase = Math.sin(angle) * (itemSpacing * ring);
       return { item, xBase, yBase };
     });
   }, [items, itemSpacing]);
 
-  // Límites elásticos amplios para navegación libre
+  // Límites elásticos
   const panLimits = useMemo(() => {
-    const maxX = Math.max(180, containerDimensions.width * 0.38);
-    const maxY = Math.max(180, containerDimensions.height * 0.38);
+    const maxX = Math.max(160, containerDimensions.width * 0.35);
+    const maxY = Math.max(160, containerDimensions.height * 0.35);
     return {
       minX: -maxX,
       maxX: maxX,
@@ -74,7 +99,6 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
     };
   }, [containerDimensions]);
 
-  // Actualizar dimensiones
   useEffect(() => {
     const updateSize = () => {
       if (containerRef.current) {
@@ -90,7 +114,6 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
     return () => window.removeEventListener('resize', updateSize);
   }, []);
 
-  // Animación suave de resorte
   const smoothAnimateTo = useCallback((targetX: number, targetY: number) => {
     if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
 
@@ -124,17 +147,16 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
     animFrameRef.current = requestAnimationFrame(tick);
   }, []);
 
-  // Inercia libre: el mapa se queda donde se deslice
   const releaseWithPhysics = useCallback(() => {
     if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
 
     let currentX = offsetRef.current.x;
     let currentY = offsetRef.current.y;
-    let vx = velocityRef.current.vx * 14;
-    let vy = velocityRef.current.vy * 14;
+    let vx = velocityRef.current.vx * 12;
+    let vy = velocityRef.current.vy * 12;
 
     const { minX, maxX, minY, maxY } = panLimits;
-    const friction = 0.94;
+    const friction = 0.92;
     const springK = 0.08;
 
     const step = () => {
@@ -179,15 +201,14 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
     animFrameRef.current = requestAnimationFrame(step);
   }, [panLimits, smoothAnimateTo]);
 
-  // Gestos de puntero con detección precisa de tap vs arrastre
-  const hasMovedSignificantlyRef = useRef(false);
-
+  // Gestos de arrastre táctil / puntero sin secuestrar clicks
   const handlePointerDown = (e: React.PointerEvent) => {
     if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     isDraggingRef.current = true;
-    hasMovedSignificantlyRef.current = false;
+    hasCapturedRef.current = false;
     dragStartRef.current = { x: e.clientX, y: e.clientY };
     dragOffsetStartRef.current = { ...offsetRef.current };
+    totalDragDistanceRef.current = 0;
     lastPointerRef.current = { x: e.clientX, y: e.clientY, time: performance.now() };
     velocityRef.current = { vx: 0, vy: 0 };
   };
@@ -196,53 +217,51 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
     if (!isDraggingRef.current) return;
     const dx = e.clientX - dragStartRef.current.x;
     const dy = e.clientY - dragStartRef.current.y;
+    const dist = Math.hypot(dx, dy);
+    totalDragDistanceRef.current = dist;
 
-    if (!hasMovedSignificantlyRef.current && Math.hypot(dx, dy) > 6) {
-      hasMovedSignificantlyRef.current = true;
+    // Solo capturar puntero si es un arrastre real (> 8px)
+    if (dist > 8 && !hasCapturedRef.current) {
       try {
         (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+        hasCapturedRef.current = true;
       } catch {}
     }
 
-    if (hasMovedSignificantlyRef.current) {
-      const now = performance.now();
-      const dt = Math.max(1, now - lastPointerRef.current.time);
-      const vx = (e.clientX - lastPointerRef.current.x) / dt;
-      const vy = (e.clientY - lastPointerRef.current.y) / dt;
+    const now = performance.now();
+    const dt = Math.max(1, now - lastPointerRef.current.time);
+    const vx = (e.clientX - lastPointerRef.current.x) / dt;
+    const vy = (e.clientY - lastPointerRef.current.y) / dt;
 
-      velocityRef.current = { vx, vy };
-      lastPointerRef.current = { x: e.clientX, y: e.clientY, time: now };
+    velocityRef.current = { vx, vy };
+    lastPointerRef.current = { x: e.clientX, y: e.clientY, time: now };
 
-      setOffset({
-        x: dragOffsetStartRef.current.x + dx,
-        y: dragOffsetStartRef.current.y + dy
-      });
-    }
+    setOffset({
+      x: dragOffsetStartRef.current.x + dx,
+      y: dragOffsetStartRef.current.y + dy
+    });
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
     if (!isDraggingRef.current) return;
     isDraggingRef.current = false;
-    try {
-      (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
-    } catch {}
-    if (hasMovedSignificantlyRef.current) {
+    if (hasCapturedRef.current) {
+      try {
+        (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+      } catch {}
+      hasCapturedRef.current = false;
+    }
+    if (totalDragDistanceRef.current > 10) {
       releaseWithPhysics();
     }
   };
 
-  const handleWheel = (e: React.WheelEvent) => {
-    e.preventDefault();
-    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-    const newX = offsetRef.current.x - e.deltaX * 0.7;
-    const newY = offsetRef.current.y - e.deltaY * 0.7;
-    setOffset({ x: newX, y: newY });
-    releaseWithPhysics();
-  };
-
-  const handleAppClick = (item: FisheyeItemData) => {
-    if (hasMovedSignificantlyRef.current) return;
-    if (navigator.vibrate) navigator.vibrate(12);
+  const handleItemClick = (item: FisheyeItemData, e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    if (totalDragDistanceRef.current > 12) return; // Era un arrastre, no un tap
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate(15);
+    }
     sounds.playAppOpen();
     onSelectApp(item);
   };
@@ -254,101 +273,79 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
-      onWheel={handleWheel}
-      className="w-full h-full relative overflow-hidden flex items-center justify-center cursor-grab active:cursor-grabbing select-none touch-none"
-      style={{ perspective: '1000px' }}
+      className="w-full h-full relative overflow-hidden flex items-center justify-center cursor-grab active:cursor-grabbing select-none"
     >
-      {/* Halo de fondo sutil */}
+      {/* Halo de fondo */}
       <div
         className="absolute rounded-full pointer-events-none transition-opacity duration-300"
         style={{
           width: `${maxRadius * 2}px`,
           height: `${maxRadius * 2}px`,
           background: isDark
-            ? 'radial-gradient(circle, rgba(168, 85, 247, 0.12) 0%, rgba(236, 72, 153, 0.05) 50%, transparent 75%)'
-            : 'radial-gradient(circle, rgba(236, 72, 153, 0.08) 0%, rgba(147, 51, 234, 0.04) 50%, transparent 75%)'
+            ? 'radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, rgba(236, 72, 153, 0.06) 50%, transparent 75%)'
+            : 'radial-gradient(circle, rgba(236, 72, 153, 0.1) 0%, rgba(147, 51, 234, 0.05) 50%, transparent 75%)'
         }}
       />
 
-      {/* Burbujas estilo Apple Watch con espaciado amplio y aireado */}
+      {/* Burbujas de Aplicaciones */}
       {itemPositions.map(({ item, xBase, yBase }) => {
         const virtualX = xBase + offset.x;
         const virtualY = yBase + offset.y;
 
-        // Distancia euclidiana al centro
         const dist = Math.hypot(virtualX, virtualY);
         const r = Math.min(Math.max(dist / maxRadius, 0), 1);
-
-        // Escala Coseno suave
         const scale = minScale + (1 - minScale) * Math.cos((r * Math.PI) / 2);
-
-        // Compresión esférica moderada
-        const compression = 1 - r * 0.22;
+        const compression = 1 - r * 0.18;
         const transX = virtualX * compression;
         const transY = virtualY * compression;
 
-        // Opacidad y 3D tilt sutil
-        const opacity = Math.min(1, Math.max(0.5, 1 - r * 0.5));
+        const opacity = Math.min(1, Math.max(0.65, 1 - r * 0.4));
         const zIndex = Math.round((1 - r) * 100);
-        const rotateX = (-virtualY / maxRadius) * 14 * r;
-        const rotateY = (virtualX / maxRadius) * 14 * r;
 
         const Icon = item.icon;
 
         return (
           <div
             key={item.id}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleAppClick(item);
-            }}
-            onPointerUp={(e) => {
-              e.stopPropagation();
-              if (!hasMovedSignificantlyRef.current) {
-                handleAppClick(item);
+            onClick={(e) => handleItemClick(item, e)}
+            onTouchEnd={(e) => {
+              if (totalDragDistanceRef.current < 12) {
+                handleItemClick(item, e);
               }
             }}
-            className="absolute flex flex-col items-center justify-center cursor-pointer transition-transform duration-150 group zentry-press"
+            className="absolute flex flex-col items-center justify-center cursor-pointer transition-transform duration-150 group zentry-spring-press"
             style={{
-              transform: `translate3d(${transX}px, ${transY}px, 0px) scale(${scale}) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
+              transform: `translate3d(${transX}px, ${transY}px, 0px) scale(${scale})`,
               opacity,
-              zIndex: zIndex + 10,
+              zIndex,
               width: '120px',
               height: '140px',
               transformOrigin: 'center center',
               willChange: 'transform, opacity'
             }}
           >
-            {/* Burbuja Squircle de Vidrio Líquido (Tamaño 88px para proporción perfecta) */}
+            {/* Burbuja Squircle */}
             <div
-              className={`relative w-22 h-22 rounded-[30px] p-1.5 flex items-center justify-center transition-transform duration-200 group-hover:scale-110 group-active:scale-90 shadow-2xl ${
-                isDark ? 'zentry-veil-dark' : 'zentry-veil-light'
+              className={`relative w-22 h-22 rounded-[30px] p-1.5 flex items-center justify-center transition-all duration-200 group-hover:scale-112 group-active:scale-90 shadow-2xl ${
+                isDark ? 'zentry-veil-dark bg-white/10' : 'zentry-veil-light bg-white/60'
               }`}
               style={{
                 boxShadow: isDark
-                  ? `0 ${Math.round((1 - r) * 16)}px ${Math.round((1 - r) * 32)}px -6px rgba(0,0,0,0.6), 0 0 ${Math.round((1 - r) * 20)}px rgba(236,72,153,0.25)`
-                  : `0 ${Math.round((1 - r) * 14)}px ${Math.round((1 - r) * 28)}px -6px rgba(236,72,153,0.3), 0 0 ${Math.round((1 - r) * 18)}px rgba(255,255,255,0.85)`
+                  ? `0 12px 30px -6px rgba(0,0,0,0.7), 0 0 20px rgba(168,85,247,0.3)`
+                  : `0 10px 24px -4px rgba(236,72,153,0.35), 0 0 16px rgba(255,255,255,0.9)`
               }}
             >
               {/* Contenedor del ícono con degradado vibrante */}
               <div
                 className={`w-full h-full rounded-[24px] bg-gradient-to-br ${item.gradient} flex items-center justify-center text-white relative overflow-hidden shadow-inner`}
               >
-                {/* Reflejo de luz superior */}
                 <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/40 to-transparent pointer-events-none rounded-t-[24px]" />
-
-                {/* Ícono de gran visibilidad */}
                 <Icon className="w-10 h-10 drop-shadow-lg transition-transform duration-200 group-hover:scale-110" />
               </div>
             </div>
 
-            {/* Título claro y directo */}
-            <div
-              className="mt-2 text-center pointer-events-none px-1"
-              style={{
-                opacity: Math.max(0.6, 1 - r * 0.5)
-              }}
-            >
+            {/* Título de la aplicación */}
+            <div className="mt-2 text-center px-1 pointer-events-none">
               <span
                 className={`text-xs font-black tracking-tight leading-tight whitespace-nowrap drop-shadow-sm ${
                   isDark ? 'text-white' : 'text-[#1E293B]'
@@ -365,11 +362,11 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
       <button
         onClick={(e) => {
           e.stopPropagation();
-          if (navigator.vibrate) navigator.vibrate(8);
+          if (typeof navigator !== 'undefined' && 'vibrate' in navigator) navigator.vibrate(8);
           sounds.playTap();
           smoothAnimateTo(0, 0);
         }}
-        className={`absolute bottom-3 right-3 px-4 py-2 rounded-[20px] backdrop-blur-xl border flex items-center gap-2 text-xs font-black shadow-lg transition-all zentry-press z-30 ${
+        className={`absolute bottom-3 right-3 px-4 py-2 rounded-[20px] backdrop-blur-xl border flex items-center gap-2 text-xs font-black shadow-lg transition-all zentry-spring-press z-30 cursor-pointer ${
           isDark
             ? 'bg-white/10 hover:bg-white/20 border-white/15 text-white'
             : 'bg-white/70 hover:bg-white/90 border-black/10 text-[#1E293B]'
@@ -382,3 +379,5 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
     </div>
   );
 };
+
+export default FisheyeBubbleGrid;

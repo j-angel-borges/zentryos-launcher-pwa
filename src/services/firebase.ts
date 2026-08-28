@@ -129,83 +129,25 @@ export function subscribeToDeviceState(
   }
 }
 
-// ----------------------------------------------------
-// Persistencia Firestore para Microapps de Creación
-// ----------------------------------------------------
-
-/**
- * Guarda una misión completada en la subcolección de misiones del dispositivo en Firestore
- */
-export async function saveMissionToFirestore(mission: {
-  id: string;
-  title: string;
-  category: string;
-  badgeReward: string;
-  photoUrl?: string;
-  deviceId?: string;
-}) {
-  const deviceId = mission.deviceId || getStoredDeviceId();
-  try {
-    const missionDocRef = doc(db, 'devices', deviceId, 'completed_missions', mission.id);
-    await setDoc(missionDocRef, {
-      ...mission,
-      completedAt: serverTimestamp(),
-      syncedOnline: navigator.onLine
-    }, { merge: true });
-    return true;
-  } catch (error) {
-    console.warn('Firestore mission save error (cached locally):', error);
-    return false;
-  }
-}
-
-/**
- * Guarda un Héroe/Personaje en Firestore
- */
-export async function saveHeroToFirestore(hero: {
+export async function saveCompletedMissionToFirestore(mission: {
   id: string;
   name: string;
-  archetype: string;
-  comicStory?: string;
-  imageUrl?: string;
+  emoji: string;
+  action: string;
   deviceId?: string;
 }) {
-  const deviceId = hero.deviceId || getStoredDeviceId();
   try {
-    const heroDocRef = doc(db, 'devices', deviceId, 'created_heroes', hero.id);
-    await setDoc(heroDocRef, {
-      ...hero,
-      createdAt: serverTimestamp()
-    }, { merge: true });
-    return true;
-  } catch (error) {
-    console.warn('Firestore hero save error:', error);
-    return false;
+    const deviceId = mission.deviceId || getStoredDeviceId();
+    const missionRef = doc(collection(db, 'devices', deviceId, 'completed_missions'));
+    await setDoc(missionRef, {
+      questId: mission.id,
+      name: mission.name,
+      emoji: mission.emoji,
+      action: mission.action,
+      completedAt: serverTimestamp(),
+      deviceId
+    });
+  } catch (err) {
+    console.warn('[Firestore] Error guardando misión en Firestore:', err);
   }
 }
-
-/**
- * Guarda una ilustración del Lienzo en Firestore
- */
-export async function saveArtworkToFirestore(artwork: {
-  id: string;
-  title?: string;
-  originalDrawingUrl: string;
-  reimaginedImageUrl?: string;
-  storyPrompt?: string;
-  deviceId?: string;
-}) {
-  const deviceId = artwork.deviceId || getStoredDeviceId();
-  try {
-    const artDocRef = doc(db, 'devices', deviceId, 'gallery_artworks', artwork.id);
-    await setDoc(artDocRef, {
-      ...artwork,
-      createdAt: serverTimestamp()
-    }, { merge: true });
-    return true;
-  } catch (error) {
-    console.warn('Firestore artwork save error:', error);
-    return false;
-  }
-}
-

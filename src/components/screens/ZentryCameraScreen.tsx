@@ -170,7 +170,7 @@ export const ZentryCameraScreen: React.FC<Props> = ({ onBack, isDark }) => {
   };
 
   return (
-    <ZentrySubPageScaffold title="Cámara Multimodal IA" kicker="VISIÓN GEMINI" onBack={onBack} isDark={isDark}>
+    <ZentrySubPageScaffold title="Cámara Multimodal IA" kicker="VISIÓN ZENTRY" onBack={onBack} isDark={isDark}>
       <div className="max-w-xl mx-auto w-full space-y-3 pb-2">
         {/* Hidden file input */}
         <input
@@ -279,7 +279,7 @@ export const ZentryCameraScreen: React.FC<Props> = ({ onBack, isDark }) => {
             ) : (
               <Scan className="w-4 h-4" />
             )}
-            <span>{isScanning ? 'Analizando con Visión Gemini...' : 'Escanear Tarea con Visión IA'}</span>
+            <span>{isScanning ? 'Analizando con Visión Zentry...' : 'Escanear con Visión Zentry'}</span>
           </button>
         </div>
 

@@ -1,941 +1,1142 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
-  Brush,
-  Sparkles,
-  Palette,
   Undo2,
-  Redo2,
   Trash2,
-  Download,
-  Camera,
-  Image as ImageIcon,
-  CheckCircle2,
   Volume2,
-  Wand2,
-  Sun,
-  Moon,
-  Grid,
-  FileText,
-  RotateCcw,
-  X,
   Eraser,
+  RefreshCw,
+  Paintbrush,
+  X,
+  Sparkles,
+  Check,
   Shapes,
-  Heart,
+  Circle,
+  Square,
   Star,
-  Flame,
-  Gem,
-  Share2
+  Triangle,
+  Heart,
+  Diamond,
+  Flower2,
+  Rocket,
+  Download,
+  Palette,
+  Mountain,
+  User,
+  Box,
+  CheckCircle2,
+  LucideIcon
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ZentrySubPageScaffold } from '../shell/ZentrySubPageScaffold';
 import { sounds } from '../../services/soundEffects';
+import { voiceService } from '../../services/voiceSpeech';
 import { askZentryAi } from '../../services/aiService';
-import { saveArtworkToFirestore } from '../../services/firebase';
+import { ZentryLogoIcon } from '../ui/ZentryLogoIcon';
 
 interface Props {
   onBack: () => void;
   isDark: boolean;
 }
 
-type BrushType = 'ink' | 'neon' | 'rainbow' | 'watercolor' | 'stamp' | 'eraser';
+export type ShapeType =
+  | 'circle'
+  | 'rectangle'
+  | 'star'
+  | 'triangle'
+  | 'heart'
+  | 'diamond'
+  | 'flower'
+  | 'rocket';
 
-interface StampItem {
-  id: string;
-  emoji: string;
-  name: string;
-}
-
-const STAMPS_CATALOG: StampItem[] = [
-  { id: 'star', emoji: '⭐', name: 'Estrella' },
-  { id: 'heart', emoji: '❤️', name: 'Corazón' },
-  { id: 'sun', emoji: '☀️', name: 'Sol' },
-  { id: 'rocket', emoji: '🚀', name: 'Cohete' },
-  { id: 'rainbow', emoji: '🌈', name: 'Arcoíris' },
-  { id: 'crown', emoji: '👑', name: 'Corona' },
-  { id: 'flower', emoji: '🌸', name: 'Flor' },
-  { id: 'paw', emoji: '🐾', name: 'Huellita' }
+const GEOMETRIC_SHAPES: Array<{ id: ShapeType; label: string; Icon: LucideIcon }> = [
+  { id: 'circle', label: 'Círculo', Icon: Circle },
+  { id: 'rectangle', label: 'Rectángulo', Icon: Square },
+  { id: 'star', label: 'Estrella', Icon: Star },
+  { id: 'triangle', label: 'Triángulo', Icon: Triangle },
+  { id: 'heart', label: 'Corazón', Icon: Heart },
+  { id: 'diamond', label: 'Rombo', Icon: Diamond },
+  { id: 'flower', label: 'Flor', Icon: Flower2 },
+  { id: 'rocket', label: 'Cohete', Icon: Rocket }
 ];
 
-const CANVAS_PAPERS = [
-  { id: 'glacial', name: 'Blanco Glacial', bg: '#F8FAFC', icon: FileText, border: 'border-slate-200' },
-  { id: 'night', name: 'Pizarra Estelar', bg: '#0F172A', icon: Moon, border: 'border-indigo-900' },
-  { id: 'grid', name: 'Cuaderno Guía', bg: '#F1F5F9', icon: Grid, border: 'border-blue-200' },
-  { id: 'parchment', name: 'Papiro Mágico', bg: '#FEF3C7', icon: Sun, border: 'border-amber-200' }
+const BRUSH_SIZES = [
+  { id: 'fine', size: 6, dotSize: 8, label: 'Fino' },
+  { id: 'medium', size: 14, dotSize: 14, label: 'Medio' },
+  { id: 'thick', size: 26, dotSize: 22, label: 'Grueso' },
+  { id: 'jumbo', size: 44, dotSize: 30, label: 'Jumbo' }
 ];
 
-const ZENTRY_PALETTE = [
-  '#EC4899', // Rosa Zentry
-  '#8B5CF6', // Violeta Lavanda
-  '#3B82F6', // Azul Glacial
-  '#10B981', // Verde Menta
-  '#F59E0B', // Amarillo Aurora
-  '#EF4444', // Rojo Fuego
-  '#06B6D4', // Cian Océano
-  '#84CC16', // Lima Viva
-  '#1E293B', // Tinta Oscura
-  '#FFFFFF'  // Blanco Nube
+// 36 Colores Estilo Paint (Matriz Ordenada por Familias)
+const PAINT_PALETTE_MATRIX = [
+  // Fila 1: Neutros y Escala de Grises
+  ['#000000', '#334155', '#64748B', '#94A3B8', '#E2E8F0', '#FFFFFF'],
+  // Fila 2: Rojos y Rosas
+  ['#881337', '#DC2626', '#EF4444', '#F87171', '#EC4899', '#F472B6'],
+  // Fila 3: Naranjas y Amarillos
+  ['#7C2D12', '#EA580C', '#F97316', '#FB923C', '#EAB308', '#FDE047'],
+  // Fila 4: Verdes y Lima
+  ['#14532D', '#16A34A', '#22C55E', '#4ADE80', '#84CC16', '#A3E635'],
+  // Fila 5: Cyan y Azules
+  ['#164E63', '#0891B2', '#06B6D4', '#38BDF8', '#2563EB', '#60A5FA'],
+  // Fila 6: Violeta, Púrpura y Tonos Piel
+  ['#4C1D95', '#7C3AED', '#8B5CF6', '#C084FC', '#92400E', '#FDDFD0']
 ];
 
-interface GalleryItem {
-  id: string;
-  dataUrl: string;
-  reimaginedTitle?: string;
-  reimaginedStory?: string;
-  date: string;
-}
+const QUICK_COLORS = ['#EC4899', '#3B82F6', '#10B981', '#EAB308', '#000000'];
 
-interface ReimaginedAiResult {
-  detectedTitle: string;
-  praiseSpeech: string;
-  visualDescription: string;
-  story: string;
-  magicDetail: string;
+type ToolMode = 'brush' | 'rainbow' | 'shape' | 'eraser';
+
+interface AiLifeResult {
+  title: string;
+  category: string;
+  strokesDescription?: string;
+  detectedSubject: string;
+  compositionMapping?: string;
+  enhancedImageUrl: string;
+  speechFeedback: string;
 }
 
 export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  // Referencias Canvas y Contenedor
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const drawCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const overlayCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Estados de Herramientas
-  const [brushType, setBrushType] = useState<BrushType>('ink');
-  const [selectedColor, setSelectedColor] = useState<string>('#8B5CF6');
+  const [toolMode, setToolMode] = useState<ToolMode>('brush');
+  const [selectedColor, setSelectedColor] = useState<string>('#EC4899');
   const [brushSize, setBrushSize] = useState<number>(14);
-  const [currentPaper, setCurrentPaper] = useState(CANVAS_PAPERS[0]);
+  const [selectedShape, setSelectedShape] = useState<ShapeType>('circle');
+  const [showColorPicker, setShowColorPicker] = useState<boolean>(false);
 
-  // Popover de Sellos & Formas
-  const [showStampsMenu, setShowStampsMenu] = useState(false);
-  const [selectedStamp, setSelectedStamp] = useState<StampItem>(STAMPS_CATALOG[0]);
-
-  // Historial de Estados (Undo / Redo)
-  const [undoStack, setUndoStack] = useState<ImageData[]>([]);
-  const [redoStack, setRedoStack] = useState<ImageData[]>([]);
-
-  // Inteligencia Artificial (Reimaginación Mágica)
-  const [isAiThinking, setIsAiThinking] = useState(false);
-  const [aiReimaginedResult, setAiReimaginedResult] = useState<ReimaginedAiResult | null>(null);
-  const [capturedAiDrawingUrl, setCapturedAiDrawingUrl] = useState<string | null>(null);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-
-  // Galería de Obras
-  const [gallery, setGallery] = useState<GalleryItem[]>(() => {
-    try {
-      const saved = localStorage.getItem('zentry_freecanvas_gallery');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
-  const [showGalleryModal, setShowGalleryModal] = useState(false);
-  const [selectedGalleryItem, setSelectedGalleryItem] = useState<GalleryItem | null>(null);
-
-  // Control de trazado
+  // Puntos de trazo para suavizado Bézier continuo
   const isDrawingRef = useRef(false);
-  const lastPointRef = useRef<{ x: number; y: number } | null>(null);
+  const strokePointsRef = useRef<Array<{ x: number; y: number }>>([]);
   const rainbowHueRef = useRef(0);
 
-  // ----------------------------------------------------------------
-  // Audio Speech (TTS)
-  // ----------------------------------------------------------------
-  const speak = (text: string) => {
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'es-ES';
-      utterance.rate = 0.94;
-      utterance.pitch = 1.2;
-      utterance.onstart = () => setIsSpeaking(true);
-      utterance.onend = () => setIsSpeaking(false);
-      utterance.onerror = () => setIsSpeaking(false);
-      window.speechSynthesis.speak(utterance);
-    }
-  };
+  // Historial Deshacer (snapshots ImageData)
+  const [history, setHistory] = useState<ImageData[]>([]);
 
-  const stopVoice = () => {
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      setIsSpeaking(false);
-    }
-  };
+  // Estado IA Mágica
+  const [isTransformingAi, setIsTransformingAi] = useState(false);
+  const [aiResult, setAiResult] = useState<AiLifeResult | null>(null);
 
-  // ----------------------------------------------------------------
-  // Inicialización del Lienzo (DPR escalado para nitidez Retina)
-  // ----------------------------------------------------------------
-  const initCanvas = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+  // --------------------------------------------------
+  // INICIALIZACIÓN Y CONFIGURACIÓN HIGH-DPI DE CANVAS
+  // --------------------------------------------------
+  const initCanvases = useCallback(() => {
+    const container = containerRef.current;
+    const drawCanvas = drawCanvasRef.current;
+    const overlayCanvas = overlayCanvasRef.current;
+    if (!container || !drawCanvas || !overlayCanvas) return;
 
-    const rect = canvas.getBoundingClientRect();
+    const rect = container.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
 
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    ctx.scale(dpr, dpr);
-
-    ctx.fillStyle = currentPaper.bg;
-    ctx.fillRect(0, 0, rect.width, rect.height);
-
-    if (currentPaper.id === 'grid') {
-      drawGridPattern(ctx, rect.width, rect.height);
+    const prevCtx = drawCanvas.getContext('2d');
+    let prevData: ImageData | null = null;
+    if (prevCtx && drawCanvas.width > 0 && drawCanvas.height > 0) {
+      try {
+        prevData = prevCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
+      } catch {}
     }
 
-    const initialData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    setUndoStack([initialData]);
-    setRedoStack([]);
-  }, [currentPaper]);
+    drawCanvas.width = Math.round(rect.width * dpr);
+    drawCanvas.height = Math.round(rect.height * dpr);
+    overlayCanvas.width = Math.round(rect.width * dpr);
+    overlayCanvas.height = Math.round(rect.height * dpr);
 
-  const drawGridPattern = (ctx: CanvasRenderingContext2D, w: number, h: number) => {
-    ctx.save();
-    ctx.strokeStyle = 'rgba(59, 130, 246, 0.12)';
-    ctx.lineWidth = 1;
-    const step = 28;
-    for (let x = 0; x < w; x += step) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, h);
-      ctx.stroke();
+    const drawCtx = drawCanvas.getContext('2d');
+    const overlayCtx = overlayCanvas.getContext('2d');
+
+    if (drawCtx) {
+      drawCtx.lineCap = 'round';
+      drawCtx.lineJoin = 'round';
+
+      if (prevData) {
+        drawCtx.putImageData(prevData, 0, 0);
+      } else {
+        drawCtx.fillStyle = '#FFFFFF';
+        drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+        const initialSnap = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
+        setHistory([initialSnap]);
+      }
     }
-    for (let y = 0; y < h; y += step) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(w, y);
-      ctx.stroke();
+
+    if (overlayCtx) {
+      overlayCtx.lineCap = 'round';
+      overlayCtx.lineJoin = 'round';
     }
-    ctx.restore();
-  };
+  }, []);
 
   useEffect(() => {
-    initCanvas();
-  }, [initCanvas]);
+    initCanvases();
+    window.addEventListener('resize', initCanvases);
+    return () => window.removeEventListener('resize', initCanvases);
+  }, [initCanvases]);
 
-  const pushUndoState = () => {
-    const canvas = canvasRef.current;
+  const pushSnapshot = () => {
+    const canvas = drawCanvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-
-    const state = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    setUndoStack((prev) => [...prev.slice(-20), state]);
-    setRedoStack([]);
-  };
-
-  const getPointerPos = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return { x: 0, y: 0 };
-    const rect = canvas.getBoundingClientRect();
-    return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    };
-  };
-
-  // ----------------------------------------------------------------
-  // Handlers de Dibujo Interactivo
-  // ----------------------------------------------------------------
-  const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const pos = getPointerPos(e);
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-
-    if (brushType === 'stamp') {
-      if (navigator.vibrate) navigator.vibrate(8);
-      sounds.playTap();
-
-      ctx.save();
-      ctx.font = `${brushSize * 2.8}px system-ui, Apple Color Emoji, Segoe UI Emoji`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(selectedStamp.emoji, pos.x, pos.y);
-      ctx.restore();
-
-      pushUndoState();
-      return;
-    }
-
-    isDrawingRef.current = true;
-    lastPointRef.current = pos;
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(pos.x, pos.y, brushSize / 2, 0, Math.PI * 2);
-
-    if (brushType === 'eraser') {
-      ctx.fillStyle = currentPaper.bg;
-      ctx.fill();
-    } else if (brushType === 'neon') {
-      ctx.shadowColor = selectedColor;
-      ctx.shadowBlur = 18;
-      ctx.fillStyle = selectedColor;
-      ctx.fill();
-    } else if (brushType === 'rainbow') {
-      ctx.fillStyle = `hsl(${rainbowHueRef.current}, 95%, 55%)`;
-      ctx.fill();
-    } else if (brushType === 'watercolor') {
-      ctx.fillStyle = selectedColor;
-      ctx.globalAlpha = 0.35;
-      ctx.fill();
-    } else {
-      ctx.fillStyle = selectedColor;
-      ctx.fill();
-    }
-    ctx.restore();
-  };
-
-  const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!isDrawingRef.current || !lastPointRef.current || brushType === 'stamp') return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const currentPos = getPointerPos(e);
-
-    ctx.save();
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-
-    if (brushType === 'eraser') {
-      ctx.strokeStyle = currentPaper.bg;
-      ctx.lineWidth = brushSize * 1.8;
-    } else if (brushType === 'neon') {
-      ctx.strokeStyle = selectedColor;
-      ctx.shadowColor = selectedColor;
-      ctx.shadowBlur = 16;
-      ctx.lineWidth = brushSize;
-    } else if (brushType === 'rainbow') {
-      rainbowHueRef.current = (rainbowHueRef.current + 5) % 360;
-      ctx.strokeStyle = `hsl(${rainbowHueRef.current}, 95%, 55%)`;
-      ctx.shadowColor = `hsl(${rainbowHueRef.current}, 95%, 55%)`;
-      ctx.shadowBlur = 8;
-      ctx.lineWidth = brushSize;
-    } else if (brushType === 'watercolor') {
-      ctx.strokeStyle = selectedColor;
-      ctx.globalAlpha = 0.3;
-      ctx.lineWidth = brushSize * 1.4;
-    } else {
-      ctx.strokeStyle = selectedColor;
-      ctx.lineWidth = brushSize;
-    }
-
-    // Trazo suavizado Bézier
-    ctx.beginPath();
-    ctx.moveTo(lastPointRef.current.x, lastPointRef.current.y);
-    const midX = (lastPointRef.current.x + currentPos.x) / 2;
-    const midY = (lastPointRef.current.y + currentPos.y) / 2;
-    ctx.quadraticCurveTo(lastPointRef.current.x, lastPointRef.current.y, midX, midY);
-    ctx.lineTo(currentPos.x, currentPos.y);
-    ctx.stroke();
-    ctx.restore();
-
-    lastPointRef.current = currentPos;
-  };
-
-  const handlePointerUp = () => {
-    if (isDrawingRef.current) {
-      isDrawingRef.current = false;
-      lastPointRef.current = null;
-      pushUndoState();
-    }
+    const snap = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    setHistory((prev) => [...prev.slice(-15), snap]);
   };
 
   const handleUndo = () => {
-    if (undoStack.length <= 1) return;
+    if (history.length <= 1) return;
     sounds.playTap();
-    const canvas = canvasRef.current;
+    sounds.vibrate(8);
+
+    const canvas = drawCanvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const currentTop = undoStack[undoStack.length - 1];
-    const nextUndo = undoStack.slice(0, -1);
-    const previousState = nextUndo[nextUndo.length - 1];
-
-    setRedoStack((prev) => [...prev, currentTop]);
-    setUndoStack(nextUndo);
-
-    ctx.putImageData(previousState, 0, 0);
+    const next = history.slice(0, -1);
+    const prev = next[next.length - 1];
+    ctx.putImageData(prev, 0, 0);
+    setHistory(next);
   };
 
-  const handleRedo = () => {
-    if (redoStack.length === 0) return;
+  const handleClear = () => {
     sounds.playTap();
-    const canvas = canvasRef.current;
+    sounds.vibrate([15, 30]);
+
+    const canvas = drawCanvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const nextState = redoStack[redoStack.length - 1];
-    setRedoStack((prev) => prev.slice(0, -1));
-    setUndoStack((prev) => [...prev, nextState]);
-
-    ctx.putImageData(nextState, 0, 0);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    pushSnapshot();
   };
 
-  const handleClearAll = () => {
-    sounds.playTap();
-    initCanvas();
+  // --------------------------------------------------
+  // CONVERSIÓN DE COORDENADAS HIGH-DPI
+  // --------------------------------------------------
+  const getCanvasPos = (e: React.PointerEvent<HTMLDivElement>) => {
+    const container = containerRef.current;
+    const canvas = drawCanvasRef.current;
+    if (!container || !canvas) return { x: 0, y: 0 };
+    const rect = container.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY
+    };
   };
 
-  // ----------------------------------------------------------------
-  // BOTÓN DE INTELIGENCIA ARTIFICIAL (DAR VIDA AL DIBUJO) ✨/💎
-  // ----------------------------------------------------------------
-  const handleAiReimagineDrawing = async () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    if (navigator.vibrate) navigator.vibrate(12);
-    sounds.playTap();
+  // --------------------------------------------------
+  // RENDERIZADO VECTORIAL DE FORMAS GEOMÉTRICAS
+  // --------------------------------------------------
+  const drawVectorShape = (
+    ctx: CanvasRenderingContext2D,
+    shape: ShapeType,
+    startX: number,
+    startY: number,
+    currentX: number,
+    currentY: number,
+    color: string,
+    strokeWidthScaled: number
+  ) => {
+    const minX = Math.min(startX, currentX);
+    const minY = Math.min(startY, currentY);
+    const width = Math.max(Math.abs(currentX - startX), 24);
+    const height = Math.max(Math.abs(currentY - startY), 24);
+    const centerX = minX + width / 2;
+    const centerY = minY + height / 2;
+    const radius = Math.max(width, height) / 2;
 
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-    setCapturedAiDrawingUrl(dataUrl);
-    setIsAiThinking(true);
-    setAiReimaginedResult(null);
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = strokeWidthScaled;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
 
-    confetti({
-      particleCount: 40,
-      spread: 60,
-      origin: { y: 0.6 }
-    });
+    ctx.beginPath();
+
+    switch (shape) {
+      case 'circle': {
+        ctx.ellipse(centerX, centerY, width / 2, height / 2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      }
+      case 'rectangle': {
+        const r = Math.min(20, width / 4, height / 4);
+        ctx.roundRect(minX, minY, width, height, r);
+        ctx.fill();
+        break;
+      }
+      case 'triangle': {
+        ctx.moveTo(centerX, minY);
+        ctx.lineTo(minX + width, minY + height);
+        ctx.lineTo(minX, minY + height);
+        ctx.closePath();
+        ctx.fill();
+        break;
+      }
+      case 'star': {
+        const spikes = 5;
+        const outer = radius;
+        const inner = radius * 0.45;
+        let rot = (Math.PI / 2) * 3;
+        const step = Math.PI / spikes;
+
+        ctx.moveTo(centerX, centerY - outer);
+        for (let i = 0; i < spikes; i++) {
+          let x = centerX + Math.cos(rot) * outer;
+          let y = centerY + Math.sin(rot) * outer;
+          ctx.lineTo(x, y);
+          rot += step;
+
+          x = centerX + Math.cos(rot) * inner;
+          y = centerY + Math.sin(rot) * inner;
+          ctx.lineTo(x, y);
+          rot += step;
+        }
+        ctx.lineTo(centerX, centerY - outer);
+        ctx.closePath();
+        ctx.fill();
+        break;
+      }
+      case 'heart': {
+        const s = radius / 18;
+        ctx.moveTo(centerX, centerY - 6 * s);
+        ctx.bezierCurveTo(
+          centerX + 12 * s,
+          centerY - 20 * s,
+          centerX + 26 * s,
+          centerY + 2 * s,
+          centerX,
+          centerY + 22 * s
+        );
+        ctx.bezierCurveTo(
+          centerX - 26 * s,
+          centerY + 2 * s,
+          centerX - 12 * s,
+          centerY - 20 * s,
+          centerX,
+          centerY - 6 * s
+        );
+        ctx.closePath();
+        ctx.fill();
+        break;
+      }
+      case 'diamond': {
+        ctx.moveTo(centerX, minY);
+        ctx.lineTo(minX + width, centerY);
+        ctx.lineTo(centerX, minY + height);
+        ctx.lineTo(minX, centerY);
+        ctx.closePath();
+        ctx.fill();
+        break;
+      }
+      case 'flower': {
+        const petals = 6;
+        for (let i = 0; i < petals; i++) {
+          const angle = (i * 2 * Math.PI) / petals;
+          const px = centerX + Math.cos(angle) * (radius * 0.55);
+          const py = centerY + Math.sin(angle) * (radius * 0.55);
+          ctx.beginPath();
+          ctx.arc(px, py, radius * 0.45, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.beginPath();
+        ctx.fillStyle = '#FEF08A';
+        ctx.arc(centerX, centerY, radius * 0.35, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      }
+      case 'rocket': {
+        ctx.moveTo(centerX, minY);
+        ctx.quadraticCurveTo(
+          minX + width,
+          centerY,
+          centerX + width * 0.3,
+          minY + height * 0.85
+        );
+        ctx.lineTo(centerX - width * 0.3, minY + height * 0.85);
+        ctx.quadraticCurveTo(minX, centerY, centerX, minY);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.fillStyle = '#F97316';
+        ctx.moveTo(centerX - width * 0.2, minY + height * 0.85);
+        ctx.lineTo(centerX, minY + height);
+        ctx.lineTo(centerX + width * 0.2, minY + height * 0.85);
+        ctx.closePath();
+        ctx.fill();
+        break;
+      }
+    }
+
+    ctx.restore();
+  };
+
+  // --------------------------------------------------
+  // GESTIÓN DE PUNTERO: TRAZO ULTRA-SUAVE BÉZIER
+  // --------------------------------------------------
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    const pos = getCanvasPos(e);
+    isDrawingRef.current = true;
+    strokePointsRef.current = [pos];
 
     try {
-      const raw = await askZentryAi(
-        'canvas_reimagine',
-        'Analiza este dibujo infantil de trazos libres. Genera la versión mágica viva para niños de 2 a 5 años.',
-        dataUrl
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    } catch {}
+
+    const dpr = window.devicePixelRatio || 1;
+    const strokeWidthScaled = (toolMode === 'eraser' ? brushSize * 2 : brushSize) * dpr;
+
+    if (toolMode === 'shape') {
+      const overlay = overlayCanvasRef.current;
+      if (overlay) {
+        const oCtx = overlay.getContext('2d');
+        if (oCtx) {
+          oCtx.clearRect(0, 0, overlay.width, overlay.height);
+          drawVectorShape(
+            oCtx,
+            selectedShape,
+            pos.x,
+            pos.y,
+            pos.x + 80 * dpr,
+            pos.y + 80 * dpr,
+            selectedColor,
+            strokeWidthScaled
+          );
+        }
+      }
+      return;
+    }
+
+    const canvas = drawCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    sounds.playTap();
+    sounds.vibrate(5);
+
+    const drawColor =
+      toolMode === 'eraser'
+        ? '#FFFFFF'
+        : toolMode === 'rainbow'
+        ? `hsl(${rainbowHueRef.current}, 95%, 55%)`
+        : selectedColor;
+
+    ctx.beginPath();
+    ctx.arc(pos.x, pos.y, strokeWidthScaled / 2, 0, Math.PI * 2);
+    ctx.fillStyle = drawColor;
+    ctx.fill();
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDrawingRef.current || strokePointsRef.current.length === 0) return;
+    const currentPos = getCanvasPos(e);
+    const startPos = strokePointsRef.current[0];
+    const dpr = window.devicePixelRatio || 1;
+    const strokeWidthScaled = (toolMode === 'eraser' ? brushSize * 2 : brushSize) * dpr;
+
+    if (toolMode === 'shape') {
+      const overlay = overlayCanvasRef.current;
+      if (!overlay) return;
+      const oCtx = overlay.getContext('2d');
+      if (!oCtx) return;
+
+      oCtx.clearRect(0, 0, overlay.width, overlay.height);
+      drawVectorShape(
+        oCtx,
+        selectedShape,
+        startPos.x,
+        startPos.y,
+        currentPos.x,
+        currentPos.y,
+        selectedColor,
+        strokeWidthScaled
       );
+      return;
+    }
 
-      const parsed: ReimaginedAiResult = JSON.parse(raw.trim().replace(/^```json/, '').replace(/```$/, ''));
-      setAiReimaginedResult(parsed);
-      sounds.playSuccess();
+    const canvas = drawCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-      confetti({
-        particleCount: 80,
-        spread: 80,
-        origin: { y: 0.55 }
-      });
+    strokePointsRef.current.push(currentPos);
+    const pts = strokePointsRef.current;
 
-      speak(`${parsed.praiseSpeech} ${parsed.story}`);
-    } catch (error) {
-      console.warn('Fallback AI Canvas Reimagine:', error);
-      const fallback: ReimaginedAiResult = {
-        detectedTitle: 'Aventura Mágica de Luz',
-        praiseSpeech: '¡Guau, qué obra de arte tan hermosa! Tus trazos tienen colores llenos de vida y magia.',
-        visualDescription: 'Una hermosa criatura de cristal flotando sobre un arcoíris brillante con pequeñas estrellas doradas alrededor.',
-        story: '¡Tu dibujo ha cobrado vida y ahora ilumina el cielo con una sonrisa gigante!',
-        magicDetail: '¡Tiene destellos mágicos que brillan en la oscuridad!'
-      };
-      setAiReimaginedResult(fallback);
-      sounds.playSuccess();
-      speak(`${fallback.praiseSpeech} ${fallback.story}`);
-    } finally {
-      setIsAiThinking(false);
+    if (toolMode === 'rainbow') {
+      rainbowHueRef.current = (rainbowHueRef.current + 5) % 360;
+      ctx.strokeStyle = `hsl(${rainbowHueRef.current}, 95%, 55%)`;
+    } else {
+      ctx.strokeStyle = toolMode === 'eraser' ? '#FFFFFF' : selectedColor;
+    }
+
+    ctx.lineWidth = strokeWidthScaled;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    if (pts.length === 2) {
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      ctx.lineTo(pts[1].x, pts[1].y);
+      ctx.stroke();
+    } else if (pts.length > 2) {
+      const p1 = pts[pts.length - 2];
+      const p2 = pts[pts.length - 1];
+      const prevP = pts[pts.length - 3] || p1;
+
+      const mid1X = (prevP.x + p1.x) / 2;
+      const mid1Y = (prevP.y + p1.y) / 2;
+      const mid2X = (p1.x + p2.x) / 2;
+      const mid2Y = (p1.y + p2.y) / 2;
+
+      ctx.beginPath();
+      ctx.moveTo(mid1X, mid1Y);
+      ctx.quadraticCurveTo(p1.x, p1.y, mid2X, mid2Y);
+      ctx.stroke();
     }
   };
 
-  // ----------------------------------------------------------------
-  // Guardar y Exportar
-  // ----------------------------------------------------------------
-  const handleSaveToGallery = async () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    if (navigator.vibrate) navigator.vibrate(15);
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDrawingRef.current) return;
+    isDrawingRef.current = false;
+
+    try {
+      (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+    } catch {}
+
+    const endPos = getCanvasPos(e);
+    const startPos = strokePointsRef.current[0];
+    const dpr = window.devicePixelRatio || 1;
+    const strokeWidthScaled = (toolMode === 'eraser' ? brushSize * 2 : brushSize) * dpr;
+
+    if (toolMode === 'shape' && startPos) {
+      const canvas = drawCanvasRef.current;
+      const overlay = overlayCanvasRef.current;
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          drawVectorShape(
+            ctx,
+            selectedShape,
+            startPos.x,
+            startPos.y,
+            endPos.x,
+            endPos.y,
+            selectedColor,
+            strokeWidthScaled
+          );
+        }
+      }
+      if (overlay) {
+        const oCtx = overlay.getContext('2d');
+        if (oCtx) oCtx.clearRect(0, 0, overlay.width, overlay.height);
+      }
+      sounds.playSuccess();
+      sounds.vibrate(10);
+    }
+
+    strokePointsRef.current = [];
+    pushSnapshot();
+  };
+
+  // --------------------------------------------------
+  // GUARDAR / DESCARGAR PNG
+  // --------------------------------------------------
+  const handleSave = () => {
     sounds.playSuccess();
+    sounds.vibrate([15, 30, 15]);
+    confetti({ particleCount: 90, spread: 80, origin: { y: 0.6 } });
 
-    const dataUrl = canvas.toDataURL('image/png', 0.95);
-    const newItem: GalleryItem = {
-      id: String(Date.now()),
-      dataUrl,
-      reimaginedTitle: aiReimaginedResult?.detectedTitle,
-      reimaginedStory: aiReimaginedResult?.story,
-      date: new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
-    };
-
-    const updated = [newItem, ...gallery.slice(0, 19)];
-    setGallery(updated);
-    localStorage.setItem('zentry_freecanvas_gallery', JSON.stringify(updated));
-
-    // Guardado en Firestore
-    await saveArtworkToFirestore({
-      id: newItem.id,
-      title: newItem.reimaginedTitle || 'Obra Libre',
-      originalDrawingUrl: dataUrl,
-      storyPrompt: newItem.reimaginedStory
-    });
-
-    confetti({
-      particleCount: 75,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
-
-    speak('¡Tu dibujo se guardó en tu Galería de Arte!');
-  };
-
-  const handleDownload = () => {
-    const canvas = canvasRef.current;
+    const canvas = drawCanvasRef.current;
     if (!canvas) return;
-    sounds.playTap();
+
+    const dataUrl = canvas.toDataURL('image/png');
     const link = document.createElement('a');
-    link.download = `zentry-arte-${Date.now()}.png`;
-    link.href = canvas.toDataURL('image/png');
+    link.download = `zentry-lienzo-${Date.now()}.png`;
+    link.href = dataUrl;
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
   };
 
-  useEffect(() => {
-    return () => {
-      stopVoice();
-    };
-  }, []);
+  // --------------------------------------------------
+  // DAR VIDA MÁGICA CON IA ZENTRY
+  // --------------------------------------------------
+  const handleAiGiveLife = async () => {
+    if (!drawCanvasRef.current || isTransformingAi) return;
+    sounds.playTap();
+    setIsTransformingAi(true);
+
+    try {
+      const canvas = drawCanvasRef.current;
+      const base64Img = canvas.toDataURL('image/png');
+
+      const response = await askZentryAi(
+        'free_canvas_life',
+        'Analiza minuciosamente los trazos, formas, colores y composición espacial de este dibujo infantil y transfórmalo en una ilustración 3D Pixar de alta resolución fiel a los trazos.',
+        base64Img
+      );
+
+      let parsed: any = {};
+      try {
+        parsed = JSON.parse(response.trim().replace(/^```json/, '').replace(/```$/, ''));
+      } catch {
+        parsed = {
+          title: 'Tu Obra Mágica',
+          category: 'magic',
+          strokesDescription: 'Trazos alegres llenos de color y luz',
+          detectedSubject: 'Creación mágica',
+          enhancedPrompt: '3D cute Pixar style character in a glowing wonderland, magical lighting, colorful, 8k resolution',
+          speechFeedback: '¡Mira cómo brilla y cobra vida tu dibujo!'
+        };
+      }
+
+      const encodedPrompt = encodeURIComponent(
+        `${parsed.enhancedPrompt}, 3D pixar style, masterpiece, cute, vibrant, 8k resolution, ray tracing`
+      );
+      const seed = Math.floor(Math.random() * 1000000);
+      const generatedUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=768&height=768&seed=${seed}&nologo=true`;
+
+      const img = new Image();
+      img.src = generatedUrl;
+      await new Promise((resolve) => {
+        img.onload = resolve;
+        img.onerror = resolve;
+      });
+
+      sounds.playSuccess();
+      confetti({ particleCount: 120, spread: 100, origin: { y: 0.5 } });
+
+      const resultData: AiLifeResult = {
+        title: parsed.title || 'Tu Creación',
+        category: parsed.category || 'magic',
+        strokesDescription: parsed.strokesDescription,
+        detectedSubject: parsed.detectedSubject || 'Obra Mágica',
+        compositionMapping: parsed.compositionMapping,
+        enhancedImageUrl: generatedUrl,
+        speechFeedback: parsed.speechFeedback || '¡Tu dibujo ha cobrado vida mágica!'
+      };
+
+      setAiResult(resultData);
+      voiceService.speakFeedback(resultData.speechFeedback);
+    } catch (err) {
+      console.warn('Free canvas AI life error:', err);
+      const fallbackResult: AiLifeResult = {
+        title: 'Tu Dibujo Mágico',
+        category: 'magic',
+        strokesDescription: 'Trazos mágicos de colores brillantes',
+        detectedSubject: 'Amigo Mágico',
+        enhancedImageUrl: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=800&auto=format&fit=crop&q=80',
+        speechFeedback: '¡Tu dibujo se llenó de colores y magia!'
+      };
+      setAiResult(fallbackResult);
+      voiceService.speakFeedback(fallbackResult.speechFeedback);
+    } finally {
+      setIsTransformingAi(false);
+    }
+  };
+
+  const getCategoryBadge = (category: string) => {
+    switch (category) {
+      case 'landscape':
+        return {
+          label: 'Paisaje',
+          color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+          Icon: Mountain
+        };
+      case 'character':
+        return {
+          label: 'Personaje',
+          color: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
+          Icon: User
+        };
+      case 'object':
+        return {
+          label: 'Objeto',
+          color: 'bg-blue-500/20 text-blue-300 border-blue-500/40',
+          Icon: Box
+        };
+      default:
+        return {
+          label: 'Magia',
+          color: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+          Icon: Sparkles
+        };
+    }
+  };
+
+  const ActiveShapeIcon = GEOMETRIC_SHAPES.find((s) => s.id === selectedShape)?.Icon || Shapes;
 
   return (
-    <ZentrySubPageScaffold
-      title="Lienzo"
-      kicker="ESTUDIO DE DIBUJO Y CREACIÓN"
-      onBack={onBack}
-      isDark={isDark}
-    >
-      <div className="w-full h-full flex flex-col justify-between gap-2 relative overflow-hidden">
+    <ZentrySubPageScaffold title="" kicker="" onBack={onBack} isDark={isDark}>
+      <div className="w-full h-full max-w-5xl mx-auto flex flex-col justify-between overflow-hidden gap-2 select-none relative">
+        
         {/* ========================================================= */}
-        {/* BARRA SUPERIOR: PINCELES, FORMAS Y GOMA DE BORRAR         */}
+        {/* 1. BARRA SUPERIOR MINIMALISTA: CERO TEXTO INNECESARIO     */}
         {/* ========================================================= */}
-        <div className="w-full flex items-center justify-between gap-2 px-2 py-1.5 rounded-[24px] bg-white/40 dark:bg-white/10 backdrop-blur-xl border border-white/60 dark:border-white/15 shadow-sm">
-          {/* Pinceles Principales */}
-          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
-            <button
-              onClick={() => {
-                if (navigator.vibrate) navigator.vibrate(5);
-                setBrushType('ink');
-                setShowStampsMenu(false);
-              }}
-              className={`p-2.5 rounded-[18px] flex items-center gap-1.5 text-xs font-black transition-all cursor-pointer ${
-                brushType === 'ink'
-                  ? 'bg-purple-600 text-white shadow-md scale-105'
-                  : 'bg-white/60 dark:bg-white/10 text-slate-700 dark:text-white/80'
-              }`}
-              title="Pluma Tinta"
-            >
-              <Brush className="w-4 h-4" />
-              <span className="hidden sm:inline">Pluma</span>
-            </button>
-
-            <button
-              onClick={() => {
-                if (navigator.vibrate) navigator.vibrate(5);
-                setBrushType('neon');
-                setShowStampsMenu(false);
-              }}
-              className={`p-2.5 rounded-[18px] flex items-center gap-1.5 text-xs font-black transition-all cursor-pointer ${
-                brushType === 'neon'
-                  ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md scale-105'
-                  : 'bg-white/60 dark:bg-white/10 text-slate-700 dark:text-white/80'
-              }`}
-              title="Pincel Neón"
-            >
-              <Sparkles className="w-4 h-4" />
-              <span className="hidden sm:inline">Neón</span>
-            </button>
-
-            <button
-              onClick={() => {
-                if (navigator.vibrate) navigator.vibrate(5);
-                setBrushType('rainbow');
-                setShowStampsMenu(false);
-              }}
-              className={`p-2.5 rounded-[18px] flex items-center gap-1.5 text-xs font-black transition-all cursor-pointer ${
-                brushType === 'rainbow'
-                  ? 'bg-gradient-to-r from-pink-500 via-amber-400 to-cyan-400 text-white shadow-md scale-105'
-                  : 'bg-white/60 dark:bg-white/10 text-slate-700 dark:text-white/80'
-              }`}
-              title="Pincel Arcoíris"
-            >
-              <span>🌈</span>
-              <span className="hidden sm:inline">Arcoíris</span>
-            </button>
-
-            {/* UN SOLO BOTÓN DESPLEGABLE PARA FORMAS Y EMOJIS */}
-            <div className="relative">
+        <div className="flex flex-col gap-1.5 p-2 bg-white/40 dark:bg-slate-900/80 backdrop-blur-2xl rounded-[28px] border border-white/50 dark:border-white/15 shadow-xl">
+          <div className="flex items-center justify-between gap-1 w-full">
+            {/* GRUPO HERRAMIENTAS (Iconos SVG Nítidos sin texto) */}
+            <div className="flex items-center gap-1 sm:gap-1.5">
+              {/* Pincel Normal */}
               <button
                 onClick={() => {
-                  if (navigator.vibrate) navigator.vibrate(5);
-                  setShowStampsMenu((prev) => !prev);
-                  setBrushType('stamp');
+                  sounds.playTap();
+                  sounds.vibrate(6);
+                  setToolMode('brush');
                 }}
-                className={`p-2.5 rounded-[18px] flex items-center gap-1.5 text-xs font-black transition-all cursor-pointer ${
-                  brushType === 'stamp'
-                    ? 'bg-amber-500 text-white shadow-md scale-105'
-                    : 'bg-white/60 dark:bg-white/10 text-slate-700 dark:text-white/80'
+                className={`p-2 sm:p-2.5 rounded-2xl flex items-center justify-center border-2 transition-all cursor-pointer zentry-spring-press ${
+                  toolMode === 'brush'
+                    ? 'bg-pink-500 text-white scale-105 shadow-md border-white ring-2 ring-pink-300'
+                    : 'bg-white/80 dark:bg-white/10 border-transparent text-slate-700 dark:text-white hover:bg-white'
                 }`}
-                title="Formas y Stickers"
+                title="Pincel"
               >
-                <span className="text-base">{selectedStamp.emoji}</span>
-                <span className="hidden sm:inline">Formas</span>
+                <Paintbrush className="w-5 h-5 stroke-[2.5]" />
               </button>
 
-              {/* Menú Desplegable con 8 Formas y Emojis */}
-              {showStampsMenu && (
-                <div className="absolute top-12 left-0 z-50 p-2 rounded-[24px] bg-white dark:bg-slate-900 border border-white/60 dark:border-white/20 shadow-2xl flex items-center gap-1.5 animate-in zoom-in-95">
-                  {STAMPS_CATALOG.map((st) => (
-                    <button
-                      key={st.id}
-                      onClick={() => {
-                        if (navigator.vibrate) navigator.vibrate(5);
-                        setSelectedStamp(st);
-                        setBrushType('stamp');
-                        setShowStampsMenu(false);
+              {/* Pincel Arcoíris */}
+              <button
+                onClick={() => {
+                  sounds.playTap();
+                  sounds.vibrate(6);
+                  setToolMode('rainbow');
+                }}
+                className={`p-2 sm:p-2.5 rounded-2xl flex items-center justify-center border-2 transition-all cursor-pointer zentry-spring-press ${
+                  toolMode === 'rainbow'
+                    ? 'bg-gradient-to-r from-pink-500 via-yellow-400 to-cyan-400 text-slate-950 scale-105 shadow-md border-white ring-2 ring-yellow-300'
+                    : 'bg-white/80 dark:bg-white/10 border-transparent text-slate-700 dark:text-white hover:bg-white'
+                }`}
+                title="Pincel Arcoíris"
+              >
+                <Sparkles className="w-5 h-5" />
+              </button>
+
+              {/* Formas Geométricas */}
+              <button
+                onClick={() => {
+                  sounds.playTap();
+                  sounds.vibrate(6);
+                  setToolMode('shape');
+                }}
+                className={`p-2 sm:p-2.5 rounded-2xl flex items-center justify-center border-2 transition-all cursor-pointer zentry-spring-press ${
+                  toolMode === 'shape'
+                    ? 'bg-amber-400 text-slate-950 scale-105 shadow-md border-white ring-2 ring-amber-300'
+                    : 'bg-white/80 dark:bg-white/10 border-transparent text-slate-700 dark:text-white hover:bg-white'
+                }`}
+                title="Formas Geométricas"
+              >
+                <ActiveShapeIcon className="w-5 h-5 stroke-[2.5]" />
+              </button>
+
+              {/* Goma de Borrar */}
+              <button
+                onClick={() => {
+                  sounds.playTap();
+                  sounds.vibrate(6);
+                  setToolMode('eraser');
+                }}
+                className={`p-2 sm:p-2.5 rounded-2xl flex items-center justify-center border-2 transition-all cursor-pointer zentry-spring-press ${
+                  toolMode === 'eraser'
+                    ? 'bg-purple-600 text-white scale-105 shadow-md border-white ring-2 ring-purple-300'
+                    : 'bg-white/80 dark:bg-white/10 border-transparent text-slate-700 dark:text-white hover:bg-white'
+                }`}
+                title="Borrador"
+              >
+                <Eraser className="w-5 h-5 stroke-[2.5]" />
+              </button>
+            </div>
+
+            {/* Separador */}
+            <div className="h-6 w-px bg-slate-300 dark:bg-white/20" />
+
+            {/* SELECTOR DE 4 TAMAÑOS DE PINCEL (Circulitos Directos) */}
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              {BRUSH_SIZES.map((b) => {
+                const isSelected = brushSize === b.size;
+                return (
+                  <button
+                    key={b.id}
+                    onClick={() => {
+                      sounds.playTap();
+                      sounds.vibrate(6);
+                      setBrushSize(b.size);
+                    }}
+                    className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-all cursor-pointer zentry-spring-press ${
+                      isSelected
+                        ? 'bg-indigo-600 border-2 border-white ring-2 ring-indigo-400 shadow-md scale-110'
+                        : 'bg-white/60 dark:bg-white/15 hover:bg-white/90'
+                    }`}
+                    title={`Tamaño ${b.label}`}
+                  >
+                    <span
+                      style={{
+                        width: `${b.dotSize}px`,
+                        height: `${b.dotSize}px`
                       }}
-                      className={`p-2 rounded-[16px] text-xl transition-transform cursor-pointer hover:scale-120 ${
-                        selectedStamp.id === st.id ? 'bg-amber-400 text-white scale-110 shadow-md' : 'bg-slate-100 dark:bg-white/10'
+                      className={`rounded-full block transition-colors ${
+                        isSelected ? 'bg-white' : 'bg-slate-700 dark:bg-slate-200'
                       }`}
-                      title={st.name}
-                    >
-                      {st.emoji}
-                    </button>
-                  ))}
-                </div>
-              )}
+                    />
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Separador */}
+            <div className="h-6 w-px bg-slate-300 dark:bg-white/20" />
+
+            {/* ACCIONES: Deshacer y Limpiar */}
+            <div className="flex items-center gap-1">
+              <button
+                onClick={handleUndo}
+                className="p-2 sm:p-2.5 rounded-2xl bg-white/80 dark:bg-white/10 text-slate-700 dark:text-white hover:bg-white active:scale-90 cursor-pointer zentry-spring-press border border-transparent shadow-sm"
+                title="Deshacer"
+              >
+                <Undo2 className="w-5 h-5" />
+              </button>
+
+              <button
+                onClick={handleClear}
+                className="p-2 sm:p-2.5 rounded-2xl bg-white/80 dark:bg-white/10 text-rose-500 hover:bg-rose-50 active:scale-90 cursor-pointer zentry-spring-press border border-transparent shadow-sm"
+                title="Limpiar Lienzo"
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
             </div>
           </div>
 
-          {/* GOMA DE BORRAR AUTÉNTICA (Goma blanca/rosa, no esponja) */}
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <button
-              onClick={() => {
-                if (navigator.vibrate) navigator.vibrate(5);
-                setBrushType('eraser');
-                setShowStampsMenu(false);
-              }}
-              className={`p-2.5 rounded-[18px] border transition-all cursor-pointer flex items-center gap-1.5 ${
-                brushType === 'eraser'
-                  ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-white border-pink-400 shadow-md scale-105'
-                  : 'bg-white/60 dark:bg-white/10 text-slate-700 dark:text-white/80 border-black/5 dark:border-white/10'
-              }`}
-              title="Goma de Borrar"
-            >
-              <Eraser className="w-4 h-4" />
-              <span className="hidden sm:inline text-xs font-black">Goma</span>
-            </button>
-
-            <button
-              onClick={handleUndo}
-              disabled={undoStack.length <= 1}
-              className="p-2 rounded-[16px] bg-white/60 dark:bg-white/10 text-slate-700 dark:text-white/80 border border-black/5 dark:border-white/10 disabled:opacity-30 cursor-pointer active:scale-95"
-              title="Deshacer"
-            >
-              <Undo2 className="w-4 h-4" />
-            </button>
-
-            <button
-              onClick={handleRedo}
-              disabled={redoStack.length === 0}
-              className="p-2 rounded-[16px] bg-white/60 dark:bg-white/10 text-slate-700 dark:text-white/80 border border-black/5 dark:border-white/10 disabled:opacity-30 cursor-pointer active:scale-95"
-              title="Rehacer"
-            >
-              <Redo2 className="w-4 h-4" />
-            </button>
-
-            <button
-              onClick={handleClearAll}
-              className="p-2 rounded-[16px] bg-white/60 dark:bg-white/10 text-red-500 border border-black/5 dark:border-white/10 cursor-pointer active:scale-95"
-              title="Limpiar Todo"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-          </div>
+          {/* Sub-barra de Formas cuando el modo Forma está activo */}
+          {toolMode === 'shape' && (
+            <div className="w-full pt-1.5 border-t border-white/20 flex items-center justify-around overflow-x-auto no-scrollbar gap-1 animate-spring-in">
+              {GEOMETRIC_SHAPES.map((s) => {
+                const isSelected = selectedShape === s.id;
+                const ShapeIcon = s.Icon;
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => {
+                      sounds.playTap();
+                      sounds.vibrate(6);
+                      setSelectedShape(s.id);
+                    }}
+                    className={`p-2 rounded-xl flex items-center justify-center transition-all cursor-pointer shrink-0 zentry-spring-press ${
+                      isSelected
+                        ? 'bg-amber-400 text-slate-950 scale-110 shadow-md ring-2 ring-white'
+                        : 'bg-white/50 dark:bg-white/10 hover:bg-white text-slate-800 dark:text-slate-200'
+                    }`}
+                    title={s.label}
+                  >
+                    <ShapeIcon className="w-5 h-5 stroke-[2.5]" />
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* ========================================================= */}
-        {/* LIENZO DE DIBUJO CENTRAL                                  */}
+        {/* 2. ÁREA DE DIBUJO DUAL FLUIDA Y TOTALMENTE RESPONSIVE     */}
         {/* ========================================================= */}
         <div
           ref={containerRef}
-          className={`flex-1 w-full relative rounded-[32px] overflow-hidden shadow-2xl border-4 ${currentPaper.border} touch-none bg-white`}
+          onPointerDown={(e) => {
+            if (showColorPicker) setShowColorPicker(false);
+            handlePointerDown(e);
+          }}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+          className="flex-1 min-h-[300px] w-full relative rounded-[32px] overflow-hidden shadow-2xl border-4 border-white/80 dark:border-slate-800 touch-none bg-white cursor-crosshair"
         >
+          {/* Canvas Principal */}
+          <canvas ref={drawCanvasRef} className="w-full h-full block absolute inset-0 z-10" />
+
+          {/* Canvas Overlay de Previsualización */}
           <canvas
-            ref={canvasRef}
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerCancel={handlePointerUp}
-            className="w-full h-full block cursor-crosshair"
+            ref={overlayCanvasRef}
+            className="w-full h-full block absolute inset-0 z-20 pointer-events-none"
           />
         </div>
 
         {/* ========================================================= */}
-        {/* BARRA INFERIOR: PALETA, GROSOR, BOTÓN IA ✨ Y GUARDADO    */}
+        {/* 3. BARRA INFERIOR: BOTÓN DE COLOR, QUICK COLORS, IA Y SAVE */}
         {/* ========================================================= */}
-        <div className="w-full flex items-center justify-between gap-2 px-2 py-1.5 rounded-[24px] bg-white/40 dark:bg-white/10 backdrop-blur-xl border border-white/60 dark:border-white/15 shadow-sm">
-          {/* Paleta de Colores */}
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
-            {ZENTRY_PALETTE.map((c) => (
-              <button
-                key={c}
-                onClick={() => {
-                  if (navigator.vibrate) navigator.vibrate(5);
-                  setSelectedColor(c);
-                  if (brushType === 'eraser') setBrushType('ink');
-                }}
-                style={{ backgroundColor: c }}
-                className={`w-7 h-7 md:w-8 md:h-8 rounded-full border-2 transition-all cursor-pointer ${
-                  brushType !== 'eraser' && selectedColor === c
-                    ? 'scale-125 border-white ring-4 ring-purple-500/40 shadow-xl'
-                    : 'border-white/80 shadow-sm'
-                }`}
+        <div className="relative flex items-center justify-between gap-2 p-2 sm:p-2.5 bg-white/40 dark:bg-slate-900/80 backdrop-blur-2xl rounded-[28px] border border-white/50 dark:border-white/15 shadow-xl">
+          {/* LADO IZQUIERDO: Botón Maestro de Color + Colores Rápidos */}
+          <div className="flex items-center gap-2">
+            {/* BOTÓN MAESTRO DE PALETA / COLOR ACTUAL */}
+            <button
+              onClick={() => {
+                sounds.playTap();
+                sounds.vibrate(6);
+                setShowColorPicker(!showColorPicker);
+              }}
+              className="px-3 py-2 rounded-2xl bg-white/80 dark:bg-white/10 hover:bg-white dark:hover:bg-white/20 border-2 border-white/80 shadow-md flex items-center gap-2 cursor-pointer zentry-spring-press"
+              title="Abrir Gama Completa de Colores"
+            >
+              {/* Swatch de Color Activo */}
+              <div
+                style={{ backgroundColor: selectedColor }}
+                className="w-7 h-7 rounded-full border-2 border-white shadow-[0_0_10px_rgba(0,0,0,0.2)] flex items-center justify-center shrink-0"
               />
-            ))}
-          </div>
-
-          {/* Selector de Grosor */}
-          <div className="flex items-center gap-1 flex-shrink-0 bg-white/50 dark:bg-white/10 p-1 rounded-full">
-            {[6, 14, 26, 42].map((size) => (
-              <button
-                key={size}
-                onClick={() => setBrushSize(size)}
-                className={`w-6 h-6 rounded-full flex items-center justify-center cursor-pointer transition-transform ${
-                  brushSize === size ? 'bg-purple-600 text-white shadow-md scale-110' : 'text-slate-600 dark:text-white/60'
-                }`}
-              >
-                <div
-                  className="rounded-full bg-current"
-                  style={{ width: `${Math.min(16, size * 0.35 + 4)}px`, height: `${Math.min(16, size * 0.35 + 4)}px` }}
-                />
-              </button>
-            ))}
-          </div>
-
-          {/* Botones de Acción (Mis Obras, BOTÓN IA ✨ al lado de GUARDAR) */}
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            <button
-              onClick={() => setShowGalleryModal(true)}
-              className="p-2.5 rounded-full bg-white/70 dark:bg-white/15 text-slate-800 dark:text-white border border-black/5 font-black text-xs flex items-center gap-1 cursor-pointer active:scale-95"
-              title="Mis Obras"
-            >
-              <ImageIcon className="w-4 h-4 text-pink-500" />
-              <span className="hidden md:inline font-bold">({gallery.length})</span>
+              <Palette className="w-5 h-5 text-slate-700 dark:text-white" />
             </button>
 
-            {/* BOTÓN DE INTELIGENCIA ARTIFICIAL ✨/💎 (Justo al lado de Guardar) */}
-            <button
-              onClick={handleAiReimagineDrawing}
-              className="px-4 py-2.5 rounded-full bg-gradient-to-r from-purple-600 via-fuchsia-500 to-pink-500 text-white font-black text-xs shadow-lg shadow-purple-500/30 flex items-center gap-1.5 cursor-pointer active:scale-95 animate-pulse"
-              title="Dar Vida Mágica al Dibujo"
-            >
-              <Gem className="w-4 h-4 text-yellow-300" />
-              <span>Magia IA</span>
-            </button>
-
-            {/* BOTÓN CIRCULAR / REDONDO DE GUARDAR */}
-            <button
-              onClick={handleSaveToGallery}
-              className="px-4 py-2.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black text-xs shadow-lg shadow-emerald-500/30 flex items-center gap-1.5 cursor-pointer active:scale-95"
-            >
-              <CheckCircle2 className="w-4 h-4" />
-              <span>Guardar</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* ========================================================= */}
-      {/* MODAL: ESTUDIO DE REIMAGINACIÓN MÁGICA CON IA (GCP)       */}
-      {/* ========================================================= */}
-      {(isAiThinking || aiReimaginedResult) && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
-          <div
-            className={`w-full max-w-lg rounded-[36px] p-6 space-y-4 border shadow-2xl flex flex-col items-center text-center ${
-              isDark ? 'bg-slate-900 border-purple-500/30 text-white' : 'bg-white border-purple-200 text-slate-900'
-            }`}
-          >
-            {isAiThinking ? (
-              <div className="py-12 space-y-4 flex flex-col items-center animate-pulse">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-purple-500 via-pink-500 to-amber-400 flex items-center justify-center text-white text-3xl shadow-2xl animate-spin">
-                  <Gem className="w-10 h-10" />
-                </div>
-                <h3 className="text-base font-black">¡Despertando la magia de tus trazos! 🪄</h3>
-                <p className="text-xs text-purple-500 dark:text-purple-300">
-                  Zentry está analizando tus colores para darle vida en alta definición...
-                </p>
-              </div>
-            ) : (
-              aiReimaginedResult && (
-                <>
-                  <div className="flex items-center justify-between w-full pb-2 border-b border-black/10 dark:border-white/10">
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="w-5 h-5 text-amber-400" />
-                      <h3 className="text-sm font-black">{aiReimaginedResult.detectedTitle}</h3>
-                    </div>
-                    <button
-                      onClick={() => setAiReimaginedResult(null)}
-                      className="p-1.5 rounded-full hover:bg-black/10 dark:hover:bg-white/10 cursor-pointer"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-
-                  {/* Imagen del Dibujo Original con Aura Mágica */}
-                  <div className="w-full flex items-center justify-center gap-3">
-                    {capturedAiDrawingUrl && (
-                      <div className="relative w-44 h-44 rounded-[28px] overflow-hidden border-4 border-purple-400 shadow-2xl bg-white">
-                        <img src={capturedAiDrawingUrl} alt="Dibujo Original" className="w-full h-full object-contain p-2" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-purple-900/40 via-transparent to-transparent pointer-events-none" />
-                        <span className="absolute bottom-2 left-2 right-2 text-[10px] font-black text-white bg-black/60 backdrop-blur-md rounded-full py-0.5 text-center">
-                          Tu Creación
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Narración e Historia */}
-                  <div className="p-4 rounded-[24px] bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/40 space-y-2 text-left w-full">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-black uppercase text-purple-600 dark:text-purple-300">
-                        ✨ Historia Mágica
-                      </span>
-                      <button
-                        onClick={() => speak(`${aiReimaginedResult.praiseSpeech} ${aiReimaginedResult.story}`)}
-                        className="text-purple-600 dark:text-purple-300 flex items-center gap-1 text-[11px] font-bold cursor-pointer"
-                      >
-                        <Volume2 className={`w-3.5 h-3.5 ${isSpeaking ? 'animate-bounce text-pink-400' : ''}`} />
-                        <span>Escuchar</span>
-                      </button>
-                    </div>
-
-                    <p className="text-xs font-bold leading-relaxed text-slate-800 dark:text-purple-100">
-                      {aiReimaginedResult.story}
-                    </p>
-
-                    <p className="text-[11px] text-slate-600 dark:text-purple-200/80 italic">
-                      "{aiReimaginedResult.visualDescription}"
-                    </p>
-                  </div>
-
-                  {/* Acciones */}
-                  <div className="flex gap-2 w-full pt-1">
-                    <button
-                      onClick={() => {
-                        handleSaveToGallery();
-                        setAiReimaginedResult(null);
-                      }}
-                      className="flex-1 py-3 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-black flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-95"
-                    >
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span>Guardar Obra Mágica</span>
-                    </button>
-
-                    <button
-                      onClick={() => setAiReimaginedResult(null)}
-                      className="px-5 py-3 rounded-full bg-slate-200 dark:bg-white/15 text-xs font-black cursor-pointer"
-                    >
-                      Volver a Pintar
-                    </button>
-                  </div>
-                </>
-              )
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================= */}
-      {/* MODAL: GALERÍA DE OBRAS GUARDADAS                         */}
-      {/* ========================================================= */}
-      {showGalleryModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
-          <div
-            className={`w-full max-w-xl max-h-[85vh] rounded-[32px] p-6 flex flex-col space-y-4 border shadow-2xl ${
-              isDark ? 'bg-slate-900 border-white/20 text-white' : 'bg-white border-black/10 text-slate-900'
-            }`}
-          >
-            <div className="flex items-center justify-between pb-2 border-b border-black/10 dark:border-white/10">
-              <div className="flex items-center gap-2">
-                <span className="text-xl">🖼️</span>
-                <h3 className="text-base font-black">Mis Creaciones ({gallery.length})</h3>
-              </div>
-              <button
-                onClick={() => setShowGalleryModal(false)}
-                className="p-1.5 rounded-full hover:bg-black/10 dark:hover:bg-white/10 cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
+            {/* ACCESOS DIRECTOS DE COLORES POPULARES (5 puntos) */}
+            <div className="hidden xs:flex items-center gap-1.5 pl-1 border-l border-slate-300 dark:border-white/20">
+              {QUICK_COLORS.map((hex) => {
+                const isSelected = selectedColor.toLowerCase() === hex.toLowerCase() && toolMode !== 'eraser';
+                return (
+                  <button
+                    key={hex}
+                    onClick={() => {
+                      sounds.playTap();
+                      sounds.vibrate(5);
+                      setSelectedColor(hex);
+                      if (toolMode === 'eraser') setToolMode('brush');
+                    }}
+                    style={{ backgroundColor: hex }}
+                    className={`w-7 h-7 rounded-full border-2 transition-all cursor-pointer shrink-0 flex items-center justify-center ${
+                      isSelected
+                        ? 'scale-120 border-white ring-2 ring-pink-500 shadow-md'
+                        : 'border-white/80 hover:scale-110'
+                    }`}
+                  />
+                );
+              })}
             </div>
+          </div>
 
-            {gallery.length === 0 ? (
-              <div className="flex-1 py-12 flex flex-col items-center justify-center text-center opacity-60 space-y-2">
-                <Sparkles className="w-8 h-8 text-pink-400" />
-                <p className="text-xs font-bold">Aún no tienes dibujos guardados.</p>
-                <p className="text-[11px]">¡Dibuja tu primera obra y toca el botón Guardar o Magia IA!</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 overflow-y-auto no-scrollbar max-h-96 p-1">
-                {gallery.map((item) => (
+          {/* LADO DERECHO: Rombo IA Zentry + Guardar */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* BOTÓN IA ZENTRY */}
+            <button
+              onClick={handleAiGiveLife}
+              disabled={isTransformingAi}
+              className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 text-white flex items-center justify-center shadow-xl border-2 border-white active:scale-90 cursor-pointer zentry-spring-press relative group disabled:opacity-50"
+              title="Dar Vida con IA"
+            >
+              {isTransformingAi ? (
+                <RefreshCw className="w-5 h-5 animate-spin text-amber-300" />
+              ) : (
+                <>
+                  <ZentryLogoIcon className="w-5 h-5 sm:w-6 sm:h-6 group-hover:scale-112 transition-transform" />
+                  <span className="w-2 h-2 rounded-full bg-amber-300 absolute -top-0.5 -right-0.5 animate-ping" />
+                </>
+              )}
+            </button>
+
+            {/* BOTÓN DESCARGAR */}
+            <button
+              onClick={handleSave}
+              className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gradient-to-tr from-emerald-400 to-teal-600 text-white flex items-center justify-center shadow-xl border-2 border-white active:scale-90 cursor-pointer zentry-spring-press"
+              title="Guardar Dibujo"
+            >
+              <Download className="w-5 h-5 text-white stroke-[2.5]" />
+            </button>
+          </div>
+        </div>
+
+        {/* ========================================================= */}
+        {/* MODAL OVERLAY: GAMA COMPLETA DE COLORES ESTILO PAINT      */}
+        {/* ========================================================= */}
+        {showColorPicker && (
+          <div
+            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-end sm:items-center justify-center p-3 sm:p-4 animate-in fade-in select-none"
+            onClick={() => setShowColorPicker(false)}
+          >
+            <div
+              className="relative max-w-sm w-full rounded-[32px] p-4 bg-[#120E24]/98 backdrop-blur-2xl border-2 border-purple-400/70 shadow-[0_0_50px_rgba(0,0,0,0.8)] text-white animate-spring-in space-y-3.5"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Encabezado del Selector */}
+              <div className="flex items-center justify-between pb-2 border-b border-white/15">
+                <div className="flex items-center gap-2">
+                  <Palette className="w-5 h-5 text-pink-400" />
+                  <span className="text-sm font-black uppercase tracking-wider text-white">
+                    Gama de Colores
+                  </span>
+                </div>
+                <div className="flex items-center gap-2.5">
                   <div
-                    key={item.id}
-                    onClick={() => setSelectedGalleryItem(item)}
-                    className="rounded-[20px] p-2 border border-black/5 dark:border-white/10 bg-slate-50 dark:bg-white/5 cursor-pointer shadow-md hover:scale-102 transition-transform flex flex-col gap-1.5"
+                    style={{ backgroundColor: selectedColor }}
+                    className="w-6 h-6 rounded-full border-2 border-white shadow-md"
+                  />
+                  <button
+                    onClick={() => setShowColorPicker(false)}
+                    className="p-1 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white cursor-pointer"
                   >
-                    <img
-                      src={item.dataUrl}
-                      alt="Obra"
-                      className="w-full h-28 object-contain rounded-[14px] bg-white"
-                    />
-                    <div className="flex items-center justify-between text-[10px]">
-                      <span className="font-bold truncate max-w-[70%]">{item.reimaginedTitle || 'Dibujo'}</span>
-                      <span className="opacity-60 font-semibold">{item.date}</span>
-                    </div>
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* 1. Matriz de 36 Colores Estilo Paint (6x6) */}
+              <div className="space-y-1.5">
+                {PAINT_PALETTE_MATRIX.map((row, rIdx) => (
+                  <div key={rIdx} className="grid grid-cols-6 gap-1.5">
+                    {row.map((hex) => {
+                      const isSelected = selectedColor.toLowerCase() === hex.toLowerCase();
+                      return (
+                        <button
+                          key={hex}
+                          onClick={() => {
+                            sounds.playTap();
+                            sounds.vibrate(5);
+                            setSelectedColor(hex);
+                            if (toolMode === 'eraser') setToolMode('brush');
+                          }}
+                          style={{ backgroundColor: hex }}
+                          className={`w-full aspect-square rounded-xl border transition-transform cursor-pointer flex items-center justify-center ${
+                            isSelected
+                              ? 'scale-115 border-white ring-2 ring-pink-400 shadow-lg'
+                              : 'border-white/20 hover:scale-110'
+                          }`}
+                        >
+                          {isSelected && (
+                            <Check
+                              className={`w-4 h-4 ${
+                                hex === '#FFFFFF' || hex === '#E2E8F0' || hex === '#FDE047'
+                                  ? 'text-slate-950'
+                                  : 'text-white'
+                              } stroke-[3]`}
+                            />
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 ))}
               </div>
-            )}
-          </div>
-        </div>
-      )}
 
-      {/* Visor de Obra Individual */}
-      {selectedGalleryItem && (
-        <div
-          onClick={() => setSelectedGalleryItem(null)}
-          className="fixed inset-0 z-60 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in zoom-in-95"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="max-w-md w-full rounded-[32px] p-5 bg-white dark:bg-slate-900 border border-white/20 space-y-4 shadow-2xl"
-          >
-            <img
-              src={selectedGalleryItem.dataUrl}
-              alt="Detalle"
-              className="w-full h-64 object-contain rounded-[20px] bg-slate-950/20"
-            />
-            {selectedGalleryItem.reimaginedStory && (
-              <p className="text-xs text-slate-700 dark:text-purple-200 leading-relaxed font-bold">
-                {selectedGalleryItem.reimaginedStory}
-              </p>
-            )}
-            <div className="flex gap-2">
-              <button
-                onClick={() => {
-                  const link = document.createElement('a');
-                  link.download = `zentry-obra-${selectedGalleryItem.id}.png`;
-                  link.href = selectedGalleryItem.dataUrl;
-                  link.click();
-                }}
-                className="flex-1 py-3 rounded-full bg-purple-600 text-white text-xs font-black flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <Download className="w-4 h-4" />
-                <span>Descargar</span>
-              </button>
-              <button
-                onClick={() => setSelectedGalleryItem(null)}
-                className="px-6 py-3 rounded-full bg-slate-200 dark:bg-white/20 text-xs font-black cursor-pointer"
-              >
-                Cerrar
-              </button>
+              {/* 2. Selector Personalizado / Espectro Libre */}
+              <div className="pt-2 border-t border-white/15 flex items-center justify-between gap-2">
+                <label
+                  htmlFor="customColorPicker"
+                  className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-slate-200 cursor-pointer zentry-spring-press"
+                >
+                  <Sparkles className="w-4 h-4 text-amber-300" />
+                  <span>Personalizado</span>
+                  <input
+                    id="customColorPicker"
+                    type="color"
+                    value={selectedColor}
+                    onChange={(e) => {
+                      setSelectedColor(e.target.value);
+                      if (toolMode === 'eraser') setToolMode('brush');
+                    }}
+                    className="sr-only"
+                  />
+                </label>
+
+                <button
+                  onClick={() => setShowColorPicker(false)}
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 text-white text-xs font-black shadow-md cursor-pointer zentry-spring-press"
+                >
+                  Listo
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* ========================================================= */}
+        {/* MODAL: DIBUJO CON VIDA MÁGICA AI                          */}
+        {/* ========================================================= */}
+        {aiResult && (
+          <div
+            className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xl flex flex-col items-center justify-center p-4 animate-in fade-in select-none"
+            onClick={() => setAiResult(null)}
+          >
+            <div
+              className="relative max-w-sm w-full rounded-[36px] p-4 bg-[#120E24]/95 border border-purple-400/60 shadow-2xl flex flex-col items-center gap-2.5 animate-spring-in text-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header con Título y Badge de Categoría con Icono SVG */}
+              <div className="flex items-center justify-between w-full border-b border-white/10 pb-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <ZentryLogoIcon className="w-5 h-5 text-amber-300 shrink-0" />
+                  <span className="text-sm font-black text-white truncate">{aiResult.title}</span>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {(() => {
+                    const badge = getCategoryBadge(aiResult.category);
+                    const BadgeIcon = badge.Icon;
+                    return (
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border flex items-center gap-1 ${badge.color}`}>
+                        <BadgeIcon className="w-3 h-3" />
+                        <span>{badge.label}</span>
+                      </span>
+                    );
+                  })()}
+                  <button
+                    onClick={() => setAiResult(null)}
+                    className="p-1 rounded-full text-slate-400 hover:text-white cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Enhanced 3D Pixar Image */}
+              <div className="relative w-full aspect-square rounded-[26px] overflow-hidden border-2 border-purple-400/40 shadow-inner bg-black">
+                <img
+                  src={aiResult.enhancedImageUrl}
+                  alt={aiResult.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              {/* Trazos e Interpretación */}
+              {aiResult.strokesDescription && (
+                <div className="text-[11px] text-purple-200 font-bold px-2 line-clamp-2 flex items-center justify-center gap-1.5">
+                  <Paintbrush className="w-3.5 h-3.5 text-pink-400 shrink-0" />
+                  <span>{aiResult.strokesDescription}</span>
+                </div>
+              )}
+
+              {/* Voice Feedback Text */}
+              <p className="text-xs font-bold text-white leading-relaxed px-1">
+                {aiResult.speechFeedback}
+              </p>
+
+              {/* Actions con Iconos SVG */}
+              <div className="flex items-center gap-3 w-full pt-1">
+                <button
+                  onClick={() => {
+                    sounds.playTap();
+                    voiceService.speakFeedback(aiResult.speechFeedback);
+                  }}
+                  className="flex-1 py-3 rounded-2xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer zentry-spring-press border border-white/20"
+                >
+                  <Volume2 className="w-4 h-4 text-purple-300" />
+                  <span>Escuchar</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    sounds.playSuccess();
+                    confetti({ particleCount: 90, spread: 80 });
+                    setAiResult(null);
+                  }}
+                  className="flex-1 py-3 rounded-2xl bg-gradient-to-tr from-amber-400 to-orange-500 text-slate-950 font-black text-xs flex items-center justify-center gap-2 cursor-pointer zentry-spring-press shadow-lg"
+                >
+                  <CheckCircle2 className="w-4 h-4 text-slate-950" />
+                  <span>¡Me Encanta!</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </ZentrySubPageScaffold>
   );
 };

@@ -63,7 +63,7 @@ export const ZentryCommandSheet: React.FC<Props> = ({
             type="text"
             value={cmd}
             onChange={(e) => setCmd(e.target.value)}
-            placeholder="Escribe un comando o busca en Google..."
+            placeholder="Escribe un comando o busca en Zentry..."
             className="w-full pl-4 pr-10 py-3 rounded-2xl bg-white/10 border border-white/20 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-[#C8B6FF]"
             autoFocus
           />

@@ -20,8 +20,7 @@ interface Props {
   onNavigate: (screen: ScreenId) => void;
 }
 
-export const OSAppGrid: React.FC<Props> = ({ isDark, ageTier = 'toddler', onNavigate }) => {
-  // Curated Toddler 2-5 Apps without redundant AI icons (AI is in Dynamic Island & Bottom Nav)
+export const OSAppGrid: React.FC<Props> = ({ isDark, ageTier = 'explorer', onNavigate }) => {
   const toddlerApps = [
     { 
       name: 'Cámara', 
@@ -31,42 +30,78 @@ export const OSAppGrid: React.FC<Props> = ({ isDark, ageTier = 'toddler', onNavi
       speech: '¡Sonríe a la cámara!' 
     },
     { 
-      name: 'Dibujar', 
+      name: 'Crear', 
       icon: Palette, 
       screen: 'neuro_art' as ScreenId, 
       bg: 'bg-gradient-to-tr from-purple-500 to-pink-500 text-white',
-      speech: '¡Vamos a pintar y crear!' 
+      speech: '¡Vamos a pintar!' 
     },
     { 
       name: 'Videos', 
       icon: Play, 
       screen: 'entertainment_hub' as ScreenId, 
       bg: 'bg-gradient-to-tr from-rose-500 to-red-500 text-white',
-      speech: '¡Hora de ver videos educativos!' 
+      speech: '¡Hora de videos!' 
     },
     { 
       name: 'Reloj', 
       icon: Clock, 
       screen: 'reloj' as ScreenId, 
       bg: 'bg-gradient-to-tr from-yellow-400 to-amber-500 text-white',
-      speech: '¡Mira qué hora es!' 
+      speech: '¡Reloj!' 
     },
     { 
-      name: 'Mundos', 
+      name: 'Simulador', 
       icon: Gamepad2, 
-      screen: 'world_generator' as ScreenId, 
+      screen: 'simulator' as ScreenId, 
       bg: 'bg-gradient-to-tr from-emerald-400 to-teal-600 text-white',
-      speech: '¡Vamos a crear un mundo mágico!' 
+      speech: '¡Simulador!' 
     }
   ];
 
   const explorerApps = [
-    { name: 'Calculadora', icon: Calculator, screen: 'calculator' as ScreenId, bg: '', speech: '' },
-    { name: 'Cámara', icon: Camera, screen: 'camera' as ScreenId, bg: '', speech: '' },
-    { name: 'Reloj', icon: Clock, screen: 'reloj' as ScreenId, bg: '', speech: '' },
-    { name: 'Calendario', icon: CalendarIcon, screen: 'calendar' as ScreenId, bg: '', speech: '' },
-    { name: 'Archivos', icon: Folder, screen: 'files' as ScreenId, bg: '', speech: '' },
-    { name: 'Tutor', icon: GraduationCap, screen: 'tutor_hub' as ScreenId, bg: '', speech: '' }
+    { 
+      name: 'Calculadora', 
+      icon: Calculator, 
+      screen: 'calculator' as ScreenId, 
+      bg: 'bg-gradient-to-tr from-cyan-500 to-blue-600 text-white', 
+      speech: '' 
+    },
+    { 
+      name: 'Cámara', 
+      icon: Camera, 
+      screen: 'camera' as ScreenId, 
+      bg: 'bg-gradient-to-tr from-amber-400 to-orange-500 text-white', 
+      speech: '' 
+    },
+    { 
+      name: 'Reloj', 
+      icon: Clock, 
+      screen: 'reloj' as ScreenId, 
+      bg: 'bg-gradient-to-tr from-yellow-400 to-amber-500 text-white', 
+      speech: '' 
+    },
+    { 
+      name: 'Calendario', 
+      icon: CalendarIcon, 
+      screen: 'calendar' as ScreenId, 
+      bg: 'bg-gradient-to-tr from-emerald-400 to-teal-600 text-white', 
+      speech: '' 
+    },
+    { 
+      name: 'Archivos', 
+      icon: Folder, 
+      screen: 'files' as ScreenId, 
+      bg: 'bg-gradient-to-tr from-indigo-500 to-purple-600 text-white', 
+      speech: '' 
+    },
+    { 
+      name: 'Tutor', 
+      icon: GraduationCap, 
+      screen: 'tutor_hub' as ScreenId, 
+      bg: 'bg-gradient-to-tr from-purple-500 to-pink-500 text-white', 
+      speech: '' 
+    }
   ];
 
   const apps = ageTier === 'toddler' ? toddlerApps : explorerApps;
@@ -83,35 +118,22 @@ export const OSAppGrid: React.FC<Props> = ({ isDark, ageTier = 'toddler', onNavi
   };
 
   return (
-    <div className="grid grid-cols-3 gap-y-5 gap-x-4 w-full justify-items-center max-w-sm mx-auto">
+    <div className="grid grid-cols-3 gap-y-4 gap-x-3 w-full justify-items-center max-w-sm mx-auto">
       {apps.map((app) => {
         const Icon = app.icon;
-        const isCustomBg = Boolean(app.bg);
         return (
           <div
             key={app.name}
             onClick={() => handleAppClick(app)}
-            className="flex flex-col items-center gap-1.5 cursor-pointer zentry-press group"
+            className="flex flex-col items-center gap-1.5 cursor-pointer zentry-spring-press group"
           >
             <div
-              className={
-                (isCustomBg
-                  ? `${app.bg} shadow-lg `
-                  : isDark
-                  ? 'zentry-veil-dark text-white '
-                  : 'zentry-veil-light text-[#3B3B58] ') +
-                'w-16 h-16 rounded-[24px] flex items-center justify-center transition-all group-hover:scale-108 active:scale-95 shadow-sm'
-              }
+              className={`${app.bg} w-15 h-15 rounded-[22px] flex items-center justify-center transition-all group-hover:scale-108 active:scale-95 shadow-lg`}
             >
-              <Icon className="w-8 h-8" />
+              <Icon className="w-7 h-7" />
             </div>
             <span
-              className={
-                (isDark
-                  ? 'text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] '
-                  : 'text-slate-900 drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)] ') +
-                'text-xs font-black tracking-tight text-center truncate max-w-[80px]'
-              }
+              className="text-xs font-black tracking-tight text-white drop-shadow-md text-center truncate max-w-[85px]"
             >
               {app.name}
             </span>

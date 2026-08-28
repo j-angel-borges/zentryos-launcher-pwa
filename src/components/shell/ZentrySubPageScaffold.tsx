@@ -50,7 +50,7 @@ export const ZentrySubPageScaffold: React.FC<Props> = ({
         </div>
 
         {/* Inner Content */}
-        <div className="flex-1 overflow-y-auto pt-4">
+        <div className="flex-1 min-h-0 overflow-y-auto pt-4 flex flex-col relative">
           {children}
         </div>
       </div>

@@ -43,6 +43,9 @@ import { ZentryMonsterScreen } from './components/screens/ZentryMonsterScreen';
 import { ZentryStudyAssistantScreen } from './components/screens/ZentryStudyAssistantScreen';
 import { ZentryResearchScreen } from './components/screens/ZentryResearchScreen';
 import { ZentryRedactorScreen } from './components/screens/ZentryRedactorScreen';
+import { ZentryImagineScreen } from './components/screens/ZentryImagineScreen';
+import { ZentryBuildScreen } from './components/screens/ZentryBuildScreen';
+import { ZentrySimulatorScreen } from './components/screens/ZentrySimulatorScreen';
 import { ZentryEmbeddedAppScreen } from './components/screens/ZentryEmbeddedAppScreen';
 
 import { subscribeToDeviceState, simulateDeviceState } from './services/firebase';
@@ -108,8 +111,16 @@ export const App: React.FC = () => {
     return localStorage.getItem('zentry_show_calendar') !== 'false';
   });
   const [ageTier, setAgeTier] = useState<AgeTier>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const urlTier = params.get('tier') || params.get('age');
+      if (urlTier === 'explorer' || urlTier === 'toddler') {
+        return urlTier;
+      }
+    }
     return (localStorage.getItem('zentry_age_tier') as AgeTier) || 'toddler';
   });
+
   const [brightness, setBrightness] = useState(80);
   const [volume, setVolume] = useState(75);
 
@@ -239,8 +250,8 @@ export const App: React.FC = () => {
         onNavigate={navigateTo}
       />
 
-      {/* 3. Screen Viewport */}
-      <div className="flex-1 w-full h-full relative overflow-hidden flex flex-col items-center justify-center">
+      {/* 3. Screen Viewport with Spring Zoom Transition */}
+      <div key={currentScreen} className="flex-1 w-full h-full relative overflow-hidden flex flex-col items-center justify-center animate-app-open">
         {currentScreen === 'launcher' && (
           <ZentryHomeScreen
             wallpaper={currentWallpaper}
@@ -266,6 +277,7 @@ export const App: React.FC = () => {
           <ZentryCreationScreen
             onBack={handleBack}
             onNavigate={navigateTo}
+            ageTier={ageTier}
             isDark={currentWallpaper.isDark}
           />
         )}
@@ -375,6 +387,29 @@ export const App: React.FC = () => {
 
         {currentScreen === 'redactor' && (
           <ZentryRedactorScreen onBack={handleBack} isDark={currentWallpaper.isDark} />
+        )}
+
+        {currentScreen === 'image_generator' && (
+          <ZentryImagineScreen
+            onBack={handleBack}
+            onNavigate={navigateTo}
+            isDark={currentWallpaper.isDark}
+          />
+        )}
+
+        {currentScreen === 'app_builder' && (
+          <ZentryBuildScreen
+            onBack={handleBack}
+            isDark={currentWallpaper.isDark}
+          />
+        )}
+
+        {currentScreen === 'simulator' && (
+          <ZentrySimulatorScreen
+            onBack={handleBack}
+            ageTier={ageTier}
+            isDark={currentWallpaper.isDark}
+          />
         )}
 
         {currentScreen === 'workspace_app' && selectedWorkspaceApp && (
