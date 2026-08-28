@@ -45,6 +45,7 @@ import { ZentryResearchScreen } from './components/screens/ZentryResearchScreen'
 import { ZentryRedactorScreen } from './components/screens/ZentryRedactorScreen';
 import { ZentryImagineScreen } from './components/screens/ZentryImagineScreen';
 import { ZentryBuildScreen } from './components/screens/ZentryBuildScreen';
+import { ZentrySimulatorScreen } from './components/screens/ZentrySimulatorScreen';
 import { ZentryEmbeddedAppScreen } from './components/screens/ZentryEmbeddedAppScreen';
 
 import { subscribeToDeviceState, simulateDeviceState } from './services/firebase';
@@ -399,6 +400,14 @@ export const App: React.FC = () => {
         {currentScreen === 'app_builder' && (
           <ZentryBuildScreen
             onBack={handleBack}
+            isDark={currentWallpaper.isDark}
+          />
+        )}
+
+        {currentScreen === 'simulator' && (
+          <ZentrySimulatorScreen
+            onBack={handleBack}
+            ageTier={ageTier}
             isDark={currentWallpaper.isDark}
           />
         )}

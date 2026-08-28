@@ -182,6 +182,22 @@ Genera SIEMPRE un JSON válido:
   "spaceObservation": "Veo tu sala con cojines y una alfombra suave.",
   "missionIdea": "¡La alfombra es un lago de estrellas y los cojines son montañas mágicas!",
   "speechFeedback": "¡Tu casa ahora es una base secreta! Camina con cuidado sobre los cojines para salvar el día."
+}`,
+
+  scene_simulator: `Eres el Simulador de Escenas y Mundos de Zentry AI para niños y estudiantes (2 a 10 años).
+Permites crear y simular mundos vivos y envolventes (espacio exterior, océanos profundos, bosques encantados, ciudades del futuro, era prehistórica de dinosaurios, reinos de cristal).
+Genera SIEMPRE un JSON válido:
+{
+  "title": "Nombre asombroso de la escena o mundo",
+  "environmentType": "space | ocean | forest | future_city | fantasy",
+  "scenePrompt": "3D Pixar panoramic cinematic environment, highly detailed, vibrant colors, ray tracing, atmospheric lighting, 8k resolution",
+  "loreStory": "Breve descripción mágica del mundo y sus secretos (2 oraciones).",
+  "interactiveElements": [
+    { "name": "Elemento 1", "effect": "Qué sucede al interactuar" },
+    { "name": "Elemento 2", "effect": "Qué sucede al interactuar" },
+    { "name": "Elemento 3", "effect": "Qué sucede al interactuar" }
+  ],
+  "speechFeedback": "¡Hemos entrado a una nueva dimensión! Explora y descubre sus maravillas."
 }`
 };
 
@@ -203,7 +219,8 @@ export function getZentryModel(appId: string): GenerativeModel {
     'app_builder',
     'free_canvas_life',
     'character_hero_creator',
-    'character_world_generator'
+    'character_world_generator',
+    'scene_simulator'
   ].includes(appId);
 
   const model = getGenerativeModel(ai, {

@@ -1,13 +1,12 @@
 import React from 'react';
 import {
   Palette,
-  Globe,
-  UserCheck,
   Brush,
   Wand2,
   Zap,
   Compass,
-  BookOpen
+  BookOpen,
+  Sparkles
 } from 'lucide-react';
 import type { ScreenId, AgeTier } from '../../types/zentry';
 import { ZentrySubPageScaffold } from '../shell/ZentrySubPageScaffold';
@@ -26,7 +25,7 @@ export const ZentryCreationScreen: React.FC<Props> = ({
   ageTier = 'toddler', 
   isDark 
 }) => {
-  // 1. Aplicaciones Sensoriales para Primera Infancia (2 a 5 años): Lienzo, Misiones y Personajes
+  // 1. Aplicaciones Sensoriales para Primera Infancia (2 a 5 años): Lienzo, Misiones y Simulador
   const toddlerCreationApps: FisheyeItemData[] = [
     {
       id: 'free_canvas',
@@ -45,11 +44,11 @@ export const ZentryCreationScreen: React.FC<Props> = ({
       gradient: 'from-amber-400 via-orange-500 to-yellow-500'
     },
     {
-      id: 'characters',
-      name: 'Personajes',
+      id: 'simulator',
+      name: 'Simulador',
       category: 'personajes',
-      icon: UserCheck,
-      screen: 'characters',
+      icon: Sparkles,
+      screen: 'simulator',
       gradient: 'from-purple-500 via-indigo-500 to-blue-600'
     }
   ];
@@ -73,20 +72,12 @@ export const ZentryCreationScreen: React.FC<Props> = ({
       gradient: 'from-indigo-500 via-purple-500 to-pink-500'
     },
     {
-      id: 'world_generator',
-      name: 'Mundos 3D',
-      category: 'mundos',
-      icon: Globe,
-      screen: 'world_generator',
+      id: 'simulator',
+      name: 'Simulador',
+      category: 'simulacion',
+      icon: Sparkles,
+      screen: 'simulator',
       gradient: 'from-emerald-400 via-teal-500 to-cyan-600'
-    },
-    {
-      id: 'characters',
-      name: 'Personajes',
-      category: 'personajes',
-      icon: UserCheck,
-      screen: 'characters',
-      gradient: 'from-purple-500 via-indigo-500 to-blue-600'
     },
     {
       id: 'redactor',

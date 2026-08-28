@@ -51,11 +51,11 @@ export const OSAppGrid: React.FC<Props> = ({ isDark, ageTier = 'explorer', onNav
       speech: '¡Reloj!' 
     },
     { 
-      name: 'Mundos', 
+      name: 'Simulador', 
       icon: Gamepad2, 
-      screen: 'world_generator' as ScreenId, 
+      screen: 'simulator' as ScreenId, 
       bg: 'bg-gradient-to-tr from-emerald-400 to-teal-600 text-white',
-      speech: '¡Mundos!' 
+      speech: '¡Simulador!' 
     }
   ];
 

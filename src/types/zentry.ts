@@ -27,6 +27,7 @@ export type ScreenId =
   | 'redactor'
   | 'image_generator'
   | 'app_builder'
+  | 'simulator'
   | 'workspace_app';
 
 export type AgeTier = 'toddler' | 'explorer';
