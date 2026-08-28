@@ -715,18 +715,20 @@ export class VoiceSpeechService {
         signal
       });
 
-      // If Studio voice is restricted or unavailable on some GCP quotas, gracefully try Neural2
+      // If Studio voice is restricted or unavailable on some GCP quotas, gracefully try Neural2 with exact gender match
       if (!response.ok && config.name.includes('Studio')) {
-        const fallbackVoice = config.ssmlGender === 'FEMALE' ? 'es-US-Neural2-A' : 'es-US-Neural2-C';
+        const isFem = config.ssmlGender === 'FEMALE';
+        const fallbackVoice = isFem ? 'es-US-Neural2-A' : 'es-US-Neural2-B';
+        const fallbackLang = 'es-US';
         response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             input: { ssml },
             voice: {
-              languageCode: config.languageCode,
+              languageCode: fallbackLang,
               name: fallbackVoice,
-              ssmlGender: config.ssmlGender
+              ssmlGender: isFem ? 'FEMALE' : 'MALE'
             },
             audioConfig: {
               audioEncoding: 'MP3',
@@ -859,39 +861,46 @@ export class VoiceSpeechService {
       return voices[0] || null;
     }
 
+    const FEMALE_NAMES = ['dalia', 'paloma', 'elvira', 'beatriz', 'carlota', 'valeria', 'monica', 'paulina', 'helena', 'sabina', 'lucia', 'laura', 'mia', 'hilda', 'female', 'mujer', 'femenina'];
+    const MALE_NAMES = ['jorge', 'alvaro', 'dario', 'nil', 'valerio', 'tristan', 'pablo', 'raul', 'alonso', 'mateo', 'david', 'male', 'hombre', 'masculino'];
+
+    // Strict gender filtering to prevent gender inversion
+    const genderPureVoices = spanishVoices.filter((v) => {
+      const name = v.name.toLowerCase();
+      if (isFemale) {
+        return !MALE_NAMES.some((m) => name.includes(m));
+      } else {
+        return !FEMALE_NAMES.some((f) => name.includes(f));
+      }
+    });
+
+    const candidateVoices = genderPureVoices.length > 0 ? genderPureVoices : spanishVoices;
+
     // Score voices according to neural/natural quality and persona alignment
-    const scored = spanishVoices.map((voice) => {
+    const scored = candidateVoices.map((voice) => {
       let score = 0;
       const name = voice.name.toLowerCase();
 
       // Direct match with persona target Edge / Natural Voice
-      if (targetEdgeVoice && name.includes(targetEdgeVoice)) score += 400;
+      if (targetEdgeVoice && name.includes(targetEdgeVoice)) score += 500;
 
       // Top priority: Modern Edge/Chrome Natural Neural Voices
-      if (name.includes('natural') || name.includes('online')) score += 250;
-      if (name.includes('neural')) score += 200;
-      if (name.includes('google') && name.includes('español')) score += 150;
+      if (name.includes('natural') || name.includes('online')) score += 300;
+      if (name.includes('neural')) score += 250;
+      if (name.includes('google') && name.includes('español')) score += 180;
 
-      // Gender affinity
+      // Gender affinity reinforcement
       if (isFemale) {
-        if (name.includes('dalia') || name.includes('paloma') || name.includes('elvira') || name.includes('beatriz') || name.includes('carlota') || name.includes('valeria') || name.includes('monica') || name.includes('paulina') || name.includes('female') || name.includes('mujer')) {
-          score += 100;
-        }
-        if (name.includes('jorge') || name.includes('alvaro') || name.includes('dario') || name.includes('male') || name.includes('hombre')) {
-          score -= 120;
-        }
+        if (FEMALE_NAMES.some((f) => name.includes(f))) score += 150;
+        if (MALE_NAMES.some((m) => name.includes(m))) score -= 2000;
       } else {
-        if (name.includes('jorge') || name.includes('alvaro') || name.includes('dario') || name.includes('nil') || name.includes('valerio') || name.includes('tristan') || name.includes('male') || name.includes('hombre')) {
-          score += 100;
-        }
-        if (name.includes('dalia') || name.includes('paloma') || name.includes('elvira') || name.includes('female') || name.includes('mujer')) {
-          score -= 120;
-        }
+        if (MALE_NAMES.some((m) => name.includes(m))) score += 150;
+        if (FEMALE_NAMES.some((f) => name.includes(f))) score -= 2000;
       }
 
       // Latin American preference for dynamic cadence
       if (voice.lang.includes('MX') || voice.lang.includes('US') || voice.lang.includes('PE') || voice.lang.includes('CO')) {
-        score += 30;
+        score += 40;
       }
 
       // Penalize legacy robotic Desktop voices
@@ -903,7 +912,7 @@ export class VoiceSpeechService {
     });
 
     scored.sort((a, b) => b.score - a.score);
-    return scored[0]?.voice || spanishVoices[0] || null;
+    return scored[0]?.voice || candidateVoices[0] || spanishVoices[0] || null;
   }
 
   private speakOfflineFallback(text: string, options?: SpeakOptions): void {
