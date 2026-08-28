@@ -57,7 +57,7 @@ export const ZentrySettingsScreen: React.FC<Props> = ({
   const [rateMultiplier, setRateMultiplier] = useState<number>(() => voiceService.getCustomSettings().rateMultiplier ?? 1.0);
   const [volumeGain, setVolumeGain] = useState<number>(() => voiceService.getCustomSettings().volumeGainDb ?? 1.5);
 
-  const [testPhrase, setTestPhrase] = useState('¡Hola! Soy Zentry, qué alegría saludarte. ¿Lista para descubrir cosas increíbles hoy? ✨');
+  const [testPhrase, setTestPhrase] = useState('¡Hola! Soy Zentry, qué alegría saludarte. ¿Lista para descubrir cosas increíbles hoy?');
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [cacheStatus, setCacheStatus] = useState<string>('');
   const [apiKeyInput, setApiKeyInput] = useState<string>(() => {
@@ -110,13 +110,13 @@ export const ZentrySettingsScreen: React.FC<Props> = ({
       onSelectAgeTier(persona.cohort);
     }
     if (personaId === 'zentry_jovial') {
-      setTestPhrase('¡Hola! Soy Zentry, qué alegría saludarte. ¿Lista para descubrir cosas increíbles hoy? ✨');
+      setTestPhrase('¡Hola! Soy Zentry, qué alegría saludarte. ¿Lista para descubrir cosas increíbles hoy?');
     } else if (personaId === 'toddler_sweet') {
-      setTestPhrase('¡Hola amiguito! ¿Quieres que dibujemos y cantemos cosas hermosas juntos? 🌸');
+      setTestPhrase('¡Hola amiguito! ¿Quieres que dibujemos y cantemos cosas hermosas juntos?');
     } else if (personaId === 'socratic_mentor') {
       setTestPhrase('¡Hola! Soy tu mentora socrática. ¿Qué reto o curiosidad exploraremos paso a paso?');
     } else {
-      setTestPhrase('¡Hola! ¡Vamos a divertirnos creando y superando misiones científicas geniales! 🚀');
+      setTestPhrase('¡Hola! ¡Vamos a divertirnos creando y superando misiones científicas geniales!');
     }
   };
 

@@ -17,7 +17,7 @@ export function matchLocalVoiceCommand(transcript: string): AgentDecision | null
     return {
       action: 'navigate',
       targetScreen: 'files',
-      speechResponse: 'Abriendo tus archivos escolares 📁'
+      speechResponse: 'Abriendo tus archivos escolares.'
     };
   }
 
@@ -26,7 +26,7 @@ export function matchLocalVoiceCommand(transcript: string): AgentDecision | null
     return {
       action: 'navigate',
       targetScreen: 'study_assistant',
-      speechResponse: 'Abriendo el Asistente de Estudio 🎓'
+      speechResponse: 'Abriendo el Asistente de Estudio.'
     };
   }
 
@@ -34,7 +34,7 @@ export function matchLocalVoiceCommand(transcript: string): AgentDecision | null
     return {
       action: 'navigate',
       targetScreen: 'redactor',
-      speechResponse: 'Abriendo el Redactor Creativo ✍️'
+      speechResponse: 'Abriendo el Redactor Creativo.'
     };
   }
 
@@ -42,7 +42,7 @@ export function matchLocalVoiceCommand(transcript: string): AgentDecision | null
     return {
       action: 'navigate',
       targetScreen: 'deep_research',
-      speechResponse: 'Abriendo el Investigador AI 🔍'
+      speechResponse: 'Abriendo el Investigador.'
     };
   }
 
@@ -50,7 +50,7 @@ export function matchLocalVoiceCommand(transcript: string): AgentDecision | null
     return {
       action: 'navigate',
       targetScreen: 'tutor_hub',
-      speechResponse: 'Abriendo el Centro de Tutoría con tus 4 herramientas 🧠'
+      speechResponse: 'Abriendo el Centro de Tutoría.'
     };
   }
 
@@ -59,7 +59,7 @@ export function matchLocalVoiceCommand(transcript: string): AgentDecision | null
     return {
       action: 'navigate',
       targetScreen: 'camera',
-      speechResponse: 'Abriendo la Cámara 📸'
+      speechResponse: 'Abriendo la Cámara.'
     };
   }
 
@@ -67,7 +67,7 @@ export function matchLocalVoiceCommand(transcript: string): AgentDecision | null
     return {
       action: 'navigate',
       targetScreen: 'calculator',
-      speechResponse: 'Abriendo la Calculadora 🔢'
+      speechResponse: 'Abriendo la Calculadora.'
     };
   }
 
@@ -75,7 +75,7 @@ export function matchLocalVoiceCommand(transcript: string): AgentDecision | null
     return {
       action: 'navigate',
       targetScreen: 'reloj',
-      speechResponse: 'Abriendo el Reloj y Alarmas ⏰'
+      speechResponse: 'Abriendo el Reloj y Alarmas.'
     };
   }
 
@@ -83,7 +83,7 @@ export function matchLocalVoiceCommand(transcript: string): AgentDecision | null
     return {
       action: 'navigate',
       targetScreen: 'calendar',
-      speechResponse: 'Abriendo tu Calendario Escolar 📅'
+      speechResponse: 'Abriendo tu Calendario Escolar.'
     };
   }
 
@@ -92,7 +92,7 @@ export function matchLocalVoiceCommand(transcript: string): AgentDecision | null
     return {
       action: 'navigate',
       targetScreen: 'neuro_art',
-      speechResponse: 'Abriendo el Estudio de Dibujo y Arte 🎨'
+      speechResponse: 'Abriendo el Estudio de Dibujo y Arte.'
     };
   }
 
@@ -100,7 +100,7 @@ export function matchLocalVoiceCommand(transcript: string): AgentDecision | null
     return {
       action: 'navigate',
       targetScreen: 'world_generator',
-      speechResponse: 'Abriendo el Generador de Aventuras 🪐'
+      speechResponse: 'Abriendo el Generador de Aventuras.'
     };
   }
 
@@ -109,7 +109,7 @@ export function matchLocalVoiceCommand(transcript: string): AgentDecision | null
     return {
       action: 'navigate',
       targetScreen: 'settings',
-      speechResponse: 'Abriendo Ajustes de ZentryOS ⚙️'
+      speechResponse: 'Abriendo Ajustes de ZentryOS.'
     };
   }
 
@@ -117,7 +117,7 @@ export function matchLocalVoiceCommand(transcript: string): AgentDecision | null
     return {
       action: 'navigate',
       targetScreen: 'phone',
-      speechResponse: 'Abriendo Teléfono y Contactos Seguros 📞'
+      speechResponse: 'Abriendo Teléfono y Contactos Seguros.'
     };
   }
 
@@ -125,7 +125,7 @@ export function matchLocalVoiceCommand(transcript: string): AgentDecision | null
     return {
       action: 'navigate',
       targetScreen: 'ai',
-      speechResponse: 'Abriendo Zentry AI ✨'
+      speechResponse: 'Abriendo Zentry AI.'
     };
   }
 
@@ -133,7 +133,7 @@ export function matchLocalVoiceCommand(transcript: string): AgentDecision | null
     return {
       action: 'navigate',
       targetScreen: 'safe_search',
-      speechResponse: 'Abriendo Búsqueda Segura 🛡️'
+      speechResponse: 'Abriendo Búsqueda Segura.'
     };
   }
 
@@ -164,6 +164,11 @@ ZentryOS tiene estas pantallas:
 - 'ai' (Chat socrático Zentry AI)
 - 'safe_search' (Búsqueda en internet)
 
+REGLAS DE RESPUESTA:
+- Responde ÚNICAMENTE en texto plano. PROHIBIDO usar emojis o símbolos en speechResponse.
+- NO uses apelativos o diminutivos como corazón, mi cielo, mi amor, cariño, etc.
+- Mantén un tono amigable, jovial, respetuoso y pedagógico.
+
 Determina si debes:
 1. 'navigate' a una pantalla específica con speechResponse corto.
 2. 'clarify' si es ambiguo, proponiendo opciones.
@@ -173,7 +178,7 @@ Responde ÚNICAMENTE en este formato JSON:
 {
   "action": "navigate" | "clarify" | "answer",
   "targetScreen": "study_assistant" (o null si es answer/clarify),
-  "speechResponse": "Frase corta para el usuario",
+  "speechResponse": "Frase corta en texto puro sin emojis para el usuario",
   "clarificationOptions": [{"label": "Asistente de Estudio", "screen": "study_assistant"}] (opcional)
 }`;
 

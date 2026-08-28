@@ -117,10 +117,10 @@ export const AGE_VOICE_PROFILES: Record<AgeCohort, TTSVoiceConfig> = {
 };
 
 export const DEFAULT_PRELOAD_PHRASES = [
-  '¡Hola! Soy Zentry. ¡Vamos a descubrir algo genial hoy! ✨',
-  '¡Vamos a crear y dibujar cosas hermosas! 🎨',
-  '¡Hora de videos divertidos, cuentos y música! 🌟',
-  '¡Sonríe a la cámara, qué linda foto! 📸',
+  '¡Hola! Soy Zentry. ¡Vamos a descubrir algo genial hoy!',
+  '¡Vamos a crear y dibujar cosas hermosas!',
+  '¡Hora de videos divertidos, cuentos y música!',
+  '¡Sonríe a la cámara, qué linda foto!',
   '¡Mira qué hora es!',
   'Abriendo el Escudo de Contenido y Algoritmo de Pasiones.',
   'Activando tu Tutora Socrática de Estudio.',
@@ -170,6 +170,39 @@ export class VoiceSpeechService {
     this.setupAutoplayUnlockListeners();
     this.initBrowserVoices();
     this.scheduleDefaultPreload();
+  }
+
+  // ==========================================
+  // SANITIZADOR DE TEXTO (0 EMOJIS & RESPETO)
+  // ==========================================
+
+  public sanitizeSpeechText(text: string): string {
+    if (!text) return '';
+
+    // 1. Filtrar todos los rangos Unicode de emojis, símbolos gráficos y emoticones
+    let clean = text
+      .replace(/[\u{1F600}-\u{1F64F}]/gu, '') // Emoticones
+      .replace(/[\u{1F300}-\u{1F5FF}]/gu, '') // Símbolos y pictogramas varios
+      .replace(/[\u{1F680}-\u{1F6FF}]/gu, '') // Transporte y mapas
+      .replace(/[\u{1F700}-\u{1F77F}]/gu, '') // Símbolos alquímicos
+      .replace(/[\u{1F780}-\u{1F7FF}]/gu, '') // Formas geométricas extendidas
+      .replace(/[\u{1F800}-\u{1F8FF}]/gu, '') // Flechas suplementarias
+      .replace(/[\u{1F900}-\u{1F9FF}]/gu, '') // Símbolos suplementarios
+      .replace(/[\u{1FA00}-\u{1FA6F}]/gu, '') // Símbolos de ajedrez
+      .replace(/[\u{1FA70}-\u{1FAFF}]/gu, '') // Pictogramas extendidos-A
+      .replace(/[\u{2600}-\u{26FF}]/gu, '')   // Símbolos varios (estrellas, destellos)
+      .replace(/[\u{2700}-\u{27BF}]/gu, '')   // Dingbats
+      .replace(/[\u{FE00}-\u{FE0F}]/gu, '')   // Selectores de variación
+      .replace(/[\u{1F1E6}-\u{1F1FF}]/gu, '') // Banderas e indicadores regionales
+      .replace(/[\u{200D}\u{200C}]/gu, '');   // Zero width joiners
+
+    // 2. Eliminar apelativos condescendientes o excesivamente íntimos
+    clean = clean
+      .replace(/\b(mi cielo|mi amor|mi vida|mi corazón|mi reina|mi rey|mi princesa|mi príncipe|corazón|corazon|cariño|carino|bebé|bebe|tesoro|chiquito|chiquita)\b/gi, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+
+    return clean;
   }
 
   // ==========================================
@@ -542,9 +575,9 @@ export class VoiceSpeechService {
   }
 
   public async speakFeedback(text: string, options?: SpeakOptions): Promise<void> {
-    if (!text || !text.trim()) return;
+    const sanitizedText = this.sanitizeSpeechText(text);
+    if (!sanitizedText) return;
 
-    const sanitizedText = text.trim();
     this.stopSpeaking();
 
     const config = this.getEffectiveConfig(options);
@@ -842,8 +875,9 @@ export class VoiceSpeechService {
     const config = this.getVoiceConfig();
 
     for (const phrase of phrases) {
-      if (!phrase || !phrase.trim()) continue;
-      const text = phrase.trim();
+      if (!phrase) continue;
+      const text = this.sanitizeSpeechText(phrase);
+      if (!text) continue;
       const cacheKey = this.getCacheKey(text, config);
 
       try {
