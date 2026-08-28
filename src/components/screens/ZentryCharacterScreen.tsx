@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Sparkles,
   Volume2,
@@ -14,82 +14,58 @@ import {
   Smile,
   Crown,
   ChevronRight,
-  Download,
-  Share2
+  ChevronLeft,
+  Camera,
+  BookOpen,
+  Play,
+  RotateCcw,
+  CheckCircle2,
+  Eye,
+  Shirt,
+  Scissors
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ZentrySubPageScaffold } from '../shell/ZentrySubPageScaffold';
 import { sounds } from '../../services/soundEffects';
+import { askZentryAi } from '../../services/aiService';
+import { saveHeroToFirestore } from '../../services/firebase';
 
 interface Props {
   onBack: () => void;
   isDark: boolean;
 }
 
-interface Archetype {
-  id: string;
-  name: string;
-  avatarIcon: string;
-  defaultPower: string;
-  lore: string;
-  stats: {
-    bravery: number;
-    magic: number;
-    speed: number;
-    creativity: number;
-  };
-}
+// Opciones de Personalización de Avatar (Estilo Skin Builder)
+const BODY_SKINS = [
+  { id: 'light', color: '#FCD34D', name: 'Claro' },
+  { id: 'tan', color: '#F59E0B', name: 'Trigueño' },
+  { id: 'cocoa', color: '#B45309', name: 'Cacao' },
+  { id: 'alien_blue', color: '#60A5FA', name: 'Celeste' },
+  { id: 'fairy_pink', color: '#F472B6', name: 'Mágico' }
+];
 
-const ARCHETYPES: Archetype[] = [
-  {
-    id: 'space_explorer',
-    name: 'Explorador Estelar',
-    avatarIcon: '🧑‍🚀',
-    defaultPower: 'Propulsión de Cometas',
-    lore: 'Viajero intrépido de la constelación Orión, capaz de saltar entre asteroides y encender constelaciones apagadas.',
-    stats: { bravery: 90, magic: 65, speed: 95, creativity: 85 }
-  },
-  {
-    id: 'forest_guardian',
-    name: 'Guardián del Bosque',
-    avatarIcon: '🧝‍♂️',
-    defaultPower: 'Lenguaje de las Criaturas',
-    lore: 'Protector de los árboles centenarios y amigo de los animales más sabios del gran valle verde.',
-    stats: { bravery: 80, magic: 90, speed: 75, creativity: 95 }
-  },
-  {
-    id: 'crystal_wizard',
-    name: 'Hechicero de Cristal',
-    avatarIcon: '🧙‍♂️',
-    defaultPower: 'Rayo de Prisma',
-    lore: 'Maestro de las gemas mágicas que transforma cualquier sombra en un festival de luces de colores.',
-    stats: { bravery: 70, magic: 100, speed: 80, creativity: 90 }
-  },
-  {
-    id: 'mech_robot',
-    name: 'Robot Amigable',
-    avatarIcon: '🤖',
-    defaultPower: 'Escudo Electromagnético',
-    lore: 'Construido con piezas de estrellas y circuitos de amistad, siempre listo para resolver cualquier desafío.',
-    stats: { bravery: 95, magic: 50, speed: 85, creativity: 80 }
-  },
-  {
-    id: 'winged_hero',
-    name: 'Héroe de las Alturas',
-    avatarIcon: '🦸',
-    defaultPower: 'Vuelo Supersónico',
-    lore: 'Defensor de los cielos y guardián de las nubes doradas al atardecer.',
-    stats: { bravery: 85, magic: 80, speed: 100, creativity: 75 }
-  }
+const HAIRSTYLES = [
+  { id: 'spiky', icon: '⚡', name: 'Espinoso' },
+  { id: 'curly', icon: '🌀', name: 'Rizado' },
+  { id: 'braids', icon: '🎀', name: 'Coletas' },
+  { id: 'smooth', icon: '✨', name: 'Liso' },
+  { id: 'helmet', icon: '🪖', name: 'Casco' }
+];
+
+const EYE_EXPRESSIONS = [
+  { id: 'heroic', icon: '👀', name: 'Valiente' },
+  { id: 'star_eyes', icon: '🤩', name: 'Estrellas' },
+  { id: 'wink', icon: '😉', name: 'Pícaro' },
+  { id: 'happy', icon: '😊', name: 'Alegre' }
 ];
 
 const HEADGEARS = [
-  { id: 'none', label: 'Sin Tocado', icon: '✨' },
-  { id: 'crown', label: 'Corona Real', icon: '👑' },
-  { id: 'space_helmet', label: 'Casco Visor', icon: '🪖' },
-  { id: 'flowers', label: 'Diadema Mágica', icon: '🌸' },
-  { id: 'bunny_ears', label: 'Orejas de Salto', icon: '🐰' },
-  { id: 'pirate_hat', label: 'Sombrero Pirata', icon: '🏴‍☠️' }
+  { id: 'none', icon: '✨', name: 'Sin Sombrero' },
+  { id: 'crown', icon: '👑', name: 'Corona' },
+  { id: 'space_visor', icon: '🚀', name: 'Visor Espacial' },
+  { id: 'flowers', icon: '🌸', name: 'Flores' },
+  { id: 'pirate', icon: '🏴‍☠️', name: 'Pirata' },
+  { id: 'bunny', icon: '🐰', name: 'Orejas' }
 ];
 
 const POWERS = [
@@ -101,51 +77,58 @@ const POWERS = [
   { id: 'heart', name: 'Abrazo de Energía', icon: '💖', color: 'from-pink-500 to-rose-600' }
 ];
 
-const SUIT_GRADIENTS = [
-  { id: 'lavender', name: 'Lavanda Zentry', class: 'from-[#8B5CF6] via-[#D6C8FA] to-[#533B87]' },
-  { id: 'aurora', name: 'Aurora Menta', class: 'from-[#10B981] via-[#C2F4E7] to-[#047857]' },
-  { id: 'sunset', name: 'Atardecer Cósmico', class: 'from-[#EC4899] via-[#F59E0B] to-[#EF4444]' },
-  { id: 'ocean', name: 'Azul Océano', class: 'from-[#06B6D4] via-[#3B82F6] to-[#1E40AF]' },
-  { id: 'emerald', name: 'Esmeralda Viva', class: 'from-[#84CC16] via-[#10B981] to-[#065F46]' }
+const SUIT_COLORS = [
+  { id: 'lavender', name: 'Lavanda', class: 'from-[#8B5CF6] via-[#D6C8FA] to-[#533B87]' },
+  { id: 'aurora', name: 'Aurora', class: 'from-[#10B981] via-[#C2F4E7] to-[#047857]' },
+  { id: 'sunset', name: 'Atardecer', class: 'from-[#EC4899] via-[#F59E0B] to-[#EF4444]' },
+  { id: 'ocean', name: 'Océano', class: 'from-[#06B6D4] via-[#3B82F6] to-[#1E40AF]' }
 ];
 
 const HERO_NAMES_PRESETS = [
   'Aura Spark', 'Cometa Ray', 'Capitán Cristal', 'Lúa Valiente', 'Nova Guardián', 'Zénit Estelar', 'Solarix'
 ];
 
-interface SavedHero {
-  id: string;
-  name: string;
-  archetype: string;
-  icon: string;
-  headgear: string;
-  power: string;
-  powerName: string;
-  gradientClass: string;
-  stats: Archetype['stats'];
-  lore: string;
-  date: string;
+interface ComicPanel {
+  title: string;
+  scene: string;
+  dialogue: string;
+}
+
+interface RoomWorldData {
+  worldName: string;
+  roomTransformations: Array<{ realObject: string; magicalRole: string }>;
+  voiceSpeech: string;
+  firstPhysicalMission: string;
 }
 
 export const ZentryCharacterScreen: React.FC<Props> = ({ onBack, isDark }) => {
-  const [selectedArchetype, setSelectedArchetype] = useState<Archetype>(ARCHETYPES[0]);
-  const [selectedHeadgear, setSelectedHeadgear] = useState(HEADGEARS[0]);
-  const [selectedPower, setSelectedPower] = useState(POWERS[0]);
-  const [selectedGradient, setSelectedGradient] = useState(SUIT_GRADIENTS[0]);
+  // Flujo en Páginas: 'creator' | 'page1_image' | 'page2_comic' | 'page3_world'
+  const [currentStepPage, setCurrentStepPage] = useState<'creator' | 'page1_image' | 'page2_comic' | 'page3_world'>('creator');
+
+  // Configuración del Avatar
+  const [bodySkin, setBodySkin] = useState(BODY_SKINS[0]);
+  const [hairStyle, setHairStyle] = useState(HAIRSTYLES[0]);
+  const [eyeExpression, setEyeExpression] = useState(EYE_EXPRESSIONS[0]);
+  const [headgear, setHeadgear] = useState(HEADGEARS[0]);
+  const [power, setPower] = useState(POWERS[0]);
+  const [suitColor, setSuitColor] = useState(SUIT_COLORS[0]);
   const [heroName, setHeroName] = useState<string>('Nova Guardián');
 
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
+  // Estados de IA y Generación en GCP
+  const [isGeneratingStory, setIsGeneratingStory] = useState(false);
+  const [comicPanels, setComicPanels] = useState<ComicPanel[]>([]);
+  const [heroGreetingSpeech, setHeroGreetingSpeech] = useState<string>('');
+  const [playAtHomeIdea, setPlayAtHomeIdea] = useState<string>('');
 
-  // Galería de Héroes Guardados
-  const [savedHeroes, setSavedHeroes] = useState<SavedHero[]>(() => {
-    try {
-      const saved = localStorage.getItem('zentry_saved_heroes');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  // Cámara para Generar Mundo de la Habitación
+  const [isScanningRoom, setIsScanningRoom] = useState(false);
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [capturedRoomPhoto, setCapturedRoomPhoto] = useState<string | null>(null);
+  const [isTransformingRoom, setIsTransformingRoom] = useState(false);
+  const [roomWorldResult, setRoomWorldResult] = useState<RoomWorldData | null>(null);
+
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   const speak = (text: string) => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -153,7 +136,7 @@ export const ZentryCharacterScreen: React.FC<Props> = ({ onBack, isDark }) => {
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'es-ES';
       utterance.rate = 0.94;
-      utterance.pitch = 1.18;
+      utterance.pitch = 1.2;
       utterance.onstart = () => setIsSpeaking(true);
       utterance.onend = () => setIsSpeaking(false);
       utterance.onerror = () => setIsSpeaking(false);
@@ -161,322 +144,583 @@ export const ZentryCharacterScreen: React.FC<Props> = ({ onBack, isDark }) => {
     }
   };
 
-  const handleRandomizeName = () => {
+  const stopVoice = () => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+    }
+  };
+
+  const handleRandomName = () => {
     sounds.playTap();
     const random = HERO_NAMES_PRESETS[Math.floor(Math.random() * HERO_NAMES_PRESETS.length)];
     setHeroName(random);
   };
 
-  const handleInteractAvatar = () => {
-    if (navigator.vibrate) navigator.vibrate(10);
-    sounds.playSuccess();
-    setIsAnimating(true);
-    setTimeout(() => setIsAnimating(false), 500);
-
-    const speechText = `¡Saludos! Soy ${heroName}, ${selectedArchetype.name}. Mi poder especial es ${selectedPower.name}. ${selectedArchetype.lore}`;
-    speak(speechText);
-  };
-
-  const handleSaveHero = () => {
+  // ----------------------------------------------------------------
+  // BOTÓN PRINCIPAL: CREAR UN SUPERHÉROE (GCP Vertex Backend)
+  // ----------------------------------------------------------------
+  const handleCreateSuperhero = async () => {
     if (navigator.vibrate) navigator.vibrate(15);
     sounds.playSuccess();
-
-    const newHero: SavedHero = {
-      id: String(Date.now()),
-      name: heroName,
-      archetype: selectedArchetype.name,
-      icon: selectedArchetype.avatarIcon,
-      headgear: selectedHeadgear.icon,
-      power: selectedPower.icon,
-      powerName: selectedPower.name,
-      gradientClass: selectedGradient.class,
-      stats: selectedArchetype.stats,
-      lore: selectedArchetype.lore,
-      date: new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
-    };
-
-    const updated = [newHero, ...savedHeroes.slice(0, 15)];
-    setSavedHeroes(updated);
-    localStorage.setItem('zentry_saved_heroes', JSON.stringify(updated));
+    setIsGeneratingStory(true);
+    setCurrentStepPage('page1_image');
 
     confetti({
-      particleCount: 85,
-      spread: 75,
-      origin: { y: 0.55 }
+      particleCount: 80,
+      spread: 70,
+      origin: { y: 0.6 }
     });
 
-    speak(`¡Tu héroe ${heroName} ha sido guardado con honores en tu Salón de la Fama!`);
+    try {
+      const heroPayload = {
+        name: heroName,
+        skin: bodySkin.name,
+        hair: hairStyle.name,
+        headgear: headgear.name,
+        power: power.name,
+        suit: suitColor.name
+      };
+
+      const raw = await askZentryAi(
+        'character_comic_studio',
+        `Configuración del superhéroe: ${JSON.stringify(heroPayload)}. Genera el cómic y la presentación.`
+      );
+
+      const parsed = JSON.parse(raw.trim().replace(/^```json/, '').replace(/```$/, ''));
+      setHeroGreetingSpeech(parsed.heroGreetingSpeech || `¡Hola! Soy ${heroName}, el defensor del cristal mágico.`);
+      setComicPanels(parsed.comicPanels || []);
+      setPlayAtHomeIdea(parsed.playAtHomeIdea || '¡Ponte una capa imaginaria y da tres saltos por la sala!');
+
+      // Persistir en Firestore (GCP)
+      await saveHeroToFirestore({
+        id: String(Date.now()),
+        name: heroName,
+        archetype: `${hairStyle.name} con ${power.name}`,
+        comicStory: parsed.comicPanels?.map((p: any) => `${p.title}: ${p.scene}`).join(' | ')
+      });
+
+      speak(parsed.heroGreetingSpeech);
+    } catch (error) {
+      console.warn('Fallback character generation:', error);
+      const fallbackGreeting = `¡Hola amigo! Soy ${heroName} y con mi ${power.name} protegeré el universo de la diversión.`;
+      setHeroGreetingSpeech(fallbackGreeting);
+      setComicPanels([
+        { title: '1. El Despertar', scene: `${heroName} despierta con su traje brillante y su ${power.name}.`, dialogue: '¡Es hora de la aventura!' },
+        { title: '2. El Gran Desafío', scene: `Aparece una sombra traviesa que quiere apagar los colores.`, dialogue: '¡Con mi poder de luz todo brillará!' },
+        { title: '3. ¡Victoria Total!', scene: `Todos los amigos celebran con fuegos artificiales mágicos.`, dialogue: '¡El bien y la imaginación triunfan siempre!' }
+      ]);
+      setPlayAtHomeIdea('¡Ponte una capa imaginaria, toma una cuchara mágica y da tres saltos heroicos!');
+      speak(fallbackGreeting);
+    } finally {
+      setIsGeneratingStory(false);
+    }
   };
+
+  // ----------------------------------------------------------------
+  // CÁMARA PHYGITAL: GENERAR MUNDO EN LA HABITACIÓN
+  // ----------------------------------------------------------------
+  const handleStartRoomCamera = async () => {
+    setIsScanningRoom(true);
+    try {
+      if (cameraStream) cameraStream.getTracks().forEach((t) => t.stop());
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+      });
+      setCameraStream(stream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+      speak('Apunta la cámara a tu sala o habitación para crear tu mundo de juego.');
+    } catch (e) {
+      console.warn('Camera room error:', e);
+    }
+  };
+
+  const handleCaptureRoomPhoto = async () => {
+    if (!videoRef.current) return;
+    sounds.playTap();
+    setIsTransformingRoom(true);
+
+    const video = videoRef.current;
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      setCapturedRoomPhoto(dataUrl);
+
+      if (cameraStream) {
+        cameraStream.getTracks().forEach((t) => t.stop());
+        setCameraStream(null);
+      }
+      setIsScanningRoom(false);
+
+      try {
+        const raw = await askZentryAi(
+          'room_world_generator',
+          `El niño creó al superhéroe ${heroName}. Analiza la foto de su habitación y genera las transformaciones mágicas para jugar en casa.`,
+          dataUrl
+        );
+
+        const parsed = JSON.parse(raw.trim().replace(/^```json/, '').replace(/```$/, ''));
+        setRoomWorldResult(parsed);
+        sounds.playSuccess();
+
+        confetti({
+          particleCount: 100,
+          spread: 80,
+          origin: { y: 0.55 }
+        });
+
+        speak(parsed.voiceSpeech);
+      } catch (e) {
+        console.warn('Fallback room transformation:', e);
+        const fallbackRoom: RoomWorldData = {
+          worldName: 'La Base de los Héroes Espaciales',
+          roomTransformations: [
+            { realObject: 'El sofá o cama', magicalRole: 'La base de comando de tu nave' },
+            { realObject: 'La alfombra del suelo', magicalRole: 'El lago de lava que no debes pisar' },
+            { realObject: 'Los cojines y sillas', magicalRole: 'Islas flotantes de paso seguro' }
+          ],
+          voiceSpeech: `¡He convertido tu espacio en la Base de los Héroes! Tu sillón es el cuartel y la alfombra es lava mágica. ¡Salta en los cojines para avanzar!`,
+          firstPhysicalMission: '¡Salta de un cojín a otro sin tocar el suelo para salvar tu juguete favorito!'
+        };
+        setRoomWorldResult(fallbackRoom);
+        sounds.playSuccess();
+        speak(fallbackRoom.voiceSpeech);
+      } finally {
+        setIsTransformingRoom(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      stopVoice();
+      if (cameraStream) cameraStream.getTracks().forEach((t) => t.stop());
+    };
+  }, [cameraStream]);
 
   return (
     <ZentrySubPageScaffold
-      title="Taller de Personajes"
-      kicker="ESTUDIO DE AVATARES Y HÉROES"
+      title="Personajes"
+      kicker="TALLER DE SUPERHÉROES Y CÓMICS"
       onBack={() => {
-        if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-          window.speechSynthesis.cancel();
+        stopVoice();
+        if (currentStepPage !== 'creator') {
+          setCurrentStepPage('creator');
+        } else {
+          onBack();
         }
-        onBack();
       }}
       isDark={isDark}
     >
-      <div className="w-full h-full flex flex-col justify-between p-2 md:p-4 space-y-4 overflow-y-auto no-scrollbar max-w-3xl mx-auto">
+      <div className="w-full h-full flex flex-col justify-between p-2 md:p-4 space-y-3 overflow-y-auto no-scrollbar max-w-3xl mx-auto">
         {/* ========================================================= */}
-        {/* AVATAR INTERACTIVO CENTRAL + FICHA DE HÉROE              */}
+        {/* PÁGINA 0: EDITOR & CREADOR DE SUPERHÉROES (SKIN BUILDER)  */}
         {/* ========================================================= */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-          {/* Avatar Squircle Interactivo */}
-          <div className="flex flex-col items-center justify-center p-4 rounded-[32px] bg-white/40 dark:bg-white/10 backdrop-blur-xl border border-white/60 dark:border-white/15 shadow-xl relative overflow-hidden">
-            {/* Halo de Aura */}
-            <div className="absolute inset-0 bg-radial from-purple-500/20 via-transparent to-transparent pointer-events-none" />
+        {currentStepPage === 'creator' && (
+          <>
+            {/* Avatar Central en Vivo */}
+            <div className="flex flex-col items-center justify-center p-4 rounded-[32px] bg-white/40 dark:bg-white/10 backdrop-blur-xl border border-white/60 dark:border-white/15 shadow-xl relative overflow-hidden">
+              <div
+                style={{ backgroundColor: bodySkin.color }}
+                className={`w-36 h-36 md:w-44 md:h-44 rounded-[40px] p-3 flex flex-col items-center justify-center shadow-2xl border-4 border-white dark:border-white/40 relative overflow-hidden transition-all`}
+              >
+                {/* Sombrero / Tocado */}
+                {headgear.id !== 'none' && (
+                  <span className="text-4xl md:text-5xl -mb-3 z-10 animate-bounce">
+                    {headgear.icon}
+                  </span>
+                )}
 
-            <div
-              onClick={handleInteractAvatar}
-              className={`w-36 h-36 md:w-44 md:h-44 rounded-[40px] bg-gradient-to-tr ${selectedGradient.class} p-3 flex flex-col items-center justify-center shadow-2xl border-4 border-white dark:border-white/40 cursor-pointer active:scale-95 transition-transform zentry-press relative overflow-hidden ${
-                isAnimating ? 'scale-110 -translate-y-2' : ''
-              }`}
-            >
-              {/* Tocado / Sombrero */}
-              {selectedHeadgear.id !== 'none' && (
-                <span className="text-4xl md:text-5xl -mb-3 z-10 animate-bounce">
-                  {selectedHeadgear.icon}
-                </span>
-              )}
+                {/* Cara con Peinado y Ojos */}
+                <div className="flex flex-col items-center select-none">
+                  <span className="text-3xl">{hairStyle.icon}</span>
+                  <span className="text-4xl -mt-1">{eyeExpression.icon}</span>
+                </div>
 
-              {/* Arquetipo */}
-              <span className="text-6xl md:text-7xl drop-shadow-md select-none">
-                {selectedArchetype.avatarIcon}
-              </span>
+                {/* Traje y Superpoder */}
+                <div className={`absolute bottom-0 inset-x-0 h-10 bg-gradient-to-tr ${suitColor.class} flex items-center justify-center`}>
+                  <span className="text-2xl animate-pulse">{power.icon}</span>
+                </div>
+              </div>
 
-              {/* Insignia de Poder */}
-              <span className="absolute bottom-2 right-2 text-2xl md:text-3xl bg-white/40 backdrop-blur-md rounded-full p-1 shadow-md animate-pulse">
-                {selectedPower.icon}
-              </span>
+              {/* Nombre del Héroe */}
+              <div className="pt-3 flex items-center gap-2">
+                <input
+                  type="text"
+                  value={heroName}
+                  onChange={(e) => setHeroName(e.target.value)}
+                  className="text-center font-black text-sm md:text-base bg-transparent border-b border-purple-400 focus:outline-none text-slate-800 dark:text-white px-2 py-0.5"
+                />
+                <button
+                  onClick={handleRandomName}
+                  className="p-1.5 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-purple-600 dark:text-purple-300 cursor-pointer"
+                  title="Nombre Aleatorio"
+                >
+                  <Dices className="w-4 h-4" />
+                </button>
+              </div>
             </div>
 
-            {/* Nombre del Héroe + Botón Random */}
-            <div className="pt-3 flex items-center gap-2">
-              <input
-                type="text"
-                value={heroName}
-                onChange={(e) => setHeroName(e.target.value)}
-                className="text-center font-black text-sm md:text-base bg-transparent border-b border-purple-400 focus:outline-none text-slate-800 dark:text-white px-2 py-0.5"
-              />
+            {/* Opciones Modulares del Skin Builder */}
+            <div className="space-y-2.5 bg-white/30 dark:bg-white/5 p-3.5 rounded-[28px] border border-white/40 dark:border-white/10">
+              {/* 1. Tono de Piel */}
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[11px] font-black text-slate-600 dark:text-white/70 uppercase">Piel</span>
+                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+                  {BODY_SKINS.map((s) => (
+                    <button
+                      key={s.id}
+                      onClick={() => setBodySkin(s)}
+                      style={{ backgroundColor: s.color }}
+                      className={`w-7 h-7 rounded-full border-2 transition-transform cursor-pointer ${
+                        bodySkin.id === s.id ? 'scale-125 border-purple-600 ring-2 ring-purple-300 shadow-md' : 'border-white'
+                      }`}
+                      title={s.name}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* 2. Peinados */}
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[11px] font-black text-slate-600 dark:text-white/70 uppercase">Pelo</span>
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                  {HAIRSTYLES.map((h) => (
+                    <button
+                      key={h.id}
+                      onClick={() => setHairStyle(h)}
+                      className={`p-1.5 rounded-[14px] text-lg border transition-all cursor-pointer ${
+                        hairStyle.id === h.id ? 'bg-purple-600 text-white border-white scale-110 shadow-md' : 'bg-white/60 dark:bg-white/10'
+                      }`}
+                    >
+                      {h.icon}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 3. Ojos & Expresiones */}
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[11px] font-black text-slate-600 dark:text-white/70 uppercase">Ojos</span>
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                  {EYE_EXPRESSIONS.map((eye) => (
+                    <button
+                      key={eye.id}
+                      onClick={() => setEyeExpression(eye)}
+                      className={`p-1.5 rounded-[14px] text-lg border transition-all cursor-pointer ${
+                        eyeExpression.id === eye.id ? 'bg-purple-600 text-white border-white scale-110 shadow-md' : 'bg-white/60 dark:bg-white/10'
+                      }`}
+                    >
+                      {eye.icon}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 4. Tocados & Sombreros */}
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[11px] font-black text-slate-600 dark:text-white/70 uppercase">Sombrero</span>
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                  {HEADGEARS.map((hg) => (
+                    <button
+                      key={hg.id}
+                      onClick={() => setHeadgear(hg)}
+                      className={`p-1.5 rounded-[14px] text-lg border transition-all cursor-pointer ${
+                        headgear.id === hg.id ? 'bg-amber-400 text-white border-white scale-110 shadow-md' : 'bg-white/60 dark:bg-white/10'
+                      }`}
+                    >
+                      {hg.icon}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 5. Superpoder */}
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[11px] font-black text-slate-600 dark:text-white/70 uppercase">Poder</span>
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                  {POWERS.map((pow) => (
+                    <button
+                      key={pow.id}
+                      onClick={() => setPower(pow)}
+                      className={`px-2.5 py-1.5 rounded-[16px] flex items-center gap-1 text-xs font-black border transition-all cursor-pointer ${
+                        power.id === pow.id ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white border-white scale-105 shadow-md' : 'bg-white/60 dark:bg-white/10'
+                      }`}
+                    >
+                      <span>{pow.icon}</span>
+                      <span className="hidden sm:inline">{pow.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* BOTÓN PRINCIPAL: CREAR UN SUPERHÉROE */}
+            <button
+              onClick={handleCreateSuperhero}
+              className="w-full py-4 rounded-[28px] bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 text-white font-black text-sm md:text-base shadow-xl shadow-purple-500/30 flex items-center justify-center gap-2 cursor-pointer active:scale-95 transition-transform"
+            >
+              <Sparkles className="w-5 h-5 text-amber-300 animate-spin" />
+              <span>Crear un Superhéroe ✨</span>
+            </button>
+          </>
+        )}
+
+        {/* ========================================================= */}
+        {/* PÁGINA 1: IMAGEN Y PRESENTACIÓN DEL HÉROE EN ALTA CALIDAD  */}
+        {/* ========================================================= */}
+        {currentStepPage === 'page1_image' && (
+          <div className="space-y-4 max-w-xl mx-auto w-full animate-in zoom-in-95 duration-200">
+            {isGeneratingStory ? (
+              <div className="py-16 text-center space-y-4 flex flex-col items-center">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 text-white flex items-center justify-center text-3xl shadow-2xl animate-spin">
+                  <Wand2 className="w-10 h-10" />
+                </div>
+                <h3 className="text-base font-black text-slate-800 dark:text-white">Dando vida a {heroName}...</h3>
+                <p className="text-xs text-purple-600 dark:text-purple-300">Zentry está escribiendo su cómic y preparando su voz mágica.</p>
+              </div>
+            ) : (
+              <>
+                <div className="p-6 rounded-[36px] bg-gradient-to-br from-purple-900/60 via-blue-900/50 to-slate-900/60 text-white shadow-2xl border border-white/20 text-center space-y-3">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-purple-300 block">
+                    Página 1 de 3 · Concepto del Héroe
+                  </span>
+
+                  <div className="w-32 h-32 rounded-[32px] bg-gradient-to-tr from-purple-500 to-pink-500 mx-auto flex items-center justify-center shadow-xl border-4 border-white">
+                    <span className="text-5xl">{headgear.icon !== '✨' ? headgear.icon : power.icon}</span>
+                  </div>
+
+                  <h3 className="text-xl font-black">{heroName}</h3>
+                  <p className="text-xs text-purple-100 leading-relaxed font-medium">
+                    "{heroGreetingSpeech}"
+                  </p>
+
+                  <button
+                    onClick={() => speak(heroGreetingSpeech)}
+                    className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white/20 hover:bg-white/30 text-xs font-bold cursor-pointer"
+                  >
+                    <Volume2 className={`w-4 h-4 ${isSpeaking ? 'animate-bounce text-yellow-300' : ''}`} />
+                    <span>Escuchar Presentación</span>
+                  </button>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setCurrentStepPage('creator')}
+                    className="px-4 py-3 rounded-full bg-slate-200 dark:bg-white/10 text-xs font-black cursor-pointer"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      sounds.playTap();
+                      setCurrentStepPage('page2_comic');
+                    }}
+                    className="flex-1 py-3 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-black text-xs shadow-md flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                  >
+                    <span>Ver el Cómic del Héroe</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* PÁGINA 2: CÓMIC DE 3 VIÑETAS GENERADO EN BACKEND          */}
+        {/* ========================================================= */}
+        {currentStepPage === 'page2_comic' && (
+          <div className="space-y-4 max-w-xl mx-auto w-full animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between px-1">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-purple-600 dark:text-purple-300">
+                  Página 2 de 3 · El Cómic Mágico
+                </span>
+                <h3 className="text-sm font-black text-slate-800 dark:text-white">Las Aventuras de {heroName}</h3>
+              </div>
+              <BookOpen className="w-5 h-5 text-purple-600 dark:text-purple-300" />
+            </div>
+
+            {/* 3 Viñetas del Cómic */}
+            <div className="grid grid-cols-1 gap-3">
+              {comicPanels.map((panel, idx) => (
+                <div
+                  key={idx}
+                  className="p-4 rounded-[28px] bg-white/50 dark:bg-white/10 backdrop-blur-md border border-white/60 dark:border-white/15 shadow-md space-y-1.5"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-purple-600 dark:text-purple-300">{panel.title}</span>
+                    <button
+                      onClick={() => speak(`${panel.title}. ${panel.scene} El héroe dice: ${panel.dialogue}`)}
+                      className="p-1 rounded-full text-purple-600 dark:text-purple-300 cursor-pointer"
+                    >
+                      <Volume2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <p className="text-xs text-slate-700 dark:text-white/80 leading-relaxed font-medium">
+                    {panel.scene}
+                  </p>
+                  <div className="p-2 rounded-[16px] bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/40 text-[11px] font-black text-purple-700 dark:text-purple-200">
+                    💬 "{panel.dialogue}"
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-2">
               <button
-                onClick={handleRandomizeName}
-                className="p-1.5 rounded-full hover:bg-black/10 dark:hover:bg-white/10 cursor-pointer text-purple-600 dark:text-purple-300"
-                title="Nombre Aleatorio"
+                onClick={() => setCurrentStepPage('page1_image')}
+                className="px-4 py-3 rounded-full bg-slate-200 dark:bg-white/10 text-xs font-black cursor-pointer"
               >
-                <Dices className="w-4 h-4" />
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => {
+                  sounds.playTap();
+                  setCurrentStepPage('page3_world');
+                  speak(playAtHomeIdea);
+                }}
+                className="flex-1 py-3 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black text-xs shadow-md flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+              >
+                <span>¿Cómo jugar en casa?</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* PÁGINA 3: GENERAR MUNDO DE JUEGO EN CASA (PHYGITAL CÁMARA)*/}
+        {/* ========================================================= */}
+        {currentStepPage === 'page3_world' && (
+          <div className="space-y-4 max-w-xl mx-auto w-full animate-in zoom-in-95 duration-200">
+            <div className="p-5 rounded-[32px] bg-gradient-to-br from-emerald-900/40 via-teal-900/40 to-slate-900/50 border border-white/20 text-white shadow-xl space-y-3">
+              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-300 block text-center">
+                Página 3 de 3 · Jugar en el Mundo Real
+              </span>
+
+              <h3 className="text-base font-black text-center">¡Sé el Superhéroe en tu Casa!</h3>
+
+              <div className="p-3.5 rounded-[22px] bg-white/10 backdrop-blur-md border border-white/15 text-xs font-bold leading-relaxed text-emerald-100">
+                🏡 {playAtHomeIdea}
+              </div>
+
+              <div className="flex justify-center">
+                <button
+                  onClick={() => speak(playAtHomeIdea)}
+                  className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white/20 hover:bg-white/30 text-xs font-bold cursor-pointer"
+                >
+                  <Volume2 className={`w-4 h-4 ${isSpeaking ? 'animate-bounce text-yellow-300' : ''}`} />
+                  <span>Escuchar Guía de Juego</span>
+                </button>
+              </div>
+            </div>
+
+            {/* BOTÓN: GENERAR MUNDO (Fotografiar Habitación con IA) */}
+            {!roomWorldResult && (
+              <div className="p-4 rounded-[28px] bg-white/40 dark:bg-white/10 backdrop-blur-md border border-white/60 dark:border-white/10 text-center space-y-3">
+                <p className="text-xs font-bold text-slate-700 dark:text-white">
+                  📸 Toma una foto a tu cuarto o sala para que Zentry transforme tus muebles en el mundo del héroe:
+                </p>
+
+                <button
+                  onClick={handleStartRoomCamera}
+                  disabled={isTransformingRoom}
+                  className="w-full py-4 rounded-[24px] bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-black text-xs shadow-lg flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                >
+                  <Camera className="w-5 h-5" />
+                  <span>{isTransformingRoom ? 'Transformando Habitación...' : 'Generar Mundo con mi Habitación'}</span>
+                </button>
+              </div>
+            )}
+
+            {/* Resultado de la Transformación Phygital de la Habitación */}
+            {roomWorldResult && (
+              <div className="p-5 rounded-[32px] bg-purple-50 dark:bg-purple-950/40 border border-purple-300 dark:border-purple-800/40 space-y-3 animate-in zoom-in-95">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-black text-purple-900 dark:text-purple-200">
+                    🪐 {roomWorldResult.worldName}
+                  </h4>
+                  <button
+                    onClick={() => speak(roomWorldResult.voiceSpeech)}
+                    className="p-1 text-purple-600 dark:text-purple-300 cursor-pointer"
+                  >
+                    <Volume2 className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="space-y-1.5 text-xs">
+                  {roomWorldResult.roomTransformations.map((t, idx) => (
+                    <div key={idx} className="p-2 rounded-[16px] bg-white dark:bg-white/10 flex items-center justify-between">
+                      <span className="font-bold text-slate-700 dark:text-white/80">{t.realObject}:</span>
+                      <span className="font-black text-purple-600 dark:text-purple-300">👉 {t.magicalRole}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="p-3 rounded-[20px] bg-emerald-500/15 border border-emerald-400 text-emerald-950 dark:text-emerald-200 font-bold text-xs">
+                  🎯 <strong>Primera Misión:</strong> {roomWorldResult.firstPhysicalMission}
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setCurrentStepPage('page2_comic')}
+                className="px-4 py-3 rounded-full bg-slate-200 dark:bg-white/10 text-xs font-black cursor-pointer"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => {
+                  sounds.playSuccess();
+                  setCurrentStepPage('creator');
+                }}
+                className="flex-1 py-3 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black text-xs shadow-md flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>¡Crear Otro Personaje!</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Cámara para Generar Mundo */}
+        {isScanningRoom && (
+          <div className="fixed inset-0 z-50 bg-black flex flex-col justify-between p-4 animate-in fade-in">
+            <div className="flex items-center justify-between text-white px-2 pt-2">
+              <h3 className="text-sm font-black">Fotografía tu Espacio de Juego</h3>
+              <button
+                onClick={() => {
+                  if (cameraStream) cameraStream.getTracks().forEach((t) => t.stop());
+                  setIsScanningRoom(false);
+                }}
+                className="px-4 py-1.5 rounded-full bg-white/20 text-xs font-bold cursor-pointer"
+              >
+                Cancelar
               </button>
             </div>
 
-            <button
-              onClick={handleInteractAvatar}
-              className="mt-2 text-[11px] font-bold text-purple-600 dark:text-purple-300 flex items-center gap-1 cursor-pointer"
-            >
-              <Volume2 className={`w-3.5 h-3.5 ${isSpeaking ? 'animate-bounce text-pink-400' : ''}`} />
-              <span>Tócame para hablar</span>
-            </button>
-          </div>
-
-          {/* Ficha de Atributos y Estadísticas */}
-          <div className="p-5 rounded-[32px] bg-white/40 dark:bg-white/10 backdrop-blur-xl border border-white/60 dark:border-white/15 shadow-xl space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-[10px] font-black uppercase tracking-wider text-purple-600 dark:text-purple-300">
-                  Ficha de Rol
-                </span>
-                <h4 className="text-sm font-black text-slate-800 dark:text-white">{selectedArchetype.name}</h4>
-              </div>
-              <span className="px-3 py-1 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-300 text-xs font-black">
-                {selectedPower.name}
-              </span>
+            <div className="relative flex-1 rounded-[32px] overflow-hidden my-3 border-2 border-cyan-400 shadow-2xl flex items-center justify-center">
+              <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
             </div>
 
-            <p className="text-xs text-slate-600 dark:text-white/80 leading-relaxed">
-              {selectedArchetype.lore}
-            </p>
-
-            {/* Barras de Estadísticas */}
-            <div className="space-y-2 pt-1">
-              <div>
-                <div className="flex justify-between text-[10px] font-black uppercase text-slate-600 dark:text-white/70 mb-0.5">
-                  <span>Valentía</span>
-                  <span>{selectedArchetype.stats.bravery}%</span>
+            <div className="flex items-center justify-center pb-4">
+              <button
+                onClick={handleCaptureRoomPhoto}
+                className="w-20 h-20 rounded-full bg-white p-1.5 shadow-2xl flex items-center justify-center cursor-pointer active:scale-90"
+              >
+                <div className="w-full h-full rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white">
+                  <Camera className="w-8 h-8" />
                 </div>
-                <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-white/10 overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-red-500 to-amber-500 rounded-full" style={{ width: `${selectedArchetype.stats.bravery}%` }} />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-[10px] font-black uppercase text-slate-600 dark:text-white/70 mb-0.5">
-                  <span>Magia & Sabiduría</span>
-                  <span>{selectedArchetype.stats.magic}%</span>
-                </div>
-                <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-white/10 overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full" style={{ width: `${selectedArchetype.stats.magic}%` }} />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-[10px] font-black uppercase text-slate-600 dark:text-white/70 mb-0.5">
-                  <span>Velocidad</span>
-                  <span>{selectedArchetype.stats.speed}%</span>
-                </div>
-                <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-white/10 overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full" style={{ width: `${selectedArchetype.stats.speed}%` }} />
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={handleSaveHero}
-              className="w-full py-3 rounded-full bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 text-white font-black text-xs shadow-lg flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-            >
-              <Star className="w-4 h-4 text-amber-300" />
-              <span>Guardar en Mi Salón de Héroes</span>
-            </button>
-          </div>
-        </div>
-
-        {/* ========================================================= */}
-        {/* SELECTORES MODULARES POR CAPAS                            */}
-        {/* ========================================================= */}
-        <div className="space-y-3 bg-white/30 dark:bg-white/5 p-4 rounded-[32px] border border-white/40 dark:border-white/10">
-          {/* 1. Selector de Arquetipo */}
-          <div className="space-y-1">
-            <span className="text-[11px] font-black text-slate-600 dark:text-white/70 uppercase">
-              1. Elige tu Arquetipo
-            </span>
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-              {ARCHETYPES.map((arch) => (
-                <button
-                  key={arch.id}
-                  onClick={() => {
-                    if (navigator.vibrate) navigator.vibrate(5);
-                    sounds.playTap();
-                    setSelectedArchetype(arch);
-                  }}
-                  className={`px-3 py-2 rounded-[20px] flex items-center gap-2 text-xs font-black border transition-all cursor-pointer flex-shrink-0 ${
-                    selectedArchetype.id === arch.id
-                      ? 'bg-purple-600 text-white border-purple-400 shadow-md scale-105'
-                      : 'bg-white/60 dark:bg-white/10 text-slate-700 dark:text-white border-black/5'
-                  }`}
-                >
-                  <span className="text-xl">{arch.avatarIcon}</span>
-                  <span>{arch.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* 2. Selector de Tocados y Sombreros */}
-          <div className="space-y-1">
-            <span className="text-[11px] font-black text-slate-600 dark:text-white/70 uppercase">
-              2. Sombrero o Tocado
-            </span>
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-              {HEADGEARS.map((hg) => (
-                <button
-                  key={hg.id}
-                  onClick={() => {
-                    if (navigator.vibrate) navigator.vibrate(5);
-                    sounds.playTap();
-                    setSelectedHeadgear(hg);
-                  }}
-                  className={`p-2.5 rounded-[18px] text-2xl border transition-all cursor-pointer flex-shrink-0 ${
-                    selectedHeadgear.id === hg.id
-                      ? 'bg-amber-400 border-white shadow-md scale-110'
-                      : 'bg-white/60 dark:bg-white/10 border-black/5'
-                  }`}
-                  title={hg.label}
-                >
-                  {hg.icon}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* 3. Selector de Superpoder */}
-          <div className="space-y-1">
-            <span className="text-[11px] font-black text-slate-600 dark:text-white/70 uppercase">
-              3. Emblema de Poder
-            </span>
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-              {POWERS.map((pow) => (
-                <button
-                  key={pow.id}
-                  onClick={() => {
-                    if (navigator.vibrate) navigator.vibrate(5);
-                    sounds.playTap();
-                    setSelectedPower(pow);
-                  }}
-                  className={`px-3 py-2 rounded-[20px] flex items-center gap-1.5 text-xs font-black border transition-all cursor-pointer flex-shrink-0 ${
-                    selectedPower.id === pow.id
-                      ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white border-white shadow-md scale-105'
-                      : 'bg-white/60 dark:bg-white/10 text-slate-700 dark:text-white border-black/5'
-                  }`}
-                >
-                  <span className="text-lg">{pow.icon}</span>
-                  <span>{pow.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* 4. Tintes y Colores de Aura */}
-          <div className="space-y-1">
-            <span className="text-[11px] font-black text-slate-600 dark:text-white/70 uppercase">
-              4. Tinte de Aura Zentry
-            </span>
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-              {SUIT_GRADIENTS.map((grad) => (
-                <button
-                  key={grad.id}
-                  onClick={() => {
-                    if (navigator.vibrate) navigator.vibrate(5);
-                    setSelectedGradient(grad);
-                  }}
-                  className={`w-9 h-9 rounded-full bg-gradient-to-tr ${grad.class} border-2 transition-transform cursor-pointer flex-shrink-0 ${
-                    selectedGradient.id === grad.id ? 'scale-125 border-white ring-4 ring-purple-500/50 shadow-lg' : 'border-white/60'
-                  }`}
-                  title={grad.name}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* ========================================================= */}
-        {/* SALÓN DE HÉROES GUARDADOS                                 */}
-        {/* ========================================================= */}
-        {savedHeroes.length > 0 && (
-          <div className="p-3.5 rounded-[28px] bg-white/40 dark:bg-white/10 backdrop-blur-md border border-white/60 dark:border-white/10 space-y-2">
-            <div className="flex items-center justify-between text-xs font-black text-slate-800 dark:text-white">
-              <div className="flex items-center gap-1.5">
-                <Trophy className="w-4 h-4 text-amber-500" />
-                <span>Salón de Héroes ({savedHeroes.length})</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 overflow-x-auto no-scrollbar">
-              {savedHeroes.map((hero) => (
-                <div
-                  key={hero.id}
-                  onClick={() => speak(`Soy ${hero.name}, ${hero.archetype}. Tengo el poder de ${hero.powerName}.`)}
-                  className="p-2.5 rounded-[20px] bg-white/70 dark:bg-white/10 border border-black/5 dark:border-white/10 flex items-center gap-2 cursor-pointer hover:scale-102 transition-transform shadow-sm"
-                >
-                  <div className={`w-10 h-10 rounded-[14px] bg-gradient-to-tr ${hero.gradientClass} flex items-center justify-center text-xl flex-shrink-0`}>
-                    {hero.icon}
-                  </div>
-                  <div className="truncate">
-                    <span className="text-xs font-black block truncate">{hero.name}</span>
-                    <span className="text-[10px] opacity-60 truncate block">{hero.archetype}</span>
-                  </div>
-                </div>
-              ))}
+              </button>
             </div>
           </div>
         )}

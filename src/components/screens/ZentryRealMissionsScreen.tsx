@@ -17,11 +17,13 @@ import {
   ArrowRight,
   ShieldCheck,
   Star,
-  Check
+  Check,
+  Layers
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ZentrySubPageScaffold } from '../shell/ZentrySubPageScaffold';
 import { sounds } from '../../services/soundEffects';
+import { saveMissionToFirestore } from '../../services/firebase';
 
 interface Props {
   onBack: () => void;
@@ -33,6 +35,7 @@ interface RealQuest {
   category: 'movement' | 'curiosity' | 'habits' | 'crafts';
   categoryLabel: string;
   title: string;
+  shortAction: string;
   description: string;
   durationSeconds: number;
   icon: string;
@@ -41,90 +44,162 @@ interface RealQuest {
   badgeReward: string;
 }
 
-const REAL_QUESTS_CATALOG: RealQuest[] = [
+const REAL_QUESTS_12_CATALOG: RealQuest[] = [
   {
-    id: 'm1_obstacle',
+    id: 'm1_canguro',
     category: 'movement',
-    categoryLabel: 'Motricidad & Ejercicio',
-    title: 'Circuito de Obstáculos en Casa',
-    description: 'Coloca 3 cojines en el suelo en línea recta y salta sobre ellos como un canguro sin tocarlos.',
-    durationSeconds: 120,
+    categoryLabel: 'Movimiento',
+    title: 'El Salto del Canguro',
+    shortAction: 'Salta sobre 3 cojines en fila',
+    description: 'Coloca 3 cojines en el suelo y salta sobre ellos con pies juntos sin tocarlos.',
+    durationSeconds: 90,
     icon: '🦘',
     gradient: 'from-blue-500 to-indigo-600',
-    audioSpeech: '¡Misión de movimiento! Coloca tres cojines en el suelo y da saltos de canguro esquivando cada uno.',
-    badgeReward: '🏅 Maestro del Salto'
+    audioSpeech: '¡Misión del Canguro! Coloca tres cojines en fila y da saltos con ambos pies juntos.',
+    badgeReward: '🏅 Salto de Campeón'
   },
   {
-    id: 'm2_flamingos',
+    id: 'm2_flamenco',
     category: 'movement',
-    categoryLabel: 'Motricidad & Ejercicio',
-    title: 'Equilibrio del Flamenco Real',
-    description: 'Párate en un solo pie con los brazos abiertos durante 10 segundos. ¡Luego cambia al otro pie!',
+    categoryLabel: 'Movimiento',
+    title: 'El Flamenco Real',
+    shortAction: 'Equilibrio en 1 pie por 10 seg',
+    description: 'Párate en un solo pie con los brazos abiertos como alas durante 10 segundos.',
     durationSeconds: 60,
     icon: '🦩',
     gradient: 'from-pink-500 to-rose-600',
-    audioSpeech: '¡Misión de equilibrio! Mantente en un solo pie como un flamenco elegante durante diez segundos.',
+    audioSpeech: '¡Misión del Flamenco! Párate en un solo pie con los brazos abiertos durante diez segundos.',
     badgeReward: '🧘 Equilibrio de Cristal'
   },
   {
-    id: 'm3_yellow_hunt',
+    id: 'm3_amarillo',
     category: 'curiosity',
-    categoryLabel: 'Curiosidad & Exploración',
-    title: 'Cacería del Tesoro Amarillo',
-    description: 'Explora tu casa y encuentra 3 objetos que sean de color amarillo brillante o dorado.',
-    durationSeconds: 180,
+    categoryLabel: 'Curiosidad',
+    title: 'El Detective Amarillo',
+    shortAction: 'Busca 3 cosas amarillas en casa',
+    description: 'Explora tu casa y encuentra 3 objetos que sean de color amarillo o dorado brillante.',
+    durationSeconds: 120,
     icon: '🟡',
     gradient: 'from-amber-400 to-yellow-600',
-    audioSpeech: '¡Misión de exploración! Busca en tu casa tres objetos de color amarillo o dorado brillante.',
+    audioSpeech: '¡Misión Detective! Busca y reúne tres objetos amarillos o dorados en tu casa.',
     badgeReward: '🔍 Ojo de Águila'
   },
   {
-    id: 'm4_textures',
+    id: 'm4_texturas',
     category: 'curiosity',
-    categoryLabel: 'Curiosidad & Exploración',
-    title: 'El Detective de Texturas',
-    description: 'Toca y compara 3 superficies diferentes: algo suave, algo rugoso y algo frío.',
-    durationSeconds: 120,
+    categoryLabel: 'Curiosidad',
+    title: 'Explorador de Texturas',
+    shortAction: 'Toca algo suave, rugoso y frío',
+    description: 'Toca y compara 3 superficies diferentes: un peluche suave, algo rugoso y algo frío.',
+    durationSeconds: 90,
     icon: '🧶',
     gradient: 'from-purple-500 to-indigo-600',
-    audioSpeech: '¡Misión de sentidos! Encuentra algo muy suave como un peluche, algo rugoso y algo frío.',
+    audioSpeech: '¡Misión de Sentidos! Toca un peluche suave, algo rugoso y algo frío.',
     badgeReward: '🖐️ Sentido Mágico'
   },
   {
-    id: 'm5_tidy_room',
+    id: 'm5_orden',
     category: 'habits',
-    categoryLabel: 'Hábitos & Amor en Casa',
-    title: 'La Misión del Súper Orden',
-    description: 'Guarda 5 juguetes o libros en su lugar correcto para dejar tu habitación brillante.',
-    durationSeconds: 180,
+    categoryLabel: 'Hábitos',
+    title: 'El Súper Orden',
+    shortAction: 'Guarda 5 juguetes en su lugar',
+    description: 'Recoge y guarda 5 juguetes o libros en su sitio para dejar tu espacio impecable.',
+    durationSeconds: 120,
     icon: '🧸',
     gradient: 'from-emerald-500 to-teal-600',
-    audioSpeech: '¡Misión de súper héroe! Guarda cinco juguetes o libros en su lugar para dejar tu cuarto impecable.',
+    audioSpeech: '¡Misión del Súper Orden! Guarda cinco juguetes o libros en su lugar.',
     badgeReward: '⭐ Guardián del Hogar'
   },
   {
-    id: 'm6_big_hug',
+    id: 'm6_abrazo',
     category: 'habits',
-    categoryLabel: 'Hábitos & Amor en Casa',
-    title: 'El Abrazo Secreto de Energía',
-    description: 'Acércate a un familiar o a tu mascota y dale un abrazo fuerte y calientito de 5 segundos.',
-    durationSeconds: 60,
+    categoryLabel: 'Hábitos',
+    title: 'El Abrazo Mágico',
+    shortAction: 'Da un abrazo cariñoso de 5 seg',
+    description: 'Acércate a un familiar o a tu mascota y dale un abrazo fuerte y calientito.',
+    durationSeconds: 45,
     icon: '🤗',
     gradient: 'from-rose-500 to-pink-600',
-    audioSpeech: '¡Misión del corazón! Dale un abrazo cálido y lleno de energía a alguien de tu familia.',
+    audioSpeech: '¡Misión del Corazón! Dale un abrazo cálido y cariñoso a alguien de tu familia.',
     badgeReward: '💖 Corazón Radiante'
   },
   {
-    id: 'm7_tower_build',
+    id: 'm7_torre',
     category: 'crafts',
-    categoryLabel: 'Arte & Creación Phygital',
-    title: 'La Gran Torre de Cojines',
-    description: 'Construye una torre alta con 4 cojines o almohadas sin que se caiga durante 10 segundos.',
-    durationSeconds: 180,
+    categoryLabel: 'Creación',
+    title: 'La Gran Torre',
+    shortAction: 'Apila 4 cojines sin que caigan',
+    description: 'Construye una torre alta con 4 cojines o almohadas y cuéntale 5 segundos de pie.',
+    durationSeconds: 120,
     icon: '🏰',
     gradient: 'from-fuchsia-500 to-purple-700',
-    audioSpeech: '¡Misión de construcción física! Apila cuatro cojines para formar una gran torre de fortaleza.',
+    audioSpeech: '¡Misión de Construcción! Apila cuatro cojines para formar una gran torre resistente.',
     badgeReward: '🧱 Gran Arquitecto'
+  },
+  {
+    id: 'm8_ranita',
+    category: 'movement',
+    categoryLabel: 'Movimiento',
+    title: 'El Salto de la Ranita',
+    shortAction: 'Da 5 saltos en cuclillas con croac',
+    description: 'Ponte en cuclillas y da 5 saltos hacia adelante diciendo ¡croac croac!',
+    durationSeconds: 60,
+    icon: '🐸',
+    gradient: 'from-green-500 to-emerald-700',
+    audioSpeech: '¡Misión de la Ranita! Agáchate y da cinco saltos de rana diciendo croac croac.',
+    badgeReward: '🍃 Ranita Veloz'
+  },
+  {
+    id: 'm9_plantas',
+    category: 'curiosity',
+    categoryLabel: 'Curiosidad',
+    title: 'El Amigo de las Plantas',
+    shortAction: 'Encuentra una planta y dale cariño',
+    description: 'Busca una planta o flor en casa, mírala de cerca y dale un soplido de aire fresco.',
+    durationSeconds: 60,
+    icon: '🌿',
+    gradient: 'from-teal-500 to-green-600',
+    audioSpeech: '¡Misión de la Naturaleza! Busca una plantita en casa y dale un soplido mágico de cariño.',
+    badgeReward: '🌱 Guardián Verde'
+  },
+  {
+    id: 'm10_oso',
+    category: 'movement',
+    categoryLabel: 'Movimiento',
+    title: 'La Caminata del Oso',
+    shortAction: 'Camina en 4 patas por 15 pasos',
+    description: 'Apoya manos y pies en el suelo y camina con pasos gigantes y pesados como un oso.',
+    durationSeconds: 90,
+    icon: '🐻',
+    gradient: 'from-amber-600 to-orange-800',
+    audioSpeech: '¡Misión del Oso! Camina en cuatro patas por tu sala dando quince pasos pesados.',
+    badgeReward: '🐾 Fuerza de Oso'
+  },
+  {
+    id: 'm11_rojo',
+    category: 'curiosity',
+    categoryLabel: 'Curiosidad',
+    title: 'La Búsqueda Roja',
+    shortAction: 'Encuentra 2 cosas de color rojo',
+    description: 'Busca con atención y encuentra 2 objetos de color rojo vivo en tu habitación o cocina.',
+    durationSeconds: 90,
+    icon: '🔴',
+    gradient: 'from-red-500 to-rose-700',
+    audioSpeech: '¡Misión Roja! Busca rápido dos objetos de color rojo brillante en tu casa.',
+    badgeReward: '🔥 Chispa Veloz'
+  },
+  {
+    id: 'm12_estatua',
+    category: 'movement',
+    categoryLabel: 'Movimiento',
+    title: 'El Baile de la Estatua',
+    shortAction: 'Baila y congélata 5 segundos',
+    description: 'Baila alocadamente y cuando cuentes 3, quédate totalmente inmóvil como una estatua.',
+    durationSeconds: 60,
+    icon: '🎶',
+    gradient: 'from-indigo-500 via-purple-500 to-pink-500',
+    audioSpeech: '¡Misión de la Estatua! Mueve tu cuerpo bailando y luego quédate quieto como estatua cinco segundos.',
+    badgeReward: '🗿 Estatua de Oro'
   }
 ];
 
@@ -137,13 +212,13 @@ export const ZentryRealMissionsScreen: React.FC<Props> = ({ onBack, isDark }) =>
   const [timerRunning, setTimerRunning] = useState<boolean>(false);
   const timerRef = useRef<any>(null);
 
-  // Cámara Phygital para foto de logro
+  // Cámara Phygital
   const [isCameraActive, setIsCameraActive] = useState<boolean>(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [questPhotos, setQuestPhotos] = useState<Record<string, string>>({});
 
-  // Historial de Misiones completadas
+  // Firestore Sync & Local Storage
   const [completedQuestIds, setCompletedQuestIds] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem('zentry_completed_real_quests');
@@ -161,7 +236,7 @@ export const ZentryRealMissionsScreen: React.FC<Props> = ({ onBack, isDark }) =>
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'es-ES';
       utterance.rate = 0.94;
-      utterance.pitch = 1.15;
+      utterance.pitch = 1.18;
       utterance.onstart = () => setIsSpeaking(true);
       utterance.onend = () => setIsSpeaking(false);
       utterance.onerror = () => setIsSpeaking(false);
@@ -169,7 +244,22 @@ export const ZentryRealMissionsScreen: React.FC<Props> = ({ onBack, isDark }) =>
     }
   };
 
-  // Iniciar Misión
+  const stopVoice = () => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+    }
+  };
+
+  // Bienvenida guiada por el asistente de voz al entrar
+  useEffect(() => {
+    speak('¡Haz clic y empieza el reto!');
+    return () => {
+      stopVoice();
+    };
+  }, []);
+
+  // Seleccionar Misión
   const handleSelectQuest = (quest: RealQuest) => {
     if (navigator.vibrate) navigator.vibrate(10);
     sounds.playAppOpen();
@@ -188,7 +278,7 @@ export const ZentryRealMissionsScreen: React.FC<Props> = ({ onBack, isDark }) =>
             clearInterval(timerRef.current!);
             setTimerRunning(false);
             sounds.playSuccess();
-            speak('¡Tiempo cumplido! ¡Excelente trabajo en tu misión física!');
+            speak('¡Tiempo cumplido! ¡Excelente trabajo en tu reto!');
             return 0;
           }
           return prev - 1;
@@ -202,8 +292,8 @@ export const ZentryRealMissionsScreen: React.FC<Props> = ({ onBack, isDark }) =>
     };
   }, [timerRunning, timeLeft]);
 
-  // Completar Misión
-  const handleCompleteQuest = () => {
+  // Completar Misión (Guardado Local + Firestore GCP)
+  const handleCompleteQuest = async () => {
     if (!activeQuest) return;
     if (navigator.vibrate) navigator.vibrate(15);
     sounds.playSuccess();
@@ -211,6 +301,15 @@ export const ZentryRealMissionsScreen: React.FC<Props> = ({ onBack, isDark }) =>
     const updated = Array.from(new Set([...completedQuestIds, activeQuest.id]));
     setCompletedQuestIds(updated);
     localStorage.setItem('zentry_completed_real_quests', JSON.stringify(updated));
+
+    // Persistencia en Firestore (GCP)
+    await saveMissionToFirestore({
+      id: activeQuest.id,
+      title: activeQuest.title,
+      category: activeQuest.category,
+      badgeReward: activeQuest.badgeReward,
+      photoUrl: questPhotos[activeQuest.id]
+    });
 
     confetti({
       particleCount: 90,
@@ -233,7 +332,7 @@ export const ZentryRealMissionsScreen: React.FC<Props> = ({ onBack, isDark }) =>
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
-      speak('Toma una foto de tu misión para guardarla en tu diario de aventuras.');
+      speak('Toma una foto de tu misión para guardarla en tu diario de logros.');
     } catch (e) {
       console.warn('Camera quest error:', e);
     }
@@ -260,18 +359,16 @@ export const ZentryRealMissionsScreen: React.FC<Props> = ({ onBack, isDark }) =>
     handleCompleteQuest();
   };
 
-  const filteredQuests = REAL_QUESTS_CATALOG.filter(
+  const filteredQuests = REAL_QUESTS_12_CATALOG.filter(
     (q) => selectedCategory === 'all' || q.category === selectedCategory
   );
 
   return (
     <ZentrySubPageScaffold
-      title="Misiones Reales"
-      kicker="RETOS PHYGITAL FUERA DE PANTALLA"
+      title="Misiones"
+      kicker="RETOS REALES FUERA DE PANTALLA"
       onBack={() => {
-        if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-          window.speechSynthesis.cancel();
-        }
+        stopVoice();
         if (activeQuest) {
           setActiveQuest(null);
         } else {
@@ -282,18 +379,34 @@ export const ZentryRealMissionsScreen: React.FC<Props> = ({ onBack, isDark }) =>
     >
       <div className="w-full h-full flex flex-col justify-between p-2 md:p-4 space-y-4 overflow-y-auto no-scrollbar max-w-3xl mx-auto">
         {/* ========================================================= */}
-        {/* VISTA 1: CATÁLOGO DE MISIONES POR CATEGORÍAS              */}
+        {/* VISTA 1: CATÁLOGO DE LAS 12 MISIONES REALES              */}
         {/* ========================================================= */}
         {!activeQuest && (
           <>
+            {/* Cabecera con Botón de Voz Principal */}
+            <div className="flex items-center justify-between px-1">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black uppercase text-purple-600 dark:text-purple-300">
+                  🎯 12 Retos Activos
+                </span>
+              </div>
+              <button
+                onClick={() => speak('¡Elige un reto, haz clic y empieza a moverte en casa!')}
+                className="p-2 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-300 flex items-center gap-1.5 text-xs font-bold cursor-pointer"
+              >
+                <Volume2 className={`w-4 h-4 ${isSpeaking ? 'animate-bounce text-pink-400' : ''}`} />
+                <span>¿Cómo jugar?</span>
+              </button>
+            </div>
+
             {/* Filtros de Categoría */}
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
               {[
-                { id: 'all', label: 'Todas las Misiones', icon: '🌟' },
+                { id: 'all', label: 'Todos (12)', icon: '🌟' },
                 { id: 'movement', label: 'Movimiento', icon: '🏃' },
                 { id: 'curiosity', label: 'Curiosidad', icon: '🔍' },
                 { id: 'habits', label: 'Hábitos en Casa', icon: '🤝' },
-                { id: 'crafts', label: 'Creación Física', icon: '🧱' }
+                { id: 'crafts', label: 'Creación', icon: '🧱' }
               ].map((cat) => (
                 <button
                   key={cat.id}
@@ -301,7 +414,7 @@ export const ZentryRealMissionsScreen: React.FC<Props> = ({ onBack, isDark }) =>
                     if (navigator.vibrate) navigator.vibrate(5);
                     setSelectedCategory(cat.id);
                   }}
-                  className={`px-3.5 py-2 rounded-full text-xs font-black flex items-center gap-1.5 border transition-all cursor-pointer flex-shrink-0 ${
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-black flex items-center gap-1.5 border transition-all cursor-pointer flex-shrink-0 ${
                     selectedCategory === cat.id
                       ? 'bg-purple-600 text-white border-purple-400 shadow-md scale-105'
                       : 'bg-white/60 dark:bg-white/10 text-slate-700 dark:text-white border-black/5'
@@ -313,8 +426,8 @@ export const ZentryRealMissionsScreen: React.FC<Props> = ({ onBack, isDark }) =>
               ))}
             </div>
 
-            {/* Grid de Tarjetas de Misiones */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 flex-1">
+            {/* Grid de las 12 Misiones */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1">
               {filteredQuests.map((quest) => {
                 const isCompleted = completedQuestIds.includes(quest.id);
 
@@ -322,7 +435,7 @@ export const ZentryRealMissionsScreen: React.FC<Props> = ({ onBack, isDark }) =>
                   <div
                     key={quest.id}
                     onClick={() => handleSelectQuest(quest)}
-                    className={`p-4.5 rounded-[32px] border transition-all cursor-pointer active:scale-98 shadow-lg flex flex-col justify-between group ${
+                    className={`p-4 rounded-[28px] border transition-all cursor-pointer active:scale-98 shadow-md flex flex-col justify-between group ${
                       isCompleted
                         ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-950 dark:text-emerald-200'
                         : 'bg-white/50 dark:bg-white/10 border-white/60 dark:border-white/15 text-slate-800 dark:text-white hover:bg-white/70'
@@ -330,24 +443,32 @@ export const ZentryRealMissionsScreen: React.FC<Props> = ({ onBack, isDark }) =>
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <div className={`w-12 h-12 rounded-[18px] bg-gradient-to-br ${quest.gradient} text-white flex items-center justify-center text-2xl shadow-md`}>
+                        <div className={`w-11 h-11 rounded-[16px] bg-gradient-to-br ${quest.gradient} text-white flex items-center justify-center text-xl shadow-md flex-shrink-0`}>
                           {quest.icon}
                         </div>
                         <div>
-                          <span className="text-[10px] font-black uppercase tracking-wider text-purple-600 dark:text-purple-300">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-purple-600 dark:text-purple-300 block">
                             {quest.categoryLabel}
                           </span>
                           <h4 className="text-xs md:text-sm font-black">{quest.title}</h4>
                         </div>
                       </div>
 
-                      {isCompleted && (
-                        <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-                      )}
+                      {/* BOTÓN DE VOLUMEN 🔊 (Habla al hacer clic) */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          speak(`${quest.title}. ${quest.audioSpeech}`);
+                        }}
+                        className="p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-purple-600 dark:text-purple-300 cursor-pointer"
+                        title="Escuchar Reto"
+                      >
+                        <Volume2 className="w-4 h-4" />
+                      </button>
                     </div>
 
-                    <p className="text-xs opacity-80 line-clamp-2 my-2.5 leading-relaxed">
-                      {quest.description}
+                    <p className="text-[11px] font-bold opacity-85 line-clamp-1 my-2">
+                      👉 {quest.shortAction}
                     </p>
 
                     <div className="pt-2 border-t border-black/5 dark:border-white/10 flex items-center justify-between text-[11px] font-bold">
@@ -356,7 +477,7 @@ export const ZentryRealMissionsScreen: React.FC<Props> = ({ onBack, isDark }) =>
                         {Math.floor(quest.durationSeconds / 60)} min
                       </span>
                       <span className="text-purple-600 dark:text-purple-300 group-hover:translate-x-1 transition-transform">
-                        Iniciar Reto →
+                        {isCompleted ? '⭐ Cumplido' : 'Empezar →'}
                       </span>
                     </div>
                   </div>
@@ -369,16 +490,16 @@ export const ZentryRealMissionsScreen: React.FC<Props> = ({ onBack, isDark }) =>
               <div className="flex items-center gap-2.5">
                 <Trophy className="w-5 h-5 text-amber-500" />
                 <div>
-                  <span className="text-[10px] font-bold uppercase opacity-60 block">Insignias Ganadas</span>
+                  <span className="text-[10px] font-bold uppercase opacity-60 block">Insignias Guardadas en Firestore</span>
                   <span className="text-xs font-black">
-                    {completedQuestIds.length} de {REAL_QUESTS_CATALOG.length} Retos Completados
+                    {completedQuestIds.length} de 12 Retos Completados
                   </span>
                 </div>
               </div>
 
               <div className="flex items-center gap-1 text-amber-500 font-black text-xs">
                 <Flame className="w-4 h-4" />
-                <span>Racha Activa</span>
+                <span>Racha Zentry</span>
               </div>
             </div>
           </>
@@ -390,7 +511,7 @@ export const ZentryRealMissionsScreen: React.FC<Props> = ({ onBack, isDark }) =>
         {activeQuest && (
           <div className="space-y-4 max-w-xl mx-auto w-full animate-in zoom-in-95 duration-200">
             {/* Tarjeta del Reto */}
-            <div className={`p-6 rounded-[36px] bg-gradient-to-br ${activeQuest.gradient} text-white shadow-2xl space-y-4 text-center relative overflow-hidden border border-white/30`}>
+            <div className={`p-6 rounded-[36px] bg-gradient-to-br ${activeQuest.gradient} text-white shadow-2xl space-y-3 text-center relative overflow-hidden border border-white/30`}>
               <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-4xl mx-auto shadow-inner">
                 {activeQuest.icon}
               </div>
@@ -400,17 +521,18 @@ export const ZentryRealMissionsScreen: React.FC<Props> = ({ onBack, isDark }) =>
                   {activeQuest.categoryLabel}
                 </span>
                 <h3 className="text-lg md:text-xl font-black">{activeQuest.title}</h3>
-                <p className="text-xs text-white/90 leading-relaxed pt-1">
+                <p className="text-xs text-white/90 leading-relaxed pt-1 font-bold">
                   {activeQuest.description}
                 </p>
               </div>
 
+              {/* BOTÓN DE VOLUMEN EN LA MISIÓN ACTIVA */}
               <button
                 onClick={() => speak(activeQuest.audioSpeech)}
-                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white/20 hover:bg-white/30 text-xs font-bold cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/25 hover:bg-white/35 text-xs font-black cursor-pointer shadow-md"
               >
-                <Volume2 className="w-4 h-4" />
-                <span>Escuchar Instrucción</span>
+                <Volume2 className={`w-4 h-4 ${isSpeaking ? 'animate-bounce text-yellow-300' : ''}`} />
+                <span>Escuchar Instrucción en Voz Alta</span>
               </button>
             </div>
 
@@ -418,7 +540,7 @@ export const ZentryRealMissionsScreen: React.FC<Props> = ({ onBack, isDark }) =>
             <div className="p-5 rounded-[32px] bg-white/40 dark:bg-white/10 backdrop-blur-xl border border-white/60 dark:border-white/15 shadow-xl flex flex-col items-center justify-center space-y-3">
               <div className="flex items-center gap-2 text-xs font-black text-slate-700 dark:text-white uppercase tracking-wider">
                 <Timer className="w-4 h-4 text-purple-600 dark:text-purple-300" />
-                <span>Tiempo para cumplir el reto</span>
+                <span>Tiempo del Reto</span>
               </div>
 
               <div className="text-4xl md:text-5xl font-black text-slate-800 dark:text-white tracking-tight font-mono">
@@ -440,7 +562,7 @@ export const ZentryRealMissionsScreen: React.FC<Props> = ({ onBack, isDark }) =>
                     setTimeLeft(activeQuest.durationSeconds);
                   }}
                   className="p-2.5 rounded-full bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-white cursor-pointer active:scale-95"
-                  title="Reiniciar"
+                  title="Reiniciar Tiempo"
                 >
                   <RotateCcw className="w-4 h-4" />
                 </button>
@@ -455,16 +577,16 @@ export const ZentryRealMissionsScreen: React.FC<Props> = ({ onBack, isDark }) =>
                 className="flex-1 py-4 rounded-[28px] bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-black text-xs shadow-lg flex items-center justify-center gap-2 cursor-pointer active:scale-95"
               >
                 <Camera className="w-4 h-4" />
-                <span>Foto de Misión</span>
+                <span>Tomar Foto</span>
               </button>
 
-              {/* Botón Misión Cumplida */}
+              {/* Botón ¡LOGRADO! (Guarda en Firestore) */}
               <button
                 onClick={handleCompleteQuest}
                 className="flex-1 py-4 rounded-[28px] bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black text-xs shadow-lg flex items-center justify-center gap-2 cursor-pointer active:scale-95"
               >
                 <CheckCircle2 className="w-4 h-4" />
-                <span>¡Ya lo Hice!</span>
+                <span>¡Logrado!</span>
               </button>
             </div>
 
@@ -474,9 +596,9 @@ export const ZentryRealMissionsScreen: React.FC<Props> = ({ onBack, isDark }) =>
                 <img src={questPhotos[activeQuest.id]} alt="Logro" className="w-16 h-12 object-cover rounded-[14px]" />
                 <div>
                   <span className="text-xs font-black text-emerald-600 dark:text-emerald-300 block">
-                    ¡Foto de Logro Guardada!
+                    ¡Foto Guardada y Sincronizada!
                   </span>
-                  <span className="text-[10px] opacity-70">Se ha guardado en tu bitácora familiar.</span>
+                  <span className="text-[10px] opacity-70">Guardado en Firestore de GCP.</span>
                 </div>
               </div>
             )}

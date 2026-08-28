@@ -22,19 +22,11 @@ export const ZentryCreationScreen: React.FC<Props> = ({ onBack, onNavigate, isDa
   const creationApps: FisheyeItemData[] = [
     {
       id: 'free_canvas',
-      name: 'Lienzo Libre',
+      name: 'Lienzo',
       category: 'arte',
       icon: Brush,
       screen: 'free_canvas',
       gradient: 'from-pink-500 via-rose-500 to-purple-600'
-    },
-    {
-      id: 'world_generator',
-      name: 'Generador de Mundos',
-      category: 'mundos',
-      icon: Globe,
-      screen: 'world_generator',
-      gradient: 'from-blue-500 via-indigo-600 to-cyan-500'
     },
     {
       id: 'characters',
@@ -42,11 +34,11 @@ export const ZentryCreationScreen: React.FC<Props> = ({ onBack, onNavigate, isDa
       category: 'personajes',
       icon: UserCheck,
       screen: 'characters',
-      gradient: 'from-purple-500 via-fuchsia-600 to-pink-500'
+      gradient: 'from-purple-500 via-fuchsia-600 to-indigo-600'
     },
     {
       id: 'real_missions',
-      name: 'Misiones Reales',
+      name: 'Misiones',
       category: 'mundos',
       icon: Compass,
       screen: 'real_missions',
