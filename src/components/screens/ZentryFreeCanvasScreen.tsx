@@ -8,7 +8,23 @@ import {
   Paintbrush,
   X,
   Sparkles,
-  Check
+  Check,
+  Shapes,
+  Circle,
+  Square,
+  Star,
+  Triangle,
+  Heart,
+  Diamond,
+  Flower2,
+  Rocket,
+  Download,
+  Palette,
+  Mountain,
+  User,
+  Box,
+  CheckCircle2,
+  LucideIcon
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ZentrySubPageScaffold } from '../shell/ZentrySubPageScaffold';
@@ -32,15 +48,15 @@ export type ShapeType =
   | 'flower'
   | 'rocket';
 
-const GEOMETRIC_SHAPES: Array<{ id: ShapeType; label: string; icon: string }> = [
-  { id: 'circle', label: 'Círculo', icon: '⭕' },
-  { id: 'rectangle', label: 'Rectángulo', icon: '⬛' },
-  { id: 'star', label: 'Estrella', icon: '⭐' },
-  { id: 'triangle', label: 'Triángulo', icon: '🔺' },
-  { id: 'heart', label: 'Corazón', icon: '❤️' },
-  { id: 'diamond', label: 'Rombo', icon: '💎' },
-  { id: 'flower', label: 'Flor', icon: '🌸' },
-  { id: 'rocket', label: 'Cohete', icon: '🚀' }
+const GEOMETRIC_SHAPES: Array<{ id: ShapeType; label: string; Icon: LucideIcon }> = [
+  { id: 'circle', label: 'Círculo', Icon: Circle },
+  { id: 'rectangle', label: 'Rectángulo', Icon: Square },
+  { id: 'star', label: 'Estrella', Icon: Star },
+  { id: 'triangle', label: 'Triángulo', Icon: Triangle },
+  { id: 'heart', label: 'Corazón', Icon: Heart },
+  { id: 'diamond', label: 'Rombo', Icon: Diamond },
+  { id: 'flower', label: 'Flor', Icon: Flower2 },
+  { id: 'rocket', label: 'Cohete', Icon: Rocket }
 ];
 
 const BRUSH_SIZES = [
@@ -93,7 +109,7 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
   const strokePointsRef = useRef<Array<{ x: number; y: number }>>([]);
   const rainbowHueRef = useRef(0);
 
-  // Historial Deshacer (guardando snapshots ImageData)
+  // Historial Deshacer (snapshots ImageData)
   const [history, setHistory] = useState<ImageData[]>([]);
 
   // Estado IA Mágica
@@ -112,7 +128,6 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
     const rect = container.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
 
-    // Guardar contenido anterior si existe
     const prevCtx = drawCanvas.getContext('2d');
     let prevData: ImageData | null = null;
     if (prevCtx && drawCanvas.width > 0 && drawCanvas.height > 0) {
@@ -134,10 +149,8 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
       drawCtx.lineJoin = 'round';
 
       if (prevData) {
-        // Restaurar estado
         drawCtx.putImageData(prevData, 0, 0);
       } else {
-        // Fondo blanco inicial limpio
         drawCtx.fillStyle = '#FFFFFF';
         drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
         const initialSnap = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
@@ -157,7 +170,6 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
     return () => window.removeEventListener('resize', initCanvases);
   }, [initCanvases]);
 
-  // Guardar estado en pila de deshacer
   const pushSnapshot = () => {
     const canvas = drawCanvasRef.current;
     if (!canvas) return;
@@ -347,7 +359,6 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
         ctx.quadraticCurveTo(minX, centerY, centerX, minY);
         ctx.fill();
 
-        // Fuego del cohete
         ctx.beginPath();
         ctx.fillStyle = '#F97316';
         ctx.moveTo(centerX - width * 0.2, minY + height * 0.85);
@@ -398,7 +409,6 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
       return;
     }
 
-    // Punto inicial redondo en canvas
     const canvas = drawCanvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -427,7 +437,6 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
     const dpr = window.devicePixelRatio || 1;
     const strokeWidthScaled = (toolMode === 'eraser' ? brushSize * 2 : brushSize) * dpr;
 
-    // Modo Formas: Preview en vivo en overlay canvas
     if (toolMode === 'shape') {
       const overlay = overlayCanvasRef.current;
       if (!overlay) return;
@@ -448,7 +457,6 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
       return;
     }
 
-    // Modo Dibujo: Suavizado continuo de puntos
     const canvas = drawCanvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -474,7 +482,6 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
       ctx.lineTo(pts[1].x, pts[1].y);
       ctx.stroke();
     } else if (pts.length > 2) {
-      // Suavizado por punto medio Bézier cuadrático
       const p1 = pts[pts.length - 2];
       const p2 = pts[pts.length - 1];
       const prevP = pts[pts.length - 3] || p1;
@@ -504,7 +511,6 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
     const dpr = window.devicePixelRatio || 1;
     const strokeWidthScaled = (toolMode === 'eraser' ? brushSize * 2 : brushSize) * dpr;
 
-    // Si es modo forma, consolidar la forma final en el canvas principal
     if (toolMode === 'shape' && startPos) {
       const canvas = drawCanvasRef.current;
       const overlay = overlayCanvasRef.current;
@@ -593,7 +599,6 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
       const seed = Math.floor(Math.random() * 1000000);
       const generatedUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=768&height=768&seed=${seed}&nologo=true`;
 
-      // Preload image
       const img = new Image();
       img.src = generatedUrl;
       await new Promise((resolve) => {
@@ -636,15 +641,33 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
   const getCategoryBadge = (category: string) => {
     switch (category) {
       case 'landscape':
-        return { label: '🏞️ Paisaje', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' };
+        return {
+          label: 'Paisaje',
+          color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+          Icon: Mountain
+        };
       case 'character':
-        return { label: '🦸 Personaje', color: 'bg-purple-500/20 text-purple-300 border-purple-500/40' };
+        return {
+          label: 'Personaje',
+          color: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
+          Icon: User
+        };
       case 'object':
-        return { label: '🚀 Objeto', color: 'bg-blue-500/20 text-blue-300 border-blue-500/40' };
+        return {
+          label: 'Objeto',
+          color: 'bg-blue-500/20 text-blue-300 border-blue-500/40',
+          Icon: Box
+        };
       default:
-        return { label: '✨ Magia', color: 'bg-amber-500/20 text-amber-300 border-amber-500/40' };
+        return {
+          label: 'Magia',
+          color: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+          Icon: Sparkles
+        };
     }
   };
+
+  const ActiveShapeIcon = GEOMETRIC_SHAPES.find((s) => s.id === selectedShape)?.Icon || Shapes;
 
   return (
     <ZentrySubPageScaffold title="" kicker="" onBack={onBack} isDark={isDark}>
@@ -655,7 +678,7 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
         {/* ========================================================= */}
         <div className="flex flex-col gap-2 p-2 bg-white/30 dark:bg-slate-900/70 backdrop-blur-2xl rounded-[28px] border border-white/40 dark:border-white/15 shadow-xl">
           
-          {/* Fila 1: Modos de Herramientas y Acciones */}
+          {/* Fila 1: Modos de Herramientas y Acciones (100% SVG Icons) */}
           <div className="flex items-center justify-between gap-1.5 w-full">
             {/* GRUPO MODOS: Pincel, Arcoíris, Formas, Goma */}
             <div className="flex items-center gap-1.5 flex-wrap">
@@ -677,7 +700,7 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
                 <span className="hidden sm:inline">Pincel</span>
               </button>
 
-              {/* Pincel Arcoíris */}
+              {/* Pincel Arcoíris (SVG Palette / Sparkles) */}
               <button
                 onClick={() => {
                   sounds.playTap();
@@ -686,16 +709,16 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
                 }}
                 className={`px-3 py-2 rounded-2xl flex items-center gap-1.5 text-xs font-black border-2 transition-all cursor-pointer zentry-spring-press ${
                   toolMode === 'rainbow'
-                    ? 'bg-gradient-to-r from-pink-500 via-yellow-400 to-cyan-400 text-white scale-105 shadow-md border-white ring-2 ring-yellow-300'
+                    ? 'bg-gradient-to-r from-pink-500 via-yellow-400 to-cyan-400 text-slate-950 scale-105 shadow-md border-white ring-2 ring-yellow-300'
                     : 'bg-white/80 dark:bg-white/10 border-transparent text-slate-700 dark:text-white'
                 }`}
                 title="Pincel Arcoíris"
               >
-                <span>🌈</span>
+                <Palette className="w-4 h-4" />
                 <span className="hidden sm:inline">Arcoíris</span>
               </button>
 
-              {/* Formas Geométricas */}
+              {/* Formas Geométricas (SVG Shapes) */}
               <button
                 onClick={() => {
                   sounds.playTap();
@@ -709,7 +732,7 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
                 }`}
                 title="Formas Geométricas"
               >
-                <span>{GEOMETRIC_SHAPES.find((s) => s.id === selectedShape)?.icon || '🔷'}</span>
+                <ActiveShapeIcon className="w-4 h-4" />
                 <span>Formas</span>
               </button>
 
@@ -732,7 +755,7 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
               </button>
             </div>
 
-            {/* ACCIONES: Deshacer y Limpiar */}
+            {/* ACCIONES: Deshacer y Limpiar (SVG) */}
             <div className="flex items-center gap-1.5 shrink-0">
               <button
                 onClick={handleUndo}
@@ -752,16 +775,17 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
             </div>
           </div>
 
-          {/* Fila 2 Contextual: DOCK DE FORMAS O SELECTOR DE TAMAÑOS */}
+          {/* Fila 2 Contextual: DOCK DE FORMAS SVG O SELECTOR DE TAMAÑOS */}
           <div className="w-full pt-1 border-t border-white/15 flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
             {toolMode === 'shape' ? (
-              /* DOCK DE 8 FORMAS GEOMÉTRICAS PERMANENTE Y VISIBLE */
+              /* DOCK DE 8 FORMAS GEOMÉTRICAS CON ICONOS SVG ESTÁNDAR */
               <div className="flex items-center gap-1.5 w-full justify-around sm:justify-start">
                 <span className="text-[10px] font-black uppercase text-amber-500 dark:text-amber-300 tracking-wider shrink-0 mr-1">
                   Elegir Forma:
                 </span>
                 {GEOMETRIC_SHAPES.map((s) => {
                   const isSelected = selectedShape === s.id;
+                  const ShapeIcon = s.Icon;
                   return (
                     <button
                       key={s.id}
@@ -770,14 +794,14 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
                         sounds.vibrate(6);
                         setSelectedShape(s.id);
                       }}
-                      className={`py-1 px-2.5 rounded-xl flex items-center gap-1 transition-all cursor-pointer shrink-0 zentry-spring-press ${
+                      className={`py-1.5 px-2.5 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shrink-0 zentry-spring-press ${
                         isSelected
                           ? 'bg-amber-400 text-slate-950 scale-108 shadow-md font-black ring-2 ring-white'
                           : 'bg-white/40 dark:bg-white/10 hover:bg-white/70 text-slate-800 dark:text-slate-200'
                       }`}
                       title={s.label}
                     >
-                      <span className="text-base">{s.icon}</span>
+                      <ShapeIcon className="w-4 h-4 stroke-[2.5]" />
                       <span className="text-[11px] font-bold hidden md:inline">{s.label}</span>
                     </button>
                   );
@@ -883,7 +907,7 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
             })}
           </div>
 
-          {/* Acciones Principales: Rombo IA Zentry + Guardar */}
+          {/* Acciones Principales: Rombo IA Zentry + Guardar SVG */}
           <div className="flex items-center gap-2 shrink-0 pl-1 border-l border-white/20">
             {/* BOTÓN INTELIGENCIA ARTIFICIAL (ROMBO ZENTRY) */}
             <button
@@ -902,13 +926,13 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
               )}
             </button>
 
-            {/* BOTÓN GUARDAR / DESCARGAR PNG */}
+            {/* BOTÓN GUARDAR / DESCARGAR PNG CON ICONO SVG */}
             <button
               onClick={handleSave}
-              className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-tr from-emerald-400 to-teal-600 text-white flex items-center justify-center text-xl sm:text-2xl shadow-xl border-2 border-white active:scale-90 cursor-pointer zentry-spring-press"
+              className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-tr from-emerald-400 to-teal-600 text-white flex items-center justify-center shadow-xl border-2 border-white active:scale-90 cursor-pointer zentry-spring-press"
               title="Guardar Dibujo"
             >
-              💾
+              <Download className="w-6 h-6 text-white stroke-[2.5]" />
             </button>
           </div>
         </div>
@@ -925,7 +949,7 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
               className="relative max-w-sm w-full rounded-[36px] p-4 bg-[#120E24]/95 border border-purple-400/60 shadow-2xl flex flex-col items-center gap-2.5 animate-spring-in text-center"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Header con Título y Badge de Categoría */}
+              {/* Header con Título y Badge de Categoría con Icono SVG */}
               <div className="flex items-center justify-between w-full border-b border-white/10 pb-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <ZentryLogoIcon className="w-5 h-5 text-amber-300 shrink-0" />
@@ -934,9 +958,11 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
                 <div className="flex items-center gap-1.5 shrink-0">
                   {(() => {
                     const badge = getCategoryBadge(aiResult.category);
+                    const BadgeIcon = badge.Icon;
                     return (
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${badge.color}`}>
-                        {badge.label}
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border flex items-center gap-1 ${badge.color}`}>
+                        <BadgeIcon className="w-3 h-3" />
+                        <span>{badge.label}</span>
                       </span>
                     );
                   })()}
@@ -960,8 +986,9 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
 
               {/* Trazos e Interpretación */}
               {aiResult.strokesDescription && (
-                <div className="text-[11px] text-purple-200 font-bold px-2 line-clamp-2">
-                  🎨 {aiResult.strokesDescription}
+                <div className="text-[11px] text-purple-200 font-bold px-2 line-clamp-2 flex items-center justify-center gap-1.5">
+                  <Paintbrush className="w-3.5 h-3.5 text-pink-400 shrink-0" />
+                  <span>{aiResult.strokesDescription}</span>
                 </div>
               )}
 
@@ -970,7 +997,7 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
                 {aiResult.speechFeedback}
               </p>
 
-              {/* Actions */}
+              {/* Actions con Iconos SVG */}
               <div className="flex items-center gap-3 w-full pt-1">
                 <button
                   onClick={() => {
@@ -991,7 +1018,8 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
                   }}
                   className="flex-1 py-3 rounded-2xl bg-gradient-to-tr from-amber-400 to-orange-500 text-slate-950 font-black text-xs flex items-center justify-center gap-2 cursor-pointer zentry-spring-press shadow-lg"
                 >
-                  <span>¡Me Encanta! ⭐</span>
+                  <CheckCircle2 className="w-4 h-4 text-slate-950" />
+                  <span>¡Me Encanta!</span>
                 </button>
               </div>
             </div>

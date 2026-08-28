@@ -55,7 +55,6 @@ export const ZentryCreationScreen: React.FC<Props> = ({
   ];
 
   // 2. Herramientas Avanzadas de IA Exclusivas para Exploradores Escolares (5 a 10+ años)
-  // Reemplazado Art-Attack por Lienzo
   const explorerCreationApps: FisheyeItemData[] = [
     {
       id: 'imagine_studio',
@@ -117,7 +116,7 @@ export const ZentryCreationScreen: React.FC<Props> = ({
     >
       <div className="w-full h-full relative overflow-hidden rounded-[28px] flex flex-col justify-center items-center">
         {ageTier === 'toddler' ? (
-          /* Vista Táctil de Alto Impacto para 2-5 Años: 3 Grandes Tarjetas Squircles */
+          /* Vista Táctil de Alto Impacto para 2-5 Años: 3 Grandes Tarjetas Squircles con Iconos SVG */
           <div className="w-full max-w-sm flex flex-col items-center justify-center gap-4 py-2">
             {toddlerCreationApps.map((app) => {
               const Icon = app.icon;
@@ -151,11 +150,11 @@ export const ZentryCreationScreen: React.FC<Props> = ({
                   </div>
 
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${
-                      isDark ? 'bg-white/10 text-purple-200' : 'bg-pink-100 text-pink-700'
+                    className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      isDark ? 'bg-white/10 text-purple-300' : 'bg-pink-100 text-pink-600'
                     }`}
                   >
-                    ✨
+                    <Sparkles className="w-5 h-5" />
                   </div>
                 </button>
               );

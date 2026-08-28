@@ -20,7 +20,18 @@ import {
   Globe,
   Trophy,
   Award,
-  Sparkle
+  Sparkle,
+  Crown,
+  Glasses,
+  CloudRain,
+  CircleDot,
+  Waves,
+  Scissors,
+  Smile,
+  Rocket,
+  Trees,
+  Building2,
+  type LucideIcon
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ZentrySubPageScaffold } from '../shell/ZentrySubPageScaffold';
@@ -49,7 +60,7 @@ export interface AuraConfig {
   glowColor: string;
   glowClass: string;
   badgeBg: string;
-  icon: string;
+  Icon: LucideIcon;
   description: string;
   powerName: string;
 }
@@ -64,7 +75,7 @@ export const AURA_TYPES: AuraConfig[] = [
     glowColor: 'rgba(192, 132, 252, 0.7)',
     glowClass: 'shadow-[0_0_35px_rgba(192,132,252,0.8),inset_0_0_20px_rgba(56,189,248,0.6)]',
     badgeBg: 'bg-purple-500/20 text-purple-200 border-purple-400/50',
-    icon: '🌌',
+    Icon: Sparkles,
     description: 'Resplandor pulsante violeta y cian con destellos de polvo estelar.',
     powerName: 'Rayo Astral'
   },
@@ -77,7 +88,7 @@ export const AURA_TYPES: AuraConfig[] = [
     glowColor: 'rgba(6, 182, 212, 0.75)',
     glowClass: 'shadow-[0_0_35px_rgba(6,182,212,0.8),inset_0_0_20px_rgba(244,63,94,0.6)]',
     badgeBg: 'bg-cyan-500/20 text-cyan-200 border-cyan-400/50',
-    icon: '⚡',
+    Icon: Zap,
     description: 'Rejilla cuántica de energía azul eléctrica y fucsia hiper-velocidad.',
     powerName: 'Pulso Cuántico'
   },
@@ -90,7 +101,7 @@ export const AURA_TYPES: AuraConfig[] = [
     glowColor: 'rgba(251, 191, 36, 0.8)',
     glowClass: 'shadow-[0_0_35px_rgba(251,191,36,0.85),inset_0_0_20px_rgba(239,68,68,0.7)]',
     badgeBg: 'bg-amber-500/20 text-amber-200 border-amber-400/50',
-    icon: '🔥',
+    Icon: Flame,
     description: 'Calidez radiante de llama dorada solar y destellos carmesí.',
     powerName: 'Llamarada Solar'
   },
@@ -103,7 +114,7 @@ export const AURA_TYPES: AuraConfig[] = [
     glowColor: 'rgba(16, 185, 129, 0.75)',
     glowClass: 'shadow-[0_0_35px_rgba(16,185,129,0.8),inset_0_0_20px_rgba(253,224,71,0.6)]',
     badgeBg: 'bg-emerald-500/20 text-emerald-200 border-emerald-400/50',
-    icon: '🌿',
+    Icon: Sun,
     description: 'Energía de hojas místicas y vida vegetal resplandeciente.',
     powerName: 'Vórtice Flora'
   }
@@ -112,21 +123,21 @@ export const AURA_TYPES: AuraConfig[] = [
 export interface AccessoryConfig {
   id: 'none' | 'wings' | 'cape' | 'shield' | 'wand' | 'crown' | 'helmet' | 'goggles';
   name: string;
-  icon: string;
+  Icon: LucideIcon;
   layer: 'back' | 'head' | 'face' | 'hand' | 'none';
   bonusStat: string;
   bonusValue: number;
 }
 
 export const HERO_ACCESSORIES: AccessoryConfig[] = [
-  { id: 'none', name: 'Ninguno', icon: '✨', layer: 'none', bonusStat: 'Agilidad', bonusValue: 5 },
-  { id: 'wings', name: 'Alas Cósmicas', icon: '🪽', layer: 'back', bonusStat: 'Vuelo', bonusValue: 25 },
-  { id: 'cape', name: 'Capa Heroica', icon: '🦸', layer: 'back', bonusStat: 'Carisma', bonusValue: 20 },
-  { id: 'shield', name: 'Escudo Estelar', icon: '🛡️', layer: 'hand', bonusStat: 'Defensa', bonusValue: 30 },
-  { id: 'wand', name: 'Varita Mágica', icon: '🪄', layer: 'hand', bonusStat: 'Magia', bonusValue: 35 },
-  { id: 'crown', name: 'Corona Astral', icon: '👑', layer: 'head', bonusStat: 'Sabiduría', bonusValue: 25 },
-  { id: 'helmet', name: 'Casco Cyber', icon: '🪖', layer: 'head', bonusStat: 'Blindaje', bonusValue: 28 },
-  { id: 'goggles', name: 'Gafas Cyber HUD', icon: '🥽', layer: 'face', bonusStat: 'Percepción', bonusValue: 22 }
+  { id: 'none', name: 'Ninguno', Icon: Sparkles, layer: 'none', bonusStat: 'Agilidad', bonusValue: 5 },
+  { id: 'wings', name: 'Alas Cósmicas', Icon: Feather, layer: 'back', bonusStat: 'Vuelo', bonusValue: 25 },
+  { id: 'cape', name: 'Capa Heroica', Icon: Shield, layer: 'back', bonusStat: 'Carisma', bonusValue: 20 },
+  { id: 'shield', name: 'Escudo Estelar', Icon: Shield, layer: 'hand', bonusStat: 'Defensa', bonusValue: 30 },
+  { id: 'wand', name: 'Varita Mágica', Icon: Wand2, layer: 'hand', bonusStat: 'Magia', bonusValue: 35 },
+  { id: 'crown', name: 'Corona Astral', Icon: Crown, layer: 'head', bonusStat: 'Sabiduría', bonusValue: 25 },
+  { id: 'helmet', name: 'Casco Cyber', Icon: Shield, layer: 'head', bonusStat: 'Blindaje', bonusValue: 28 },
+  { id: 'goggles', name: 'Gafas Cyber HUD', Icon: Glasses, layer: 'face', bonusStat: 'Percepción', bonusValue: 22 }
 ];
 
 export type WeatherType = 'starfall' | 'mystic_rain' | 'nebula' | 'bubbles' | 'clear';
@@ -134,16 +145,16 @@ export type WeatherType = 'starfall' | 'mystic_rain' | 'nebula' | 'bubbles' | 'c
 export interface WeatherOption {
   id: WeatherType;
   name: string;
-  icon: string;
+  Icon: LucideIcon;
   description: string;
 }
 
 export const WEATHER_OPTIONS: WeatherOption[] = [
-  { id: 'starfall', name: 'Lluvia Estelar', icon: '⭐', description: 'Polvo de estrellas cayendo suavemente' },
-  { id: 'mystic_rain', name: 'Lluvia Mística', icon: '🌧️', description: 'Gotas de neón luminosas con ondas' },
-  { id: 'nebula', name: 'Nebulosa Espacial', icon: '🌌', description: 'Nubes interestelares flotantes y orbes' },
-  { id: 'bubbles', name: 'Burbujas Oceánicas', icon: '🫧', description: 'Burbujas interactivas que explotan' },
-  { id: 'clear', name: 'Cielo Despejado', icon: '✨', description: 'Brillo ambiental tranquilo' }
+  { id: 'starfall', name: 'Lluvia Estelar', Icon: Sparkles, description: 'Polvo de estrellas cayendo suavemente' },
+  { id: 'mystic_rain', name: 'Lluvia Mística', Icon: CloudRain, description: 'Gotas de neón luminosas con ondas' },
+  { id: 'nebula', name: 'Nebulosa Espacial', Icon: Sparkles, description: 'Nubes interestelares flotantes y orbes' },
+  { id: 'bubbles', name: 'Burbujas Oceánicas', Icon: CircleDot, description: 'Burbujas interactivas que explotan' },
+  { id: 'clear', name: 'Cielo Despejado', Icon: Sun, description: 'Brillo ambiental tranquilo' }
 ];
 
 const SKIN_TONES = [
@@ -154,13 +165,13 @@ const SKIN_TONES = [
   { id: 'aqua', color: '#A7F3D0', label: 'Mágico' }
 ];
 
-const HAIR_STYLES = [
-  { id: 'spiky', icon: '⚡', label: 'Picos' },
-  { id: 'curly', icon: '🌀', label: 'Rizos' },
-  { id: 'short', icon: '✂️', label: 'Corto' },
-  { id: 'buns', icon: '🎀', label: 'Moñitos' },
-  { id: 'crown', icon: '👑', label: 'Corona' },
-  { id: 'helmet', icon: '🪖', label: 'Casco' }
+const HAIR_STYLES: Array<{ id: string; Icon: LucideIcon; label: string }> = [
+  { id: 'spiky', Icon: Zap, label: 'Picos' },
+  { id: 'curly', Icon: Waves, label: 'Rizos' },
+  { id: 'short', Icon: Scissors, label: 'Corto' },
+  { id: 'buns', Icon: Smile, label: 'Moñitos' },
+  { id: 'crown', Icon: Crown, label: 'Corona' },
+  { id: 'helmet', Icon: Shield, label: 'Casco' }
 ];
 
 const POWERS = [
@@ -173,12 +184,12 @@ const POWERS = [
 
 const SUIT_COLORS = ['#6366F1', '#EC4899', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
 
-const PRESET_WORLDS = [
-  { id: 'space', name: 'Galaxia Neón', icon: '🚀', prompt: 'Cosmic glowing galaxy floating city with colorful nebula stars' },
-  { id: 'ocean', name: 'Reino Marino', icon: '🌊', prompt: 'Underwater glowing crystal palace with friendly glowing dolphins' },
-  { id: 'forest', name: 'Bosque Mágico', icon: '🌲', prompt: 'Enchanted bioluminescent fairy forest with giant colorful mushrooms' },
-  { id: 'future', name: 'Ciudad Flotante', icon: '🏙️', prompt: 'Futuristic floating sky metropolis with holographic flying cars' },
-  { id: 'dino', name: 'Valle Jurásico', icon: '🦖', prompt: 'Prehistoric lush valley with friendly colorful baby dinosaurs' }
+const PRESET_WORLDS: Array<{ id: string; name: string; Icon: LucideIcon; prompt: string }> = [
+  { id: 'space', name: 'Galaxia Neón', Icon: Rocket, prompt: 'Cosmic glowing galaxy floating city with colorful nebula stars' },
+  { id: 'ocean', name: 'Reino Marino', Icon: Waves, prompt: 'Underwater glowing crystal palace with friendly glowing dolphins' },
+  { id: 'forest', name: 'Bosque Mágico', Icon: Trees, prompt: 'Enchanted bioluminescent fairy forest with giant colorful mushrooms' },
+  { id: 'future', name: 'Ciudad Flotante', Icon: Building2, prompt: 'Futuristic floating sky metropolis with holographic flying cars' },
+  { id: 'dino', name: 'Valle Jurásico', Icon: Sparkles, prompt: 'Prehistoric lush valley with friendly colorful baby dinosaurs' }
 ];
 
 interface ComicPanel {
@@ -577,11 +588,11 @@ const LayeredHeroAvatar: React.FC<AvatarPreviewProps> = ({
         {/* 6. LAYER 5: HAIR STYLE & HEAD ACCESSORIES */}
         <div className="absolute top-2 z-30 flex flex-col items-center pointer-events-none">
           {accessory.id === 'crown' ? (
-            <span className="text-4xl drop-shadow-[0_0_10px_#fbbf24] animate-bounce">👑</span>
+            <Crown className="w-8 h-8 text-amber-300 fill-amber-300 drop-shadow-[0_0_10px_#fbbf24] animate-bounce" />
           ) : accessory.id === 'helmet' ? (
-            <span className="text-4xl drop-shadow-[0_0_10px_#38bdf8]">🪖</span>
+            <Shield className="w-8 h-8 text-cyan-300 fill-cyan-300 drop-shadow-[0_0_10px_#38bdf8]" />
           ) : (
-            <span className="text-4xl -mb-2 animate-bounce">{hair.icon}</span>
+            <hair.Icon className="w-7 h-7 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] animate-bounce" />
           )}
         </div>
 
@@ -995,7 +1006,8 @@ export const ZentrySimulatorScreen: React.FC<Props> = ({ onBack, ageTier = 'todd
                     : 'text-slate-300 hover:text-white'
                 }`}
               >
-                <span>🦸 Héroes</span>
+                <Shield className="w-3.5 h-3.5" />
+                <span>Héroes</span>
               </button>
               <button
                 onClick={() => {
@@ -1008,7 +1020,8 @@ export const ZentrySimulatorScreen: React.FC<Props> = ({ onBack, ageTier = 'todd
                     : 'text-slate-300 hover:text-white'
                 }`}
               >
-                <span>🪐 Escenas</span>
+                <Globe className="w-3.5 h-3.5" />
+                <span>Escenas</span>
               </button>
             </div>
 
@@ -1016,24 +1029,27 @@ export const ZentrySimulatorScreen: React.FC<Props> = ({ onBack, ageTier = 'todd
             <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-md p-1 rounded-2xl border border-white/20">
               {/* Weather Quick Picker */}
               <div className="flex gap-1">
-                {WEATHER_OPTIONS.slice(0, 4).map((w) => (
-                  <button
-                    key={w.id}
-                    onClick={() => {
-                      sounds.playTap();
-                      setActiveWeather(w.id);
-                      sounds.vibrate(6);
-                    }}
-                    className={`w-7 h-7 rounded-lg text-sm flex items-center justify-center transition-all cursor-pointer ${
-                      activeWeather === w.id
-                        ? 'bg-purple-600/80 border border-white text-white scale-110 shadow-md'
-                        : 'bg-white/5 hover:bg-white/15 text-slate-300'
-                    }`}
-                    title={w.name}
-                  >
-                    {w.icon}
-                  </button>
-                ))}
+                {WEATHER_OPTIONS.slice(0, 4).map((w) => {
+                  const WeatherIcon = w.Icon;
+                  return (
+                    <button
+                      key={w.id}
+                      onClick={() => {
+                        sounds.playTap();
+                        setActiveWeather(w.id);
+                        sounds.vibrate(6);
+                      }}
+                      className={`w-7 h-7 rounded-lg text-sm flex items-center justify-center transition-all cursor-pointer ${
+                        activeWeather === w.id
+                          ? 'bg-purple-600/80 border border-white text-white scale-110 shadow-md'
+                          : 'bg-white/5 hover:bg-white/15 text-slate-300'
+                      }`}
+                      title={w.name}
+                    >
+                      <WeatherIcon className="w-3.5 h-3.5" />
+                    </button>
+                  );
+                })}
               </div>
 
               {/* Day / Night Celestial Toggle */}
@@ -1078,12 +1094,12 @@ export const ZentrySimulatorScreen: React.FC<Props> = ({ onBack, ageTier = 'todd
                   {/* Aura & Accessory Headline Badges */}
                   <div className="flex items-center gap-2">
                     <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black border ${selectedAura.badgeBg} flex items-center gap-1`}>
-                      <span>{selectedAura.icon}</span>
+                      <selectedAura.Icon className="w-3.5 h-3.5" />
                       <span>{selectedAura.name}</span>
                     </span>
                     {selectedAccessory.id !== 'none' && (
                       <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black border bg-cyan-500/20 text-cyan-200 border-cyan-400/50 flex items-center gap-1">
-                        <span>{selectedAccessory.icon}</span>
+                        <selectedAccessory.Icon className="w-3.5 h-3.5" />
                         <span>{selectedAccessory.name} (+{selectedAccessory.bonusValue} {selectedAccessory.bonusStat})</span>
                       </span>
                     )}
@@ -1103,6 +1119,7 @@ export const ZentrySimulatorScreen: React.FC<Props> = ({ onBack, ageTier = 'todd
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
                         {AURA_TYPES.map((aura) => {
                           const isSelected = selectedAura.id === aura.id;
+                          const AuraIcon = aura.Icon;
                           return (
                             <button
                               key={aura.id}
@@ -1123,7 +1140,7 @@ export const ZentrySimulatorScreen: React.FC<Props> = ({ onBack, ageTier = 'todd
                               }`}
                             >
                               <div className="flex items-center justify-between">
-                                <span className="text-base">{aura.icon}</span>
+                                <AuraIcon className="w-4 h-4 text-white" />
                                 {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
                               </div>
                               <div className="text-[11px] font-black text-white truncate mt-1">{aura.name}</div>
@@ -1148,6 +1165,7 @@ export const ZentrySimulatorScreen: React.FC<Props> = ({ onBack, ageTier = 'todd
                       <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
                         {HERO_ACCESSORIES.map((acc) => {
                           const isSelected = selectedAccessory.id === acc.id;
+                          const AccIcon = acc.Icon;
                           return (
                             <button
                               key={acc.id}
@@ -1162,7 +1180,7 @@ export const ZentrySimulatorScreen: React.FC<Props> = ({ onBack, ageTier = 'todd
                                   : 'bg-white/10 border-white/20 text-slate-300 hover:bg-white/20'
                               }`}
                             >
-                              <span className="text-sm">{acc.icon}</span>
+                              <AccIcon className="w-3.5 h-3.5" />
                               <span className="text-[10px] font-black whitespace-nowrap">{acc.name}</span>
                             </button>
                           );
@@ -1462,7 +1480,8 @@ export const ZentrySimulatorScreen: React.FC<Props> = ({ onBack, ageTier = 'todd
                       }}
                       className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-pink-500 text-slate-950 font-black text-sm flex items-center justify-center gap-2 shadow-xl border border-white/30 cursor-pointer zentry-spring-press"
                     >
-                      <span>📸 Misión en tu Habitación</span>
+                      <Camera className="w-4 h-4" />
+                      <span>Misión en tu Habitación</span>
                       <ArrowRight className="w-4 h-4" />
                     </button>
                   </div>
@@ -1502,7 +1521,7 @@ export const ZentrySimulatorScreen: React.FC<Props> = ({ onBack, ageTier = 'todd
                       className="w-full py-4 rounded-[28px] bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-black text-sm flex items-center justify-center gap-2 shadow-2xl border-2 border-white cursor-pointer zentry-spring-press"
                     >
                       <Camera className="w-5 h-5 text-amber-300" />
-                      <span>📸 Abrir Cámara y Escanear Habitación</span>
+                      <span>Abrir Cámara y Escanear Habitación</span>
                     </button>
                   )}
 
@@ -1520,8 +1539,8 @@ export const ZentrySimulatorScreen: React.FC<Props> = ({ onBack, ageTier = 'todd
                         onClick={handleCaptureRoomAndEvaluate}
                         className="w-full py-3.5 rounded-2xl bg-gradient-to-tr from-amber-400 via-orange-500 to-pink-500 text-slate-950 font-black text-sm shadow-xl cursor-pointer zentry-spring-press flex items-center justify-center gap-2"
                       >
-                        <Sparkles className="w-5 h-5" />
-                        <span>⚡ ¡Escanear Luz y Cargar Cristal!</span>
+                        <Zap className="w-5 h-5 text-slate-950" />
+                        <span>¡Escanear Luz y Cargar Cristal!</span>
                       </button>
                     </div>
                   )}
@@ -1589,9 +1608,10 @@ export const ZentrySimulatorScreen: React.FC<Props> = ({ onBack, ageTier = 'todd
                         sounds.playTap();
                         setCharStep(0);
                       }}
-                      className="px-4 py-2.5 rounded-2xl bg-white/15 hover:bg-white/25 text-white text-xs font-bold cursor-pointer"
+                      className="px-4 py-2.5 rounded-2xl bg-white/15 hover:bg-white/25 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
                     >
-                      Nuevo Héroe ✨
+                      <span>Nuevo Héroe</span>
+                      <Sparkles className="w-3.5 h-3.5 text-amber-300" />
                     </button>
                   </div>
                 </div>
@@ -1623,20 +1643,23 @@ export const ZentrySimulatorScreen: React.FC<Props> = ({ onBack, ageTier = 'todd
 
                 {/* Preset Worlds Chips */}
                 <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-                  {PRESET_WORLDS.map((w) => (
-                    <button
-                      key={w.id}
-                      onClick={() => {
-                        sounds.playTap();
-                        setScenePrompt(w.prompt);
-                        handleSimulateScene(w.prompt);
-                      }}
-                      className="shrink-0 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-[11px] font-bold text-white border border-white/15 cursor-pointer flex items-center gap-1 zentry-spring-press"
-                    >
-                      <span>{w.icon}</span>
-                      <span>{w.name}</span>
-                    </button>
-                  ))}
+                  {PRESET_WORLDS.map((w) => {
+                    const WorldIcon = w.Icon;
+                    return (
+                      <button
+                        key={w.id}
+                        onClick={() => {
+                          sounds.playTap();
+                          setScenePrompt(w.prompt);
+                          handleSimulateScene(w.prompt);
+                        }}
+                        className="shrink-0 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-[11px] font-bold text-white border border-white/15 cursor-pointer flex items-center gap-1.5 zentry-spring-press"
+                      >
+                        <WorldIcon className="w-3.5 h-3.5 text-cyan-300" />
+                        <span>{w.name}</span>
+                      </button>
+                    );
+                  })}
                 </div>
 
                 <div className="flex justify-end pt-1">
@@ -1648,9 +1671,9 @@ export const ZentrySimulatorScreen: React.FC<Props> = ({ onBack, ageTier = 'todd
                     {isGeneratingScene ? (
                       <RefreshCw className="w-4 h-4 animate-spin" />
                     ) : (
-                      <Sparkles className="w-4 h-4 text-amber-300" />
+                      <Globe className="w-4 h-4 text-cyan-300" />
                     )}
-                    <span>{isGeneratingScene ? 'Simulando...' : '🪐 Simular Mundo'}</span>
+                    <span>{isGeneratingScene ? 'Simulando...' : 'Simular Mundo'}</span>
                   </button>
                 </div>
               </div>

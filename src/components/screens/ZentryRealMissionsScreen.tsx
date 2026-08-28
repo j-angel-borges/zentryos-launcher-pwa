@@ -842,7 +842,7 @@ export const ZentryRealMissionsScreen: React.FC<Props> = ({ onBack, isDark }) =>
                     className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-pink-500 text-slate-950 font-black text-base flex items-center justify-center gap-2 shadow-xl border-2 border-white cursor-pointer active:scale-95 zentry-spring-press animate-pulse"
                   >
                     <Check className="w-5 h-5 stroke-[3]" />
-                    <span>✅ ¡YA LO HICE!</span>
+                    <span>¡YA LO HICE!</span>
                   </button>
                   <button
                     onClick={handleCancelChallenge}
@@ -881,15 +881,15 @@ export const ZentryRealMissionsScreen: React.FC<Props> = ({ onBack, isDark }) =>
               {challengeState === 'completed' && (
                 <div className="space-y-2">
                   <div className="p-3 rounded-2xl bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 font-black text-sm flex items-center justify-center gap-2">
-                    <CheckCircle2 className="w-5 h-5" />
-                    <span>⭐ ¡MISIÓN CUMPLIDA CON ÉXITO! ⭐</span>
+                    <Sparkles className="w-5 h-5 text-amber-300" />
+                    <span>¡MISIÓN CUMPLIDA CON ÉXITO!</span>
                   </div>
                   <button
                     onClick={handleResetToWheel}
                     className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-purple-500 via-indigo-500 to-cyan-500 text-white font-black text-base flex items-center justify-center gap-2 shadow-xl border-2 border-white cursor-pointer active:scale-95 zentry-spring-press"
                   >
                     <RotateCw className="w-5 h-5" />
-                    <span>Jugar Otro Reto 🎯</span>
+                    <span>Jugar Otro Reto</span>
                   </button>
                 </div>
               )}
@@ -899,10 +899,8 @@ export const ZentryRealMissionsScreen: React.FC<Props> = ({ onBack, isDark }) =>
           /* TAB 1: INTERACTIVE 12-QUEST SPINNING WHEEL */
           <div className="w-full max-w-md flex flex-col items-center justify-center pt-2 space-y-4">
             <div className="relative flex flex-col items-center justify-center">
-              {/* Top Pointer Indicator */}
-              <div className="text-3xl -mb-4 z-20 animate-bounce filter drop-shadow-[0_2px_8px_rgba(244,63,94,0.8)]">
-                🔻
-              </div>
+              {/* Top Pointer Indicator SVG */}
+              <div className="w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[18px] border-t-rose-500 drop-shadow-[0_2px_8px_rgba(244,63,94,0.9)] -mb-3 z-20 animate-bounce" />
 
               {/* Spinning Circular 12-segment Wheel */}
               <div
@@ -971,8 +969,9 @@ export const ZentryRealMissionsScreen: React.FC<Props> = ({ onBack, isDark }) =>
                     <h4 className="text-xs font-black text-white group-hover:text-amber-300 leading-tight">
                       {q.name}
                     </h4>
-                    <span className="text-[10px] font-bold text-white/50 block">
-                      ⏱️ {q.durationSeconds}s • +{q.xp} XP
+                    <span className="text-[10px] font-bold text-white/50 flex items-center justify-center gap-1">
+                      <Timer className="w-3 h-3 text-white/50" />
+                      <span>{q.durationSeconds}s • +{q.xp} XP</span>
                     </span>
                   </div>
                 </button>
