@@ -51,36 +51,36 @@ export interface VoicePersonaInfo {
 export const VOICE_PERSONAS: Record<VoicePersona, VoicePersonaInfo> = {
   zentry_jovial: {
     id: 'zentry_jovial',
-    name: 'Zentry Amiga (Jovial)',
-    description: 'Voz femenina alegre, optimista, luminosa y muy cercana',
+    name: 'Zentry Urbana (Joven & Fluida)',
+    description: 'Voz femenina juvenil, fresca, luminosa, ágil y sin resonancias graves',
     cohort: 'toddler',
     gcpModel: 'es-US-Neural2-A',
     gender: 'FEMALE',
-    defaultPitch: 1.2,
-    defaultRate: 1.03,
-    defaultGain: 1.6
+    defaultPitch: 2.2, // Tono semitonal brillante y fresco, elimina sensación grave
+    defaultRate: 1.07, // Cadencia moderna, ágil y conversacional de joven de ciudad
+    defaultGain: 1.2
   },
   toddler_sweet: {
     id: 'toddler_sweet',
-    name: 'Zentry Dulce (Infantil)',
-    description: 'Voz femenina tierna, suave y cariñosa para los más pequeños',
+    name: 'Zentry Dulce (Tierna & Clara)',
+    description: 'Voz femenina suave, alegre y cariñosa para los más pequeños',
     cohort: 'toddler',
     gcpModel: 'es-US-Neural2-A',
     gender: 'FEMALE',
-    defaultPitch: 1.5,
-    defaultRate: 1.01,
-    defaultGain: 1.5
+    defaultPitch: 2.6,
+    defaultRate: 1.04,
+    defaultGain: 1.2
   },
   socratic_mentor: {
     id: 'socratic_mentor',
-    name: 'Mentora Socrática (Studio)',
-    description: 'Voz femenina inspiradora, reflexiva, motivadora y cálida',
+    name: 'Mentora Universitaria (Dinámica)',
+    description: 'Voz femenina joven, inspiradora, elocuente y motivadora',
     cohort: 'explorer',
     gcpModel: 'es-ES-Studio-C',
     gender: 'FEMALE',
-    defaultPitch: 0.7,
-    defaultRate: 1.0,
-    defaultGain: 1.4
+    defaultPitch: 1.8,
+    defaultRate: 1.06,
+    defaultGain: 1.2
   },
   companion_spark: {
     id: 'companion_spark',
@@ -89,9 +89,9 @@ export const VOICE_PERSONAS: Record<VoicePersona, VoicePersonaInfo> = {
     cohort: 'explorer',
     gcpModel: 'es-ES-Neural2-C',
     gender: 'FEMALE',
-    defaultPitch: 1.0,
-    defaultRate: 1.05,
-    defaultGain: 1.5
+    defaultPitch: 2.3,
+    defaultRate: 1.09,
+    defaultGain: 1.2
   }
 };
 
@@ -100,18 +100,18 @@ export const AGE_VOICE_PROFILES: Record<AgeCohort, TTSVoiceConfig> = {
     languageCode: 'es-US',
     name: 'es-US-Neural2-A',
     ssmlGender: 'FEMALE',
-    pitch: 1.2, // Tono dulce, alegre y femenino
-    speakingRate: 1.03, // Cadencia jovial y fluida
-    volumeGainDb: 1.6,
+    pitch: 2.2, // Tono juvenil fresco, luminoso y femenino
+    speakingRate: 1.07, // Cadencia fluida y ágil
+    volumeGainDb: 1.2,
     personaId: 'zentry_jovial'
   },
   explorer: {
     languageCode: 'es-ES',
     name: 'es-ES-Studio-C', // Modelo de estudio femenino de alta fidelidad
     ssmlGender: 'FEMALE',
-    pitch: 0.7, // Tono femenino inspirador y socrático
-    speakingRate: 1.0, // Ritmo claro y motivador
-    volumeGainDb: 1.4,
+    pitch: 1.8, // Tono femenino joven, inspirador y dinámico
+    speakingRate: 1.06, // Ritmo ágil y motivador
+    volumeGainDb: 1.2,
     personaId: 'socratic_mentor'
   }
 };
@@ -560,13 +560,13 @@ export class VoiceSpeechService {
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&apos;');
 
-    // Insert natural conversational micro-pauses at punctuation marks
+    // Insert natural conversational micro-pauses at punctuation marks (ágiles y fluidas)
     const pacedText = escaped
-      .replace(/\.\s+/g, '. <break time="200ms"/> ')
-      .replace(/!\s+/g, '! <break time="220ms"/> ')
-      .replace(/\?\s+/g, '? <break time="220ms"/> ')
-      .replace(/,\s+/g, ', <break time="120ms"/> ')
-      .replace(/:\s+/g, ': <break time="140ms"/> ');
+      .replace(/\.\s+/g, '. <break time="110ms"/> ')
+      .replace(/!\s+/g, '! <break time="120ms"/> ')
+      .replace(/\?\s+/g, '? <break time="120ms"/> ')
+      .replace(/,\s+/g, ', <break time="60ms"/> ')
+      .replace(/:\s+/g, ': <break time="80ms"/> ');
 
     const pitchStr = config.pitch >= 0 ? `+${config.pitch}st` : `${config.pitch}st`;
     const rateStr = `${Math.round(config.speakingRate * 100)}%`;
@@ -625,9 +625,9 @@ export class VoiceSpeechService {
             audioEncoding: 'MP3',
             pitch: config.pitch,
             speakingRate: config.speakingRate,
-            volumeGainDb: config.volumeGainDb ?? 1.5,
+            volumeGainDb: config.volumeGainDb ?? 1.2,
             sampleRateHertz: 24000,
-            effectsProfileId: ['headphone-class-device', 'small-bluetooth-speaker-class-device']
+            effectsProfileId: ['high-fidelity-headphone-class-device']
           }
         }),
         signal
@@ -650,9 +650,9 @@ export class VoiceSpeechService {
               audioEncoding: 'MP3',
               pitch: config.pitch,
               speakingRate: config.speakingRate,
-              volumeGainDb: config.volumeGainDb ?? 1.5,
+              volumeGainDb: config.volumeGainDb ?? 1.2,
               sampleRateHertz: 24000,
-              effectsProfileId: ['headphone-class-device', 'small-bluetooth-speaker-class-device']
+              effectsProfileId: ['high-fidelity-headphone-class-device']
             }
           }),
           signal
@@ -781,24 +781,26 @@ export class VoiceSpeechService {
       let score = 0;
       const name = voice.name.toLowerCase();
 
-      // Top priority: Modern Edge/Chrome Natural Neural Voices
-      if (name.includes('natural') || name.includes('online')) score += 120;
-      if (name.includes('neural')) score += 100;
-      if (name.includes('google') || name.includes('español')) score += 80;
+      // Top priority: Modern Edge/Chrome Natural Neural Voices (cristalinas, jóvenes y sin fondo grave)
+      if (name.includes('dalia') && (name.includes('natural') || name.includes('online'))) score += 300;
+      if (name.includes('paloma') && (name.includes('natural') || name.includes('online'))) score += 280;
+      if (name.includes('natural') || name.includes('online')) score += 200;
+      if (name.includes('neural')) score += 180;
+      if (name.includes('google') && name.includes('español')) score += 150;
 
-      // Prioritize feminine voices for warm, approachable persona
-      if (isFemale || name.includes('dalia') || name.includes('paloma') || name.includes('carlota') || name.includes('valeria') || name.includes('monica') || name.includes('paulina') || name.includes('sabina') || name.includes('female') || name.includes('mujer') || name.includes('femenina')) {
-        score += 60;
+      // Prioritize feminine voices for warm, youthful persona
+      if (isFemale || name.includes('dalia') || name.includes('paloma') || name.includes('carlota') || name.includes('valeria') || name.includes('monica') || name.includes('paulina') || name.includes('female') || name.includes('mujer') || name.includes('femenina')) {
+        score += 80;
       }
 
-      // Latin American preference for gentle, friendly melodic cadence
+      // Latin American preference for dynamic, cheerful melodic cadence
       if (voice.lang.includes('MX') || voice.lang.includes('US') || voice.lang.includes('PE') || voice.lang.includes('CO')) {
-        score += 20;
+        score += 30;
       }
 
-      // Penalize legacy robotic Desktop voices when Natural voices are available
-      if (name.includes('desktop')) {
-        score -= 50;
+      // Penalize legacy robotic Desktop voices that sound heavy, low-pass filtered or grave
+      if (name.includes('desktop') || name.includes('mobile') || name.includes('sabina') || name.includes('helena')) {
+        score -= 250;
       }
 
       return { voice, score };
@@ -827,13 +829,13 @@ export class VoiceSpeechService {
         utterance.voice = naturalVoice;
       }
 
-      // Calibrate human pitch & rate (feminine, warm, friendly and cheerful)
+      // Calibrate human pitch & rate (feminine, youthful, clear and agile city tone)
       const isExplorer = this.currentCohort === 'explorer';
-      const basePitch = isExplorer ? 1.06 : 1.12;
-      const baseRate = isExplorer ? 1.0 : 1.03;
+      const basePitch = isExplorer ? 1.15 : 1.20;
+      const baseRate = isExplorer ? 1.06 : 1.08;
 
-      utterance.pitch = Math.min(1.25, Math.max(0.95, basePitch + (this.customSettings.pitchOffset ?? 0) * 0.05));
-      utterance.rate = Math.min(1.20, Math.max(0.90, baseRate * (this.customSettings.rateMultiplier ?? 1.0)));
+      utterance.pitch = Math.min(1.30, Math.max(1.0, basePitch + (this.customSettings.pitchOffset ?? 0) * 0.05));
+      utterance.rate = Math.min(1.25, Math.max(0.95, baseRate * (this.customSettings.rateMultiplier ?? 1.0)));
 
       utterance.volume = 1.0;
 
@@ -900,9 +902,9 @@ export class VoiceSpeechService {
               audioEncoding: 'MP3',
               pitch: config.pitch,
               speakingRate: config.speakingRate,
-              volumeGainDb: config.volumeGainDb ?? 1.5,
+              volumeGainDb: config.volumeGainDb ?? 1.2,
               sampleRateHertz: 24000,
-              effectsProfileId: ['headphone-class-device', 'small-bluetooth-speaker-class-device']
+              effectsProfileId: ['high-fidelity-headphone-class-device']
             }
           })
         });

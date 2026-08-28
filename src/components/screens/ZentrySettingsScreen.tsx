@@ -139,9 +139,9 @@ export const ZentrySettingsScreen: React.FC<Props> = ({
     sounds.playTap();
     setPitchOffset(0);
     setRateMultiplier(1.0);
-    setVolumeGain(1.6);
-    voiceService.saveCustomSettings({ pitchOffset: 0, rateMultiplier: 1.0, volumeGainDb: 1.6 });
-    setCacheStatus('Valores acústicos restaurados a la calibración jovial y femenina.');
+    setVolumeGain(1.2);
+    voiceService.saveCustomSettings({ pitchOffset: 0, rateMultiplier: 1.0, volumeGainDb: 1.2 });
+    setCacheStatus('Valores acústicos restaurados a la calibración juvenil, fresca y fluida.');
   };
 
   const handleSpeakTest = async () => {
