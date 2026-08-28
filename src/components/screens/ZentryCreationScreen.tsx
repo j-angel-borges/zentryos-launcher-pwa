@@ -21,20 +21,12 @@ export const ZentryCreationScreen: React.FC<Props> = ({ onBack, onNavigate, isDa
   // Aplicaciones de creación sensorial para la sección de 2 a 5 años (sin exceso de texto ni tutores académicos)
   const creationApps: FisheyeItemData[] = [
     {
-      id: 'neuro_art',
-      name: 'Art-Attack',
+      id: 'free_canvas',
+      name: 'Lienzo',
       category: 'arte',
-      icon: Palette,
-      screen: 'neuro_art',
-      gradient: 'from-pink-500 via-rose-500 to-red-500'
-    },
-    {
-      id: 'world_generator',
-      name: 'Generador de Mundos',
-      category: 'mundos',
-      icon: Globe,
-      screen: 'world_generator',
-      gradient: 'from-amber-400 via-orange-500 to-red-500'
+      icon: Brush,
+      screen: 'free_canvas',
+      gradient: 'from-pink-500 via-rose-500 to-purple-600'
     },
     {
       id: 'characters',
@@ -42,31 +34,15 @@ export const ZentryCreationScreen: React.FC<Props> = ({ onBack, onNavigate, isDa
       category: 'personajes',
       icon: UserCheck,
       screen: 'characters',
-      gradient: 'from-purple-500 via-indigo-500 to-blue-600'
-    },
-    {
-      id: 'free_canvas',
-      name: 'Lienzo Libre',
-      category: 'arte',
-      icon: Brush,
-      screen: 'free_canvas',
-      gradient: 'from-fuchsia-500 via-pink-600 to-rose-600'
+      gradient: 'from-purple-500 via-fuchsia-600 to-indigo-600'
     },
     {
       id: 'real_missions',
-      name: 'Misiones Reales',
+      name: 'Misiones',
       category: 'mundos',
       icon: Compass,
       screen: 'real_missions',
-      gradient: 'from-lime-400 via-emerald-500 to-green-600'
-    },
-    {
-      id: 'friendly_monsters',
-      name: 'Monstruos',
-      category: 'personajes',
-      icon: Smile,
-      screen: 'monsters',
-      gradient: 'from-yellow-400 via-amber-500 to-orange-500'
+      gradient: 'from-emerald-500 via-teal-600 to-green-600'
     }
   ];
 

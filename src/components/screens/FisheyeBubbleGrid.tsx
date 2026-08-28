@@ -47,32 +47,17 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
   const maxRadius = Math.min(containerDimensions.width, containerDimensions.height) * 0.58 || 350;
   const minScale = 0.58;
 
-  // Distribución en anillo simétrico armónico (o 1 centro + anillo con radio amplio)
+  // Distribución en anillo simétrico con centro libre
   const itemPositions = useMemo(() => {
     if (items.length <= 1) {
       return [{ item: items[0], xBase: 0, yBase: 0 }];
     }
 
-    if (items.length <= 6) {
-      // 1 en el centro + (N-1) alrededor con radio holgado de 160px
-      return items.map((item, idx) => {
-        if (idx === 0) {
-          return { item, xBase: 0, yBase: 0 };
-        }
-        const angle = ((idx - 1) * 2 * Math.PI) / (items.length - 1) - Math.PI / 2;
-        const xBase = Math.cos(angle) * itemSpacing;
-        const yBase = Math.sin(angle) * itemSpacing;
-        return { item, xBase, yBase };
-      });
-    }
-
-    // Para más de 6 elementos
+    // Anillo simétrico alrededor del centro vacío (distribución armónica a 160px)
     return items.map((item, idx) => {
-      if (idx === 0) return { item, xBase: 0, yBase: 0 };
-      const ring = Math.ceil(idx / 6);
-      const angle = (idx * 2 * Math.PI) / 6 - Math.PI / 2;
-      const xBase = Math.cos(angle) * (itemSpacing * ring);
-      const yBase = Math.sin(angle) * (itemSpacing * ring);
+      const angle = (idx * 2 * Math.PI) / items.length - Math.PI / 2;
+      const xBase = Math.cos(angle) * itemSpacing;
+      const yBase = Math.sin(angle) * itemSpacing;
       return { item, xBase, yBase };
     });
   }, [items, itemSpacing]);
@@ -194,15 +179,17 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
     animFrameRef.current = requestAnimationFrame(step);
   }, [panLimits, smoothAnimateTo]);
 
-  // Gestos de puntero
+  // Gestos de puntero con detección precisa de tap vs arrastre
+  const hasMovedSignificantlyRef = useRef(false);
+
   const handlePointerDown = (e: React.PointerEvent) => {
     if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     isDraggingRef.current = true;
+    hasMovedSignificantlyRef.current = false;
     dragStartRef.current = { x: e.clientX, y: e.clientY };
     dragOffsetStartRef.current = { ...offsetRef.current };
     lastPointerRef.current = { x: e.clientX, y: e.clientY, time: performance.now() };
     velocityRef.current = { vx: 0, vy: 0 };
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
@@ -210,18 +197,27 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
     const dx = e.clientX - dragStartRef.current.x;
     const dy = e.clientY - dragStartRef.current.y;
 
-    const now = performance.now();
-    const dt = Math.max(1, now - lastPointerRef.current.time);
-    const vx = (e.clientX - lastPointerRef.current.x) / dt;
-    const vy = (e.clientY - lastPointerRef.current.y) / dt;
+    if (!hasMovedSignificantlyRef.current && Math.hypot(dx, dy) > 6) {
+      hasMovedSignificantlyRef.current = true;
+      try {
+        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+      } catch {}
+    }
 
-    velocityRef.current = { vx, vy };
-    lastPointerRef.current = { x: e.clientX, y: e.clientY, time: now };
+    if (hasMovedSignificantlyRef.current) {
+      const now = performance.now();
+      const dt = Math.max(1, now - lastPointerRef.current.time);
+      const vx = (e.clientX - lastPointerRef.current.x) / dt;
+      const vy = (e.clientY - lastPointerRef.current.y) / dt;
 
-    setOffset({
-      x: dragOffsetStartRef.current.x + dx,
-      y: dragOffsetStartRef.current.y + dy
-    });
+      velocityRef.current = { vx, vy };
+      lastPointerRef.current = { x: e.clientX, y: e.clientY, time: now };
+
+      setOffset({
+        x: dragOffsetStartRef.current.x + dx,
+        y: dragOffsetStartRef.current.y + dy
+      });
+    }
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
@@ -229,10 +225,10 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
     isDraggingRef.current = false;
     try {
       (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
-    } catch {
-      // Ignorar si el puntero ya se liberó
+    } catch {}
+    if (hasMovedSignificantlyRef.current) {
+      releaseWithPhysics();
     }
-    releaseWithPhysics();
   };
 
   const handleWheel = (e: React.WheelEvent) => {
@@ -242,6 +238,13 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
     const newY = offsetRef.current.y - e.deltaY * 0.7;
     setOffset({ x: newX, y: newY });
     releaseWithPhysics();
+  };
+
+  const handleAppClick = (item: FisheyeItemData) => {
+    if (hasMovedSignificantlyRef.current) return;
+    if (navigator.vibrate) navigator.vibrate(12);
+    sounds.playAppOpen();
+    onSelectApp(item);
   };
 
   return (
@@ -297,25 +300,28 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
             key={item.id}
             onClick={(e) => {
               e.stopPropagation();
-              if (Math.hypot(velocityRef.current.vx, velocityRef.current.vy) > 0.5) return;
-              if (navigator.vibrate) navigator.vibrate(12);
-              sounds.playAppOpen();
-              onSelectApp(item);
+              handleAppClick(item);
             }}
-            className="absolute flex flex-col items-center justify-center cursor-pointer transition-transform duration-150 group"
+            onPointerUp={(e) => {
+              e.stopPropagation();
+              if (!hasMovedSignificantlyRef.current) {
+                handleAppClick(item);
+              }
+            }}
+            className="absolute flex flex-col items-center justify-center cursor-pointer transition-transform duration-150 group zentry-press"
             style={{
               transform: `translate3d(${transX}px, ${transY}px, 0px) scale(${scale}) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
               opacity,
-              zIndex,
-              width: '110px',
-              height: '130px',
+              zIndex: zIndex + 10,
+              width: '120px',
+              height: '140px',
               transformOrigin: 'center center',
               willChange: 'transform, opacity'
             }}
           >
-            {/* Burbuja Squircle de Vidrio Líquido (Tamaño 84px para proporción perfecta) */}
+            {/* Burbuja Squircle de Vidrio Líquido (Tamaño 88px para proporción perfecta) */}
             <div
-              className={`relative w-21 h-21 rounded-[28px] p-1 flex items-center justify-center transition-transform duration-200 group-hover:scale-110 group-active:scale-92 shadow-2xl ${
+              className={`relative w-22 h-22 rounded-[30px] p-1.5 flex items-center justify-center transition-transform duration-200 group-hover:scale-110 group-active:scale-90 shadow-2xl ${
                 isDark ? 'zentry-veil-dark' : 'zentry-veil-light'
               }`}
               style={{
@@ -326,7 +332,7 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
             >
               {/* Contenedor del ícono con degradado vibrante */}
               <div
-                className={`w-full h-full rounded-[24px] bg-gradient-to-br ${item.gradient} flex items-center justify-center text-white relative overflow-hidden`}
+                className={`w-full h-full rounded-[24px] bg-gradient-to-br ${item.gradient} flex items-center justify-center text-white relative overflow-hidden shadow-inner`}
               >
                 {/* Reflejo de luz superior */}
                 <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/40 to-transparent pointer-events-none rounded-t-[24px]" />
@@ -340,7 +346,7 @@ export const FisheyeBubbleGrid: React.FC<Props> = ({
             <div
               className="mt-2 text-center pointer-events-none px-1"
               style={{
-                opacity: Math.max(0.5, 1 - r * 0.6)
+                opacity: Math.max(0.6, 1 - r * 0.5)
               }}
             >
               <span
