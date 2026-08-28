@@ -943,38 +943,43 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
               <Download className="w-5 h-5 text-white stroke-[2.5]" />
             </button>
           </div>
+        </div>
 
-          {/* ========================================================= */}
-          {/* POPOVER / MODAL: GAMA COMPLETA DE COLORES ESTILO PAINT    */}
-          {/* ========================================================= */}
-          {showColorPicker && (
+        {/* ========================================================= */}
+        {/* MODAL OVERLAY: GAMA COMPLETA DE COLORES ESTILO PAINT      */}
+        {/* ========================================================= */}
+        {showColorPicker && (
+          <div
+            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-end sm:items-center justify-center p-3 sm:p-4 animate-in fade-in select-none"
+            onClick={() => setShowColorPicker(false)}
+          >
             <div
-              className="absolute bottom-16 left-2 z-40 w-72 sm:w-80 p-3.5 rounded-[28px] bg-[#120E24]/95 backdrop-blur-2xl border-2 border-purple-400/50 shadow-2xl text-white animate-spring-in space-y-3"
+              className="relative max-w-sm w-full rounded-[32px] p-4 bg-[#120E24]/98 backdrop-blur-2xl border-2 border-purple-400/70 shadow-[0_0_50px_rgba(0,0,0,0.8)] text-white animate-spring-in space-y-3.5"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Encabezado del Selector */}
-              <div className="flex items-center justify-between pb-1 border-b border-white/15">
+              <div className="flex items-center justify-between pb-2 border-b border-white/15">
                 <div className="flex items-center gap-2">
-                  <Palette className="w-4 h-4 text-pink-400" />
-                  <span className="text-xs font-black uppercase tracking-wider text-white">
+                  <Palette className="w-5 h-5 text-pink-400" />
+                  <span className="text-sm font-black uppercase tracking-wider text-white">
                     Gama de Colores
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5">
                   <div
                     style={{ backgroundColor: selectedColor }}
-                    className="w-5 h-5 rounded-full border border-white shadow-sm"
+                    className="w-6 h-6 rounded-full border-2 border-white shadow-md"
                   />
                   <button
                     onClick={() => setShowColorPicker(false)}
                     className="p-1 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white cursor-pointer"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-5 h-5" />
                   </button>
                 </div>
               </div>
 
-              {/* 1. Matriz de Colores Estilo Paint (6x6 = 36 colores) */}
+              {/* 1. Matriz de 36 Colores Estilo Paint (6x6) */}
               <div className="space-y-1.5">
                 {PAINT_PALETTE_MATRIX.map((row, rIdx) => (
                   <div key={rIdx} className="grid grid-cols-6 gap-1.5">
@@ -998,7 +1003,7 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
                         >
                           {isSelected && (
                             <Check
-                              className={`w-3.5 h-3.5 ${
+                              className={`w-4 h-4 ${
                                 hex === '#FFFFFF' || hex === '#E2E8F0' || hex === '#FDE047'
                                   ? 'text-slate-950'
                                   : 'text-white'
@@ -1016,9 +1021,9 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
               <div className="pt-2 border-t border-white/15 flex items-center justify-between gap-2">
                 <label
                   htmlFor="customColorPicker"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-slate-200 cursor-pointer zentry-spring-press"
+                  className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-slate-200 cursor-pointer zentry-spring-press"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                  <Sparkles className="w-4 h-4 text-amber-300" />
                   <span>Personalizado</span>
                   <input
                     id="customColorPicker"
@@ -1034,14 +1039,14 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
 
                 <button
                   onClick={() => setShowColorPicker(false)}
-                  className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 text-white text-xs font-black shadow-md cursor-pointer zentry-spring-press"
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 text-white text-xs font-black shadow-md cursor-pointer zentry-spring-press"
                 >
                   Listo
                 </button>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* ========================================================= */}
         {/* MODAL: DIBUJO CON VIDA MÁGICA AI                          */}
