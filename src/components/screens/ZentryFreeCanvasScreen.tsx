@@ -3,20 +3,11 @@ import {
   Undo2,
   Trash2,
   Volume2,
-  Sparkles,
   Eraser,
-  Download,
-  X,
   RefreshCw,
   Paintbrush,
-  Shapes,
-  Circle,
-  Square,
-  Star,
-  Triangle,
-  Heart,
-  Diamond,
-  Zap,
+  X,
+  Sparkles,
   Check
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -31,11 +22,15 @@ interface Props {
   isDark: boolean;
 }
 
-// ==========================================
-// CONFIGURACIÓN DE FORMAS, TAMAÑOS Y COLORES
-// ==========================================
-
-export type ShapeType = 'circle' | 'rectangle' | 'star' | 'triangle' | 'heart' | 'diamond' | 'flower' | 'rocket';
+export type ShapeType =
+  | 'circle'
+  | 'rectangle'
+  | 'star'
+  | 'triangle'
+  | 'heart'
+  | 'diamond'
+  | 'flower'
+  | 'rocket';
 
 const GEOMETRIC_SHAPES: Array<{ id: ShapeType; label: string; icon: string }> = [
   { id: 'circle', label: 'Círculo', icon: '⭕' },
@@ -56,17 +51,17 @@ const BRUSH_SIZES = [
 ];
 
 const COLOR_PALETTE = [
-  '#EC4899', // Rosa
-  '#A855F7', // Violeta
-  '#6366F1', // Indigo
-  '#3B82F6', // Azul
-  '#06B6D4', // Cyan
-  '#10B981', // Verde
-  '#EAB308', // Amarillo
-  '#F97316', // Naranja
-  '#EF4444', // Rojo
-  '#FFFFFF', // Blanco
-  '#1E293B'  // Carbón
+  { id: 'pink', color: '#EC4899' },
+  { id: 'purple', color: '#A855F7' },
+  { id: 'indigo', color: '#6366F1' },
+  { id: 'blue', color: '#3B82F6' },
+  { id: 'cyan', color: '#06B6D4' },
+  { id: 'green', color: '#10B981' },
+  { id: 'yellow', color: '#EAB308' },
+  { id: 'orange', color: '#F97316' },
+  { id: 'red', color: '#EF4444' },
+  { id: 'white', color: '#FFFFFF' },
+  { id: 'black', color: '#1E293B' }
 ];
 
 type ToolMode = 'brush' | 'rainbow' | 'shape' | 'eraser';
@@ -82,7 +77,7 @@ interface AiLifeResult {
 }
 
 export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
-  // Referencias Canvas
+  // Referencias Canvas y Contenedor
   const containerRef = useRef<HTMLDivElement | null>(null);
   const drawCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const overlayCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -92,15 +87,13 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
   const [selectedColor, setSelectedColor] = useState<string>('#EC4899');
   const [brushSize, setBrushSize] = useState<number>(14);
   const [selectedShape, setSelectedShape] = useState<ShapeType>('circle');
-  const [isShapeMenuOpen, setIsShapeMenuOpen] = useState(false);
 
-  // Puntero y Arrastre de Dibujo / Formas
+  // Puntos de trazo para suavizado Bézier continuo
   const isDrawingRef = useRef(false);
-  const startPosRef = useRef<{ x: number; y: number } | null>(null);
-  const lastPointRef = useRef<{ x: number; y: number } | null>(null);
+  const strokePointsRef = useRef<Array<{ x: number; y: number }>>([]);
   const rainbowHueRef = useRef(0);
 
-  // Historial Deshacer
+  // Historial Deshacer (guardando snapshots ImageData)
   const [history, setHistory] = useState<ImageData[]>([]);
 
   // Estado IA Mágica
@@ -108,7 +101,7 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
   const [aiResult, setAiResult] = useState<AiLifeResult | null>(null);
 
   // --------------------------------------------------
-  // INICIALIZACIÓN Y RESIZE DE CANVAS
+  // INICIALIZACIÓN Y CONFIGURACIÓN HIGH-DPI DE CANVAS
   // --------------------------------------------------
   const initCanvases = useCallback(() => {
     const container = containerRef.current;
@@ -119,26 +112,40 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
     const rect = container.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
 
-    drawCanvas.width = rect.width * dpr;
-    drawCanvas.height = rect.height * dpr;
-    overlayCanvas.width = rect.width * dpr;
-    overlayCanvas.height = rect.height * dpr;
+    // Guardar contenido anterior si existe
+    const prevCtx = drawCanvas.getContext('2d');
+    let prevData: ImageData | null = null;
+    if (prevCtx && drawCanvas.width > 0 && drawCanvas.height > 0) {
+      try {
+        prevData = prevCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
+      } catch {}
+    }
+
+    drawCanvas.width = Math.round(rect.width * dpr);
+    drawCanvas.height = Math.round(rect.height * dpr);
+    overlayCanvas.width = Math.round(rect.width * dpr);
+    overlayCanvas.height = Math.round(rect.height * dpr);
 
     const drawCtx = drawCanvas.getContext('2d');
     const overlayCtx = overlayCanvas.getContext('2d');
 
     if (drawCtx) {
-      drawCtx.scale(dpr, dpr);
       drawCtx.lineCap = 'round';
       drawCtx.lineJoin = 'round';
-      drawCtx.fillStyle = '#FFFFFF';
-      drawCtx.fillRect(0, 0, rect.width, rect.height);
-      const initialSnapshot = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
-      setHistory([initialSnapshot]);
+
+      if (prevData) {
+        // Restaurar estado
+        drawCtx.putImageData(prevData, 0, 0);
+      } else {
+        // Fondo blanco inicial limpio
+        drawCtx.fillStyle = '#FFFFFF';
+        drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+        const initialSnap = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
+        setHistory([initialSnap]);
+      }
     }
 
     if (overlayCtx) {
-      overlayCtx.scale(dpr, dpr);
       overlayCtx.lineCap = 'round';
       overlayCtx.lineJoin = 'round';
     }
@@ -150,6 +157,7 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
     return () => window.removeEventListener('resize', initCanvases);
   }, [initCanvases]);
 
+  // Guardar estado en pila de deshacer
   const pushSnapshot = () => {
     const canvas = drawCanvasRef.current;
     if (!canvas) return;
@@ -180,15 +188,29 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
     sounds.vibrate([15, 30]);
 
     const canvas = drawCanvasRef.current;
-    const container = containerRef.current;
-    if (!canvas || !container) return;
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const rect = container.getBoundingClientRect();
     ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, rect.width, rect.height);
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     pushSnapshot();
+  };
+
+  // --------------------------------------------------
+  // CONVERSIÓN DE COORDENADAS HIGH-DPI
+  // --------------------------------------------------
+  const getCanvasPos = (e: React.PointerEvent<HTMLDivElement>) => {
+    const container = containerRef.current;
+    const canvas = drawCanvasRef.current;
+    if (!container || !canvas) return { x: 0, y: 0 };
+    const rect = container.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY
+    };
   };
 
   // --------------------------------------------------
@@ -202,12 +224,12 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
     currentX: number,
     currentY: number,
     color: string,
-    lineWidth: number
+    strokeWidthScaled: number
   ) => {
     const minX = Math.min(startX, currentX);
     const minY = Math.min(startY, currentY);
-    const width = Math.max(Math.abs(currentX - startX), 20);
-    const height = Math.max(Math.abs(currentY - startY), 20);
+    const width = Math.max(Math.abs(currentX - startX), 24);
+    const height = Math.max(Math.abs(currentY - startY), 24);
     const centerX = minX + width / 2;
     const centerY = minY + height / 2;
     const radius = Math.max(width, height) / 2;
@@ -215,7 +237,7 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
     ctx.save();
     ctx.fillStyle = color;
     ctx.strokeStyle = color;
-    ctx.lineWidth = lineWidth;
+    ctx.lineWidth = strokeWidthScaled;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
@@ -228,7 +250,7 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
         break;
       }
       case 'rectangle': {
-        const r = Math.min(16, width / 4, height / 4);
+        const r = Math.min(20, width / 4, height / 4);
         ctx.roundRect(minX, minY, width, height, r);
         ctx.fill();
         break;
@@ -268,8 +290,22 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
       case 'heart': {
         const s = radius / 18;
         ctx.moveTo(centerX, centerY - 6 * s);
-        ctx.bezierCurveTo(centerX + 12 * s, centerY - 20 * s, centerX + 26 * s, centerY + 2 * s, centerX, centerY + 22 * s);
-        ctx.bezierCurveTo(centerX - 26 * s, centerY + 2 * s, centerX - 12 * s, centerY - 20 * s, centerX, centerY - 6 * s);
+        ctx.bezierCurveTo(
+          centerX + 12 * s,
+          centerY - 20 * s,
+          centerX + 26 * s,
+          centerY + 2 * s,
+          centerX,
+          centerY + 22 * s
+        );
+        ctx.bezierCurveTo(
+          centerX - 26 * s,
+          centerY + 2 * s,
+          centerX - 12 * s,
+          centerY - 20 * s,
+          centerX,
+          centerY - 6 * s
+        );
         ctx.closePath();
         ctx.fill();
         break;
@@ -300,14 +336,18 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
         break;
       }
       case 'rocket': {
-        // Cuerpo del cohete
         ctx.moveTo(centerX, minY);
-        ctx.quadraticCurveTo(minX + width, centerY, centerX + width * 0.3, minY + height * 0.85);
+        ctx.quadraticCurveTo(
+          minX + width,
+          centerY,
+          centerX + width * 0.3,
+          minY + height * 0.85
+        );
         ctx.lineTo(centerX - width * 0.3, minY + height * 0.85);
         ctx.quadraticCurveTo(minX, centerY, centerX, minY);
         ctx.fill();
 
-        // Fuego
+        // Fuego del cohete
         ctx.beginPath();
         ctx.fillStyle = '#F97316';
         ctx.moveTo(centerX - width * 0.2, minY + height * 0.85);
@@ -323,44 +363,42 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
   };
 
   // --------------------------------------------------
-  // GESTIÓN DE PUNTERO / DIBUJO FLUIDO
+  // GESTIÓN DE PUNTERO: TRAZO ULTRA-SUAVE BÉZIER
   // --------------------------------------------------
-  const getCanvasPos = (e: React.PointerEvent<HTMLDivElement>) => {
-    const container = containerRef.current;
-    if (!container) return { x: 0, y: 0 };
-    const rect = container.getBoundingClientRect();
-    return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    };
-  };
-
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    setIsShapeMenuOpen(false);
     const pos = getCanvasPos(e);
-    startPosRef.current = pos;
-    lastPointRef.current = pos;
     isDrawingRef.current = true;
+    strokePointsRef.current = [pos];
 
     try {
       (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     } catch {}
 
+    const dpr = window.devicePixelRatio || 1;
+    const strokeWidthScaled = (toolMode === 'eraser' ? brushSize * 2 : brushSize) * dpr;
+
     if (toolMode === 'shape') {
-      // Dibujar preview inicial en overlay
       const overlay = overlayCanvasRef.current;
       if (overlay) {
         const oCtx = overlay.getContext('2d');
         if (oCtx) {
-          const rect = containerRef.current?.getBoundingClientRect();
-          if (rect) oCtx.clearRect(0, 0, rect.width, rect.height);
-          drawVectorShape(oCtx, selectedShape, pos.x, pos.y, pos.x + brushSize * 2, pos.y + brushSize * 2, selectedColor, brushSize);
+          oCtx.clearRect(0, 0, overlay.width, overlay.height);
+          drawVectorShape(
+            oCtx,
+            selectedShape,
+            pos.x,
+            pos.y,
+            pos.x + 80 * dpr,
+            pos.y + 80 * dpr,
+            selectedColor,
+            strokeWidthScaled
+          );
         }
       }
       return;
     }
 
-    // Dibujo normal o arcoíris
+    // Punto inicial redondo en canvas
     const canvas = drawCanvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -376,66 +414,81 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
         ? `hsl(${rainbowHueRef.current}, 95%, 55%)`
         : selectedColor;
 
-    const currentRadius = (toolMode === 'eraser' ? brushSize * 1.8 : brushSize) / 2;
-
     ctx.beginPath();
-    ctx.arc(pos.x, pos.y, currentRadius, 0, Math.PI * 2);
+    ctx.arc(pos.x, pos.y, strokeWidthScaled / 2, 0, Math.PI * 2);
     ctx.fillStyle = drawColor;
     ctx.fill();
   };
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!isDrawingRef.current || !startPosRef.current) return;
+    if (!isDrawingRef.current || strokePointsRef.current.length === 0) return;
     const currentPos = getCanvasPos(e);
+    const startPos = strokePointsRef.current[0];
+    const dpr = window.devicePixelRatio || 1;
+    const strokeWidthScaled = (toolMode === 'eraser' ? brushSize * 2 : brushSize) * dpr;
 
-    // Modo Formas: Preview en Overlay Canvas
+    // Modo Formas: Preview en vivo en overlay canvas
     if (toolMode === 'shape') {
       const overlay = overlayCanvasRef.current;
-      const container = containerRef.current;
-      if (!overlay || !container) return;
+      if (!overlay) return;
       const oCtx = overlay.getContext('2d');
       if (!oCtx) return;
 
-      const rect = container.getBoundingClientRect();
-      oCtx.clearRect(0, 0, rect.width, rect.height);
+      oCtx.clearRect(0, 0, overlay.width, overlay.height);
       drawVectorShape(
         oCtx,
         selectedShape,
-        startPosRef.current.x,
-        startPosRef.current.y,
+        startPos.x,
+        startPos.y,
         currentPos.x,
         currentPos.y,
         selectedColor,
-        brushSize
+        strokeWidthScaled
       );
       return;
     }
 
-    // Modo Trazo Normal / Arcoíris / Borrador
+    // Modo Dibujo: Suavizado continuo de puntos
     const canvas = drawCanvasRef.current;
-    if (!canvas || !lastPointRef.current) return;
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    strokePointsRef.current.push(currentPos);
+    const pts = strokePointsRef.current;
+
     if (toolMode === 'rainbow') {
-      rainbowHueRef.current = (rainbowHueRef.current + 7) % 360;
+      rainbowHueRef.current = (rainbowHueRef.current + 5) % 360;
       ctx.strokeStyle = `hsl(${rainbowHueRef.current}, 95%, 55%)`;
     } else {
       ctx.strokeStyle = toolMode === 'eraser' ? '#FFFFFF' : selectedColor;
     }
 
-    ctx.lineWidth = toolMode === 'eraser' ? brushSize * 1.8 : brushSize;
+    ctx.lineWidth = strokeWidthScaled;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
 
-    // Suavizado Bézier cuadrático
-    const midX = (lastPointRef.current.x + currentPos.x) / 2;
-    const midY = (lastPointRef.current.y + currentPos.y) / 2;
+    if (pts.length === 2) {
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      ctx.lineTo(pts[1].x, pts[1].y);
+      ctx.stroke();
+    } else if (pts.length > 2) {
+      // Suavizado por punto medio Bézier cuadrático
+      const p1 = pts[pts.length - 2];
+      const p2 = pts[pts.length - 1];
+      const prevP = pts[pts.length - 3] || p1;
 
-    ctx.beginPath();
-    ctx.moveTo(lastPointRef.current.x, lastPointRef.current.y);
-    ctx.quadraticCurveTo(lastPointRef.current.x, lastPointRef.current.y, midX, midY);
-    ctx.stroke();
+      const mid1X = (prevP.x + p1.x) / 2;
+      const mid1Y = (prevP.y + p1.y) / 2;
+      const mid2X = (p1.x + p2.x) / 2;
+      const mid2Y = (p1.y + p2.y) / 2;
 
-    lastPointRef.current = currentPos;
+      ctx.beginPath();
+      ctx.moveTo(mid1X, mid1Y);
+      ctx.quadraticCurveTo(p1.x, p1.y, mid2X, mid2Y);
+      ctx.stroke();
+    }
   };
 
   const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -447,38 +500,38 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
     } catch {}
 
     const endPos = getCanvasPos(e);
+    const startPos = strokePointsRef.current[0];
+    const dpr = window.devicePixelRatio || 1;
+    const strokeWidthScaled = (toolMode === 'eraser' ? brushSize * 2 : brushSize) * dpr;
 
     // Si es modo forma, consolidar la forma final en el canvas principal
-    if (toolMode === 'shape' && startPosRef.current) {
+    if (toolMode === 'shape' && startPos) {
       const canvas = drawCanvasRef.current;
       const overlay = overlayCanvasRef.current;
-      const container = containerRef.current;
-      if (canvas && container) {
+      if (canvas) {
         const ctx = canvas.getContext('2d');
         if (ctx) {
           drawVectorShape(
             ctx,
             selectedShape,
-            startPosRef.current.x,
-            startPosRef.current.y,
+            startPos.x,
+            startPos.y,
             endPos.x,
             endPos.y,
             selectedColor,
-            brushSize
+            strokeWidthScaled
           );
         }
       }
-      if (overlay && container) {
+      if (overlay) {
         const oCtx = overlay.getContext('2d');
-        const rect = container.getBoundingClientRect();
-        if (oCtx) oCtx.clearRect(0, 0, rect.width, rect.height);
+        if (oCtx) oCtx.clearRect(0, 0, overlay.width, overlay.height);
       }
       sounds.playSuccess();
       sounds.vibrate(10);
     }
 
-    startPosRef.current = null;
-    lastPointRef.current = null;
+    strokePointsRef.current = [];
     pushSnapshot();
   };
 
@@ -534,7 +587,9 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
         };
       }
 
-      const encodedPrompt = encodeURIComponent(`${parsed.enhancedPrompt}, 3D pixar style, masterpiece, cute, vibrant, 8k resolution, ray tracing`);
+      const encodedPrompt = encodeURIComponent(
+        `${parsed.enhancedPrompt}, 3D pixar style, masterpiece, cute, vibrant, 8k resolution, ray tracing`
+      );
       const seed = Math.floor(Math.random() * 1000000);
       const generatedUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=768&height=768&seed=${seed}&nologo=true`;
 
@@ -593,175 +648,183 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
 
   return (
     <ZentrySubPageScaffold title="" kicker="" onBack={onBack} isDark={isDark}>
-      <div className="w-full h-full flex flex-col justify-between overflow-hidden gap-2 select-none relative">
+      <div className="w-full h-full max-w-5xl mx-auto flex flex-col justify-between overflow-hidden gap-2 select-none relative">
+        
         {/* ========================================================= */}
-        {/* BARRA SUPERIOR: PINCELES, 4 TAMAÑOS VISIBLES, FORMAS Y GOMA */}
+        {/* 1. BARRA SUPERIOR INTEGRADA: HERRAMIENTAS Y ACCIONES      */}
         {/* ========================================================= */}
-        <div className="flex items-center justify-between gap-2 px-3 py-2 bg-white/25 dark:bg-slate-900/60 backdrop-blur-2xl rounded-[30px] border border-white/40 dark:border-white/15 shadow-xl">
+        <div className="flex flex-col gap-2 p-2 bg-white/30 dark:bg-slate-900/70 backdrop-blur-2xl rounded-[28px] border border-white/40 dark:border-white/15 shadow-xl">
           
-          {/* GRUPO 1: PINCELES Y FORMAS */}
-          <div className="flex items-center gap-1.5">
-            {/* Pincel Normal */}
-            <button
-              onClick={() => {
-                sounds.playTap();
-                sounds.vibrate(6);
-                setToolMode('brush');
-                setIsShapeMenuOpen(false);
-              }}
-              className={`p-2.5 rounded-[20px] text-xl border-2 transition-all cursor-pointer zentry-spring-press ${
-                toolMode === 'brush'
-                  ? 'bg-pink-500 text-white scale-108 shadow-lg border-white ring-2 ring-pink-300'
-                  : 'bg-white/80 dark:bg-white/10 border-transparent text-slate-700 dark:text-white'
-              }`}
-              title="Pincel"
-            >
-              <Paintbrush className="w-5 h-5" />
-            </button>
+          {/* Fila 1: Modos de Herramientas y Acciones */}
+          <div className="flex items-center justify-between gap-1.5 w-full">
+            {/* GRUPO MODOS: Pincel, Arcoíris, Formas, Goma */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {/* Pincel Normal */}
+              <button
+                onClick={() => {
+                  sounds.playTap();
+                  sounds.vibrate(6);
+                  setToolMode('brush');
+                }}
+                className={`px-3 py-2 rounded-2xl flex items-center gap-1.5 text-xs font-black border-2 transition-all cursor-pointer zentry-spring-press ${
+                  toolMode === 'brush'
+                    ? 'bg-pink-500 text-white scale-105 shadow-md border-white ring-2 ring-pink-300'
+                    : 'bg-white/80 dark:bg-white/10 border-transparent text-slate-700 dark:text-white'
+                }`}
+                title="Pincel"
+              >
+                <Paintbrush className="w-4 h-4" />
+                <span className="hidden sm:inline">Pincel</span>
+              </button>
 
-            {/* Pincel Arcoíris */}
-            <button
-              onClick={() => {
-                sounds.playTap();
-                sounds.vibrate(6);
-                setToolMode('rainbow');
-                setIsShapeMenuOpen(false);
-              }}
-              className={`p-2.5 rounded-[20px] text-xl border-2 transition-all cursor-pointer zentry-spring-press ${
-                toolMode === 'rainbow'
-                  ? 'bg-gradient-to-r from-pink-500 via-yellow-400 to-cyan-400 text-white scale-108 shadow-lg border-white ring-2 ring-yellow-300'
-                  : 'bg-white/80 dark:bg-white/10 border-transparent text-slate-700 dark:text-white'
-              }`}
-              title="Pincel Arcoíris"
-            >
-              🌈
-            </button>
+              {/* Pincel Arcoíris */}
+              <button
+                onClick={() => {
+                  sounds.playTap();
+                  sounds.vibrate(6);
+                  setToolMode('rainbow');
+                }}
+                className={`px-3 py-2 rounded-2xl flex items-center gap-1.5 text-xs font-black border-2 transition-all cursor-pointer zentry-spring-press ${
+                  toolMode === 'rainbow'
+                    ? 'bg-gradient-to-r from-pink-500 via-yellow-400 to-cyan-400 text-white scale-105 shadow-md border-white ring-2 ring-yellow-300'
+                    : 'bg-white/80 dark:bg-white/10 border-transparent text-slate-700 dark:text-white'
+                }`}
+                title="Pincel Arcoíris"
+              >
+                <span>🌈</span>
+                <span className="hidden sm:inline">Arcoíris</span>
+              </button>
 
-            {/* Herramienta de Formas Geométricas */}
-            <div className="relative">
+              {/* Formas Geométricas */}
               <button
                 onClick={() => {
                   sounds.playTap();
                   sounds.vibrate(6);
                   setToolMode('shape');
-                  setIsShapeMenuOpen((prev) => !prev);
                 }}
-                className={`p-2.5 rounded-[20px] border-2 flex items-center justify-center gap-1 transition-all cursor-pointer zentry-spring-press ${
+                className={`px-3 py-2 rounded-2xl flex items-center gap-1.5 text-xs font-black border-2 transition-all cursor-pointer zentry-spring-press ${
                   toolMode === 'shape'
-                    ? 'bg-amber-400 text-slate-950 scale-108 shadow-lg border-white ring-2 ring-amber-300 font-black'
+                    ? 'bg-amber-400 text-slate-950 scale-105 shadow-md border-white ring-2 ring-amber-300'
                     : 'bg-white/80 dark:bg-white/10 border-transparent text-slate-700 dark:text-white'
                 }`}
                 title="Formas Geométricas"
               >
-                <span className="text-xl">
-                  {GEOMETRIC_SHAPES.find((s) => s.id === selectedShape)?.icon || '🔷'}
-                </span>
+                <span>{GEOMETRIC_SHAPES.find((s) => s.id === selectedShape)?.icon || '🔷'}</span>
+                <span>Formas</span>
               </button>
 
-              {/* Menú Desplegable de 8 Formas */}
-              {isShapeMenuOpen && (
-                <div className="absolute top-14 left-0 bg-[#120E24]/95 border-2 border-amber-400/60 p-2.5 rounded-[26px] shadow-2xl backdrop-blur-2xl grid grid-cols-4 gap-2 z-50 animate-spring-unfold min-w-[200px]">
-                  {GEOMETRIC_SHAPES.map((s) => (
+              {/* Goma de Borrar */}
+              <button
+                onClick={() => {
+                  sounds.playTap();
+                  sounds.vibrate(6);
+                  setToolMode('eraser');
+                }}
+                className={`px-3 py-2 rounded-2xl flex items-center gap-1.5 text-xs font-black border-2 transition-all cursor-pointer zentry-spring-press ${
+                  toolMode === 'eraser'
+                    ? 'bg-purple-600 text-white scale-105 shadow-md border-white ring-2 ring-purple-300'
+                    : 'bg-white/80 dark:bg-white/10 border-transparent text-slate-700 dark:text-white'
+                }`}
+                title="Borrador"
+              >
+                <Eraser className="w-4 h-4" />
+                <span className="hidden sm:inline">Borrar</span>
+              </button>
+            </div>
+
+            {/* ACCIONES: Deshacer y Limpiar */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                onClick={handleUndo}
+                className="p-2 rounded-2xl bg-white/80 dark:bg-white/10 text-slate-700 dark:text-white hover:bg-white active:scale-90 cursor-pointer zentry-spring-press border border-transparent shadow-sm"
+                title="Deshacer"
+              >
+                <Undo2 className="w-4 h-4" />
+              </button>
+
+              <button
+                onClick={handleClear}
+                className="p-2 rounded-2xl bg-white/80 dark:bg-white/10 text-rose-500 hover:bg-rose-50 active:scale-90 cursor-pointer zentry-spring-press border border-transparent shadow-sm"
+                title="Limpiar Lienzo"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Fila 2 Contextual: DOCK DE FORMAS O SELECTOR DE TAMAÑOS */}
+          <div className="w-full pt-1 border-t border-white/15 flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
+            {toolMode === 'shape' ? (
+              /* DOCK DE 8 FORMAS GEOMÉTRICAS PERMANENTE Y VISIBLE */
+              <div className="flex items-center gap-1.5 w-full justify-around sm:justify-start">
+                <span className="text-[10px] font-black uppercase text-amber-500 dark:text-amber-300 tracking-wider shrink-0 mr-1">
+                  Elegir Forma:
+                </span>
+                {GEOMETRIC_SHAPES.map((s) => {
+                  const isSelected = selectedShape === s.id;
+                  return (
                     <button
                       key={s.id}
                       onClick={() => {
                         sounds.playTap();
                         sounds.vibrate(6);
                         setSelectedShape(s.id);
-                        setToolMode('shape');
-                        setIsShapeMenuOpen(false);
                       }}
-                      className={`p-2.5 rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer ${
-                        selectedShape === s.id && toolMode === 'shape'
-                          ? 'bg-amber-400 text-slate-950 scale-110 shadow-md font-bold'
-                          : 'bg-white/10 hover:bg-white/20 text-white'
+                      className={`py-1 px-2.5 rounded-xl flex items-center gap-1 transition-all cursor-pointer shrink-0 zentry-spring-press ${
+                        isSelected
+                          ? 'bg-amber-400 text-slate-950 scale-108 shadow-md font-black ring-2 ring-white'
+                          : 'bg-white/40 dark:bg-white/10 hover:bg-white/70 text-slate-800 dark:text-slate-200'
                       }`}
                       title={s.label}
                     >
-                      <span className="text-2xl">{s.icon}</span>
-                      <span className="text-[9px] font-bold mt-0.5">{s.label}</span>
+                      <span className="text-base">{s.icon}</span>
+                      <span className="text-[11px] font-bold hidden md:inline">{s.label}</span>
                     </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* GRUPO 2: 4 CIRCULITOS VISIBLES DE TAMAÑO DE PINCEL */}
-          <div className="flex items-center gap-2 bg-black/10 dark:bg-white/10 px-2.5 py-1.5 rounded-[22px] border border-white/20">
-            {BRUSH_SIZES.map((b) => {
-              const isSelected = brushSize === b.size;
-              return (
-                <button
-                  key={b.id}
-                  onClick={() => {
-                    sounds.playTap();
-                    sounds.vibrate(6);
-                    setBrushSize(b.size);
-                  }}
-                  className={`w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer zentry-spring-press ${
-                    isSelected
-                      ? 'bg-indigo-600 border-2 border-white ring-2 ring-indigo-300 shadow-md scale-115'
-                      : 'bg-white/60 dark:bg-white/20 hover:bg-white/80'
-                  }`}
-                  title={`Tamaño: ${b.label} (${b.size}px)`}
-                >
-                  <span
-                    style={{
-                      width: `${b.dotSize}px`,
-                      height: `${b.dotSize}px`
-                    }}
-                    className={`rounded-full block transition-colors ${
-                      isSelected ? 'bg-white' : 'bg-slate-700 dark:bg-slate-200'
-                    }`}
-                  />
-                </button>
-              );
-            })}
-          </div>
-
-          {/* GRUPO 3: GOMA DE BORRAR, DESHACER Y LIMPIAR */}
-          <div className="flex items-center gap-1.5">
-            {/* Goma de Borrar */}
-            <button
-              onClick={() => {
-                sounds.playTap();
-                sounds.vibrate(6);
-                setToolMode('eraser');
-                setIsShapeMenuOpen(false);
-              }}
-              className={`p-2.5 rounded-[20px] border-2 transition-all cursor-pointer zentry-spring-press ${
-                toolMode === 'eraser'
-                  ? 'bg-purple-600 text-white scale-108 shadow-lg border-white ring-2 ring-purple-300'
-                  : 'bg-white/80 dark:bg-white/10 border-transparent text-slate-700 dark:text-white'
-              }`}
-              title="Goma de Borrar"
-            >
-              <Eraser className="w-5 h-5" />
-            </button>
-
-            {/* Deshacer */}
-            <button
-              onClick={handleUndo}
-              className="p-2.5 rounded-[20px] bg-white/80 dark:bg-white/10 text-slate-700 dark:text-white active:scale-90 cursor-pointer zentry-spring-press border border-transparent hover:border-white/30"
-              title="Deshacer"
-            >
-              <Undo2 className="w-5 h-5" />
-            </button>
-
-            {/* Limpiar */}
-            <button
-              onClick={handleClear}
-              className="p-2.5 rounded-[20px] bg-white/80 dark:bg-white/10 text-slate-700 dark:text-white active:scale-90 cursor-pointer zentry-spring-press border border-transparent hover:border-white/30"
-              title="Limpiar Lienzo"
-            >
-              <Trash2 className="w-5 h-5" />
-            </button>
+                  );
+                })}
+              </div>
+            ) : (
+              /* SELECTOR DE 4 TAMAÑOS DE PINCEL CIRCULARES */
+              <div className="flex items-center gap-3 w-full justify-center sm:justify-start">
+                <span className="text-[10px] font-black uppercase text-purple-600 dark:text-purple-300 tracking-wider shrink-0 mr-1">
+                  Grosor:
+                </span>
+                {BRUSH_SIZES.map((b) => {
+                  const isSelected = brushSize === b.size;
+                  return (
+                    <button
+                      key={b.id}
+                      onClick={() => {
+                        sounds.playTap();
+                        sounds.vibrate(6);
+                        setBrushSize(b.size);
+                      }}
+                      className={`w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer zentry-spring-press ${
+                        isSelected
+                          ? 'bg-indigo-600 border-2 border-white ring-2 ring-indigo-400 shadow-lg scale-115'
+                          : 'bg-white/60 dark:bg-white/15 hover:bg-white/90'
+                      }`}
+                      title={`Tamaño: ${b.label} (${b.size}px)`}
+                    >
+                      <span
+                        style={{
+                          width: `${b.dotSize}px`,
+                          height: `${b.dotSize}px`
+                        }}
+                        className={`rounded-full block transition-colors ${
+                          isSelected ? 'bg-white' : 'bg-slate-700 dark:bg-slate-200'
+                        }`}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 
         {/* ========================================================= */}
-        {/* ÁREA DE DIBUJO DUAL (DRAW CANVAS + PREVIEW OVERLAY)       */}
+        {/* 2. ÁREA DE DIBUJO DUAL FLUIDA Y TOTALMENTE RESPONSIVE     */}
         {/* ========================================================= */}
         <div
           ref={containerRef}
@@ -769,54 +832,71 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerUp}
-          className="flex-1 w-full relative rounded-[32px] overflow-hidden shadow-2xl border-4 border-white/80 touch-none bg-white cursor-crosshair"
+          className="flex-1 min-h-[300px] w-full relative rounded-[32px] overflow-hidden shadow-2xl border-4 border-white/80 dark:border-slate-800 touch-none bg-white cursor-crosshair"
         >
           {/* Canvas Principal */}
           <canvas ref={drawCanvasRef} className="w-full h-full block absolute inset-0 z-10" />
 
           {/* Canvas Overlay de Previsualización */}
-          <canvas ref={overlayCanvasRef} className="w-full h-full block absolute inset-0 z-20 pointer-events-none" />
+          <canvas
+            ref={overlayCanvasRef}
+            className="w-full h-full block absolute inset-0 z-20 pointer-events-none"
+          />
         </div>
 
         {/* ========================================================= */}
-        {/* BARRA INFERIOR: PALETA DE COLORES, ROMBO IA Y GUARDAR    */}
+        {/* 3. BARRA INFERIOR: PALETA ESPACIOSA, ROMBO IA Y GUARDAR   */}
         {/* ========================================================= */}
-        <div className="flex items-center justify-between gap-3 px-3 py-2 bg-white/25 dark:bg-slate-900/60 backdrop-blur-2xl rounded-[30px] border border-white/40 dark:border-white/15 shadow-xl">
-          {/* Paleta de Colores */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-            {COLOR_PALETTE.map((c) => (
-              <button
-                key={c}
-                onClick={() => {
-                  sounds.playTap();
-                  sounds.vibrate(5);
-                  setSelectedColor(c);
-                  if (toolMode === 'eraser') setToolMode('brush');
-                }}
-                style={{ backgroundColor: c }}
-                className={`w-9 h-9 md:w-11 md:h-11 rounded-full border-2 transition-transform cursor-pointer ${
-                  selectedColor === c && toolMode !== 'eraser'
-                    ? 'scale-120 border-white ring-4 ring-pink-400 shadow-xl'
-                    : 'border-white/80 dark:border-white/40'
-                }`}
-              />
-            ))}
+        <div className="flex items-center justify-between gap-2 p-2.5 bg-white/30 dark:bg-slate-900/70 backdrop-blur-2xl rounded-[28px] border border-white/40 dark:border-white/15 shadow-xl">
+          {/* Paleta de Colores con espaciado amplio y sin compresión */}
+          <div className="flex-1 flex items-center gap-2 overflow-x-auto no-scrollbar py-1 px-1">
+            {COLOR_PALETTE.map((c) => {
+              const isSelected = selectedColor === c.color && toolMode !== 'eraser';
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => {
+                    sounds.playTap();
+                    sounds.vibrate(5);
+                    setSelectedColor(c.color);
+                    if (toolMode === 'eraser') setToolMode('brush');
+                  }}
+                  style={{ backgroundColor: c.color }}
+                  className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full shrink-0 border-2 transition-all cursor-pointer flex items-center justify-center ${
+                    isSelected
+                      ? 'scale-118 border-white ring-4 ring-pink-500 shadow-xl'
+                      : 'border-white/80 dark:border-white/40 hover:scale-105'
+                  }`}
+                  title={`Color ${c.id}`}
+                >
+                  {isSelected && (
+                    <Check
+                      className={`w-4 h-4 ${
+                        c.color === '#FFFFFF' || c.color === '#EAB308'
+                          ? 'text-slate-900'
+                          : 'text-white'
+                      } stroke-[3]`}
+                    />
+                  )}
+                </button>
+              );
+            })}
           </div>
 
-          {/* Botonera de Acción: Rombo IA Zentry + Guardar */}
-          <div className="flex items-center gap-2.5 shrink-0">
+          {/* Acciones Principales: Rombo IA Zentry + Guardar */}
+          <div className="flex items-center gap-2 shrink-0 pl-1 border-l border-white/20">
             {/* BOTÓN INTELIGENCIA ARTIFICIAL (ROMBO ZENTRY) */}
             <button
               onClick={handleAiGiveLife}
               disabled={isTransformingAi}
-              className="w-13 h-13 md:w-15 md:h-15 rounded-[22px] bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 text-white flex items-center justify-center shadow-xl border-2 border-white active:scale-90 cursor-pointer zentry-spring-press relative group disabled:opacity-50"
+              className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 text-white flex items-center justify-center shadow-xl border-2 border-white active:scale-90 cursor-pointer zentry-spring-press relative group disabled:opacity-50"
               title="¡Dar Vida Mágica con Zentry AI!"
             >
               {isTransformingAi ? (
                 <RefreshCw className="w-6 h-6 animate-spin text-amber-300" />
               ) : (
                 <>
-                  <ZentryLogoIcon className="w-7 h-7 group-hover:scale-115 transition-transform" />
+                  <ZentryLogoIcon className="w-6 h-6 sm:w-7 sm:h-7 group-hover:scale-112 transition-transform" />
                   <span className="w-2.5 h-2.5 rounded-full bg-amber-300 absolute -top-1 -right-1 animate-ping" />
                 </>
               )}
@@ -825,7 +905,7 @@ export const ZentryFreeCanvasScreen: React.FC<Props> = ({ onBack, isDark }) => {
             {/* BOTÓN GUARDAR / DESCARGAR PNG */}
             <button
               onClick={handleSave}
-              className="w-13 h-13 md:w-15 md:h-15 rounded-full bg-gradient-to-tr from-emerald-400 to-teal-600 text-white flex items-center justify-center text-2xl shadow-xl border-2 border-white active:scale-90 cursor-pointer zentry-spring-press"
+              className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-tr from-emerald-400 to-teal-600 text-white flex items-center justify-center text-xl sm:text-2xl shadow-xl border-2 border-white active:scale-90 cursor-pointer zentry-spring-press"
               title="Guardar Dibujo"
             >
               💾
