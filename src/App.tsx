@@ -276,6 +276,7 @@ export const App: React.FC = () => {
           <ZentryCreationScreen
             onBack={handleBack}
             onNavigate={navigateTo}
+            ageTier={ageTier}
             isDark={currentWallpaper.isDark}
           />
         )}
