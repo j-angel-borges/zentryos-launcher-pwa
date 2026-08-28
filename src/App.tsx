@@ -117,6 +117,12 @@ export const App: React.FC = () => {
       if (urlTier === 'explorer' || urlTier === 'toddler') {
         return urlTier;
       }
+      if (window.location.port === '5180') {
+        return 'explorer';
+      }
+      if (window.location.port === '5175') {
+        return 'toddler';
+      }
     }
     return (localStorage.getItem('zentry_age_tier') as AgeTier) || 'toddler';
   });
