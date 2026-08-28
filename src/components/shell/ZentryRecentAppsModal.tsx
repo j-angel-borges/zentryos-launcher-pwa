@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Play, Camera, Palette, Clock, Gamepad2, Sparkles, Trash2, CheckCircle2 } from 'lucide-react';
+import { X, Play, Camera, Palette, Clock, Gamepad2, Trash2, CheckCircle2 } from 'lucide-react';
 import type { ScreenId, AgeTier } from '../../types/zentry';
 import { sounds } from '../../services/soundEffects';
 import { ZentryLogoIcon } from '../ui/ZentryLogoIcon';
@@ -7,10 +7,8 @@ import { ZentryLogoIcon } from '../ui/ZentryLogoIcon';
 interface RecentAppItem {
   id: ScreenId;
   title: string;
-  category: string;
   icon: React.ComponentType<{ className?: string }>;
   gradient: string;
-  lastActive: string;
 }
 
 interface Props {
@@ -27,49 +25,38 @@ export const ZentryRecentAppsModal: React.FC<Props> = ({
   onClose,
   onNavigate,
   currentScreen,
-  isDark,
-  ageTier = 'toddler'
+  isDark
 }) => {
   const [apps, setApps] = useState<RecentAppItem[]>([
     {
       id: 'camera',
       title: 'Cámara',
-      category: 'Visión Multimodal',
       icon: Camera,
-      gradient: 'from-amber-400 to-orange-500',
-      lastActive: 'Hace un momento'
+      gradient: 'from-amber-400 to-orange-500'
     },
     {
       id: 'creation',
-      title: 'Taller de Arte',
-      category: 'Dibujo y Pintura',
+      title: 'Arte',
       icon: Palette,
-      gradient: 'from-purple-600 to-indigo-500',
-      lastActive: 'En memoria'
+      gradient: 'from-purple-600 to-indigo-500'
     },
     {
       id: 'entertainment_hub',
-      title: 'Entretenimiento',
-      category: 'Videos & Cuentos',
+      title: 'Videos',
       icon: Play,
-      gradient: 'from-rose-500 to-pink-600',
-      lastActive: 'En segundo plano'
+      gradient: 'from-rose-500 to-pink-600'
     },
     {
       id: 'reloj',
-      title: 'Reloj Circadiano',
-      category: 'Tiempo & Alarmas',
+      title: 'Reloj',
       icon: Clock,
-      gradient: 'from-yellow-400 to-amber-500',
-      lastActive: 'Activo'
+      gradient: 'from-yellow-400 to-amber-500'
     },
     {
       id: 'world_generator',
       title: 'Mundos',
-      category: 'Generador 3D',
       icon: Gamepad2,
-      gradient: 'from-emerald-400 to-teal-600',
-      lastActive: 'En pausa'
+      gradient: 'from-emerald-400 to-teal-600'
     }
   ]);
 
@@ -100,7 +87,7 @@ export const ZentryRecentAppsModal: React.FC<Props> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/65 backdrop-blur-lg flex flex-col justify-end items-center p-3 animate-in fade-in duration-200 select-none"
+      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xl flex flex-col justify-end items-center p-3 animate-in fade-in duration-200 select-none"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           sounds.playTap();
@@ -109,21 +96,17 @@ export const ZentryRecentAppsModal: React.FC<Props> = ({
       }}
     >
       <div
-        className={
-          (isDark ? 'zentry-glass-dark text-white ' : 'zentry-glass-light text-[#1E293B] ') +
-          'w-full max-w-lg rounded-[36px] p-5 shadow-2xl border border-white/30 space-y-4 animate-in slide-in-from-bottom-6 duration-300 relative overflow-hidden'
-        }
+        className="w-full max-w-lg rounded-[36px] p-5 shadow-2xl border border-purple-400/40 bg-[#120E24]/95 text-white space-y-4 animate-in slide-in-from-bottom-6 duration-300 relative overflow-hidden"
       >
-        {/* Header with Title and Clear All */}
-        <div className="flex items-center justify-between border-b border-white/10 pb-3">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-white/15 pb-3">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-md">
               <ZentryLogoIcon className="w-4 h-4" />
             </div>
-            <div>
-              <h3 className="text-sm font-black tracking-tight">Procesos en Segundo Plano</h3>
-              <p className="text-[10px] text-slate-400">Aplicaciones y tareas recientes en memoria</p>
-            </div>
+            <h3 className="text-base font-black tracking-tight text-white drop-shadow-sm">
+              Recientes
+            </h3>
           </div>
 
           <button
@@ -131,19 +114,18 @@ export const ZentryRecentAppsModal: React.FC<Props> = ({
               sounds.playTap();
               onClose();
             }}
-            className="p-1.5 rounded-full hover:bg-white/10 text-slate-400 hover:text-white cursor-pointer"
-            title="Cerrar recientes"
+            className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white cursor-pointer"
+            title="Cerrar"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Horizontal Carousel of Recent App Cards */}
+        {/* Carousel of Cards */}
         {apps.length === 0 ? (
-          <div className="py-12 flex flex-col items-center justify-center gap-2 text-center text-slate-400">
+          <div className="py-10 flex flex-col items-center justify-center gap-2 text-center text-slate-300">
             <CheckCircle2 className="w-10 h-10 text-emerald-400 animate-pulse" />
-            <p className="text-xs font-bold text-slate-300">No hay procesos en segundo plano</p>
-            <p className="text-[11px] text-slate-400">Memoria RAM limpia y optimizada</p>
+            <p className="text-sm font-black text-white">Limpio</p>
           </div>
         ) : (
           <div className="flex gap-3 overflow-x-auto py-2 px-1 no-scrollbar snap-x snap-mandatory">
@@ -156,36 +138,30 @@ export const ZentryRecentAppsModal: React.FC<Props> = ({
                   onClick={() => handleSelectApp(app.id)}
                   className={
                     (isCurrent
-                      ? 'ring-2 ring-purple-400 bg-purple-500/20 '
-                      : 'bg-white/10 hover:bg-white/15 ') +
-                    'w-40 shrink-0 rounded-[28px] p-3.5 flex flex-col justify-between h-48 border border-white/20 shadow-lg cursor-pointer transition-all duration-200 zentry-press relative group snap-start'
+                      ? 'ring-2 ring-purple-400 bg-purple-500/30 '
+                      : 'bg-white/10 hover:bg-white/20 ') +
+                    'w-36 shrink-0 rounded-[26px] p-3 flex flex-col items-center justify-between h-42 border border-white/20 shadow-lg cursor-pointer transition-all duration-200 zentry-spring-press relative group snap-start text-center'
                   }
                 >
-                  {/* Top Close Button on Card */}
+                  {/* Close Button on Card */}
                   <button
                     onClick={(e) => handleDismissApp(e, app.id)}
-                    className="absolute top-2.5 right-2.5 w-6 h-6 rounded-full bg-black/40 hover:bg-red-500/80 text-white flex items-center justify-center cursor-pointer transition-colors z-10"
-                    title="Cerrar proceso"
+                    className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/50 hover:bg-red-500 text-white flex items-center justify-center cursor-pointer transition-colors z-10"
+                    title="Cerrar"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
 
-                  {/* App Icon Container */}
+                  {/* App Icon */}
                   <div
-                    className={`w-14 h-14 rounded-2xl bg-gradient-to-tr ${app.gradient} flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform`}
+                    className={`w-14 h-14 rounded-2xl bg-gradient-to-tr ${app.gradient} flex items-center justify-center text-white shadow-md group-hover:scale-108 transition-transform mt-2`}
                   >
                     <Icon className="w-7 h-7" />
                   </div>
 
-                  {/* App Info */}
-                  <div className="space-y-0.5">
-                    <div className="text-xs font-black text-white truncate">{app.title}</div>
-                    <div className="text-[10px] text-slate-300 font-medium truncate">
-                      {app.category}
-                    </div>
-                    <div className="text-[9px] text-amber-300/90 font-mono pt-1">
-                      ● {app.lastActive}
-                    </div>
+                  {/* App Title */}
+                  <div className="text-sm font-black text-white drop-shadow-sm truncate mb-1">
+                    {app.title}
                   </div>
                 </div>
               );
@@ -193,15 +169,12 @@ export const ZentryRecentAppsModal: React.FC<Props> = ({
           </div>
         )}
 
-        {/* Bottom Actions: Clear All */}
+        {/* Bottom Actions */}
         {apps.length > 0 && (
-          <div className="flex items-center justify-between pt-1">
-            <span className="text-[10px] text-slate-400 font-mono">
-              {apps.length} {apps.length === 1 ? 'proceso activo' : 'procesos activos'}
-            </span>
+          <div className="flex justify-end pt-1">
             <button
               onClick={handleClearAll}
-              className="px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-red-500/20 text-red-300 hover:text-red-200 text-xs font-bold flex items-center gap-1.5 cursor-pointer zentry-press transition-colors"
+              className="px-4 py-2 rounded-full bg-red-500/20 hover:bg-red-500/30 text-red-200 text-xs font-black flex items-center gap-1.5 cursor-pointer zentry-spring-press border border-red-500/30"
             >
               <Trash2 className="w-3.5 h-3.5" />
               <span>Cerrar todo</span>

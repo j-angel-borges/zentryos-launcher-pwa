@@ -212,8 +212,7 @@ export const ZentryNavBar: React.FC<Props> = ({
         {/* CONTAINER WITH BOUNCE & SPRING MORPHING PHYSICS */}
         <div
           className={
-            (isDark ? 'zentry-glass-dark ' : 'zentry-glass-light ') +
-            'transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] rounded-full shadow-2xl border border-white/40 backdrop-blur-2xl ' +
+            'bg-[#120E24]/92 text-white transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] rounded-full shadow-2xl border border-purple-400/50 backdrop-blur-2xl ring-1 ring-white/20 ' +
             (isAiMode ? 'w-full max-w-md px-3 py-1.5' : 'w-auto px-2 py-1.5')
           }
         >
@@ -241,9 +240,9 @@ export const ZentryNavBar: React.FC<Props> = ({
                   (isListening
                     ? 'bg-red-500 text-white animate-pulse scale-110 ring-4 ring-red-400/40 '
                     : 'bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 text-white hover:scale-105 ') +
-                  'w-9 h-9 rounded-full flex items-center justify-center shrink-0 shadow-lg cursor-pointer transition-all zentry-press relative'
+                  'w-9 h-9 rounded-full flex items-center justify-center shrink-0 shadow-lg cursor-pointer transition-all zentry-spring-press relative'
                 }
-                title="Mantén presionado para hablar"
+                title="Hablar"
               >
                 <Mic className="w-4 h-4" />
                 {isListening && (
@@ -258,11 +257,8 @@ export const ZentryNavBar: React.FC<Props> = ({
                   type="text"
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
-                  placeholder={isListening ? 'Escuchando tu voz...' : 'Escribe o habla a Zentry...'}
-                  className={
-                    (isDark ? 'text-white placeholder-slate-400 ' : 'text-slate-900 placeholder-slate-500 ') +
-                    'w-full bg-transparent text-xs font-bold focus:outline-none'
-                  }
+                  placeholder={isListening ? 'Escuchando...' : 'Escribe o habla...'}
+                  className="w-full bg-transparent text-xs font-black text-white placeholder-slate-400 focus:outline-none"
                   autoFocus
                 />
 
@@ -278,17 +274,17 @@ export const ZentryNavBar: React.FC<Props> = ({
 
               {/* Status if processing */}
               {agentStatus && (
-                <span className="text-[10px] font-black text-indigo-400 truncate max-w-[80px] animate-in fade-in">
+                <span className="text-[10px] font-black text-amber-300 truncate max-w-[80px] animate-in fade-in">
                   {agentStatus}
                 </span>
               )}
 
-              {/* Action Button: Send when text typed, or Open Drawer / Close */}
+              {/* Action Button */}
               {hasText ? (
                 <button
                   type="submit"
                   disabled={isProcessing}
-                  className="p-2 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-white shadow-md hover:scale-105 cursor-pointer zentry-press shrink-0"
+                  className="p-2 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-white shadow-md hover:scale-105 cursor-pointer zentry-spring-press shrink-0"
                   title="Enviar"
                 >
                   <Send className="w-3.5 h-3.5" />
@@ -297,22 +293,22 @@ export const ZentryNavBar: React.FC<Props> = ({
                 <button
                   type="button"
                   onClick={() => setIsAiDrawerOpen(true)}
-                  className="p-2 rounded-full text-indigo-400 hover:text-indigo-300 hover:bg-white/10 cursor-pointer zentry-press shrink-0"
-                  title="Desplegar chat Zentry AI"
+                  className="p-2 rounded-full text-white hover:bg-white/10 cursor-pointer zentry-spring-press shrink-0"
+                  title="Chat Zentry"
                 >
                   <ZentryLogoIcon className="w-4 h-4 animate-pulse" />
                 </button>
               )}
 
-              {/* Close Bar Button (Returns to 3-button pill) */}
+              {/* Close Button */}
               <button
                 type="button"
                 onClick={() => {
                   sounds.playTap();
                   setIsAiMode(false);
                 }}
-                className="p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-white/10 cursor-pointer shrink-0"
-                title="Volver a botones de navegación"
+                className="p-1.5 rounded-full text-slate-300 hover:text-white hover:bg-white/10 cursor-pointer shrink-0"
+                title="Cerrar"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -320,43 +316,33 @@ export const ZentryNavBar: React.FC<Props> = ({
           ) : (
             /* STATE B: SLEEK 3-BUTTON LIQUID GLASS FLOATING CAPSULE */
             <div className="flex items-center gap-4 px-2">
-              {/* 1. BOTÓN RETROCESO (IZQUIERDA) - Click: Back | Long-press: Recent Apps */}
+              {/* 1. BOTÓN RETROCESO (IZQUIERDA) */}
               <button
                 onClick={handleBackClick}
                 onMouseDown={handleBackTouchStart}
                 onMouseUp={handleBackTouchEnd}
                 onTouchStart={handleBackTouchStart}
                 onTouchEnd={handleBackTouchEnd}
-                className={
-                  (isDark
-                    ? 'text-white hover:bg-white/15 '
-                    : 'text-[#1E293B] hover:bg-black/10 ') +
-                  'w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 zentry-press cursor-pointer active:scale-90 hover:scale-108 relative group'
-                }
-                title="Atrás (Mantén presionado para ver Procesos en Segundo Plano)"
+                className="text-white hover:bg-white/15 w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 zentry-spring-press cursor-pointer active:scale-90 hover:scale-108 relative group"
+                title="Atrás"
               >
-                <ArrowLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
+                <ArrowLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform text-white" />
               </button>
 
-              {/* 2. BOTÓN INICIO (CENTRO) - Click: Home */}
+              {/* 2. BOTÓN INICIO (CENTRO) */}
               <button
                 onClick={handleHomeClick}
-                className={
-                  (isDark
-                    ? 'text-white hover:bg-white/15 '
-                    : 'text-[#1E293B] hover:bg-black/10 ') +
-                  'w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 zentry-press cursor-pointer active:scale-90 hover:scale-108 group'
-                }
-                title="Pantalla de Inicio"
+                className="text-white hover:bg-white/15 w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 zentry-spring-press cursor-pointer active:scale-90 hover:scale-108 group"
+                title="Inicio"
               >
-                <Home className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                <Home className="w-5 h-5 group-hover:scale-110 transition-transform text-white" />
               </button>
 
-              {/* 3. BOTÓN INTELIGENCIA ARTIFICIAL (DERECHA) - Click: Morph into AI Chat */}
+              {/* 3. BOTÓN INTELIGENCIA ARTIFICIAL (DERECHA) */}
               <button
                 onClick={handleAiButtonClick}
-                className="w-11 h-11 rounded-full bg-gradient-to-tr from-indigo-500/25 via-purple-500/25 to-pink-500/25 hover:from-indigo-500/40 hover:to-pink-500/40 flex items-center justify-center transition-all duration-200 zentry-press cursor-pointer active:scale-90 hover:scale-108 border border-white/40 shadow-sm relative group"
-                title="Hablar o Chatear con Zentry AI"
+                className="w-11 h-11 rounded-full bg-gradient-to-tr from-indigo-500/35 via-purple-500/35 to-pink-500/35 hover:from-indigo-500/50 hover:to-pink-500/50 flex items-center justify-center transition-all duration-200 zentry-spring-press cursor-pointer active:scale-90 hover:scale-108 border border-white/40 shadow-sm relative group"
+                title="Zentry AI"
               >
                 <ZentryLogoIcon className="w-5 h-5 group-hover:scale-115 transition-transform" />
                 <span className="w-2 h-2 rounded-full bg-purple-400 absolute -top-0.5 -right-0.5 animate-ping" />
