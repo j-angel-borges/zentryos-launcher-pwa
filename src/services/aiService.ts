@@ -104,7 +104,7 @@ Genera SIEMPRE un JSON válido:
   "documentContent": "# Título\\n\\nInicio redactado..."
 }`,
 
-  image_generator: `Eres el motor Zentry Imagine, un generador y refinador de arte visual impulsado por Gemini y Vertex AI.
+  image_generator: `Eres el motor Zentry Imagine, un generador y refinador de arte visual impulsado por Zentry AI.
 Tu tarea es convertir el prompt del usuario en una descripción visual maestra, rica en detalles, iluminación, atmósfera y estilo artístico para generar imágenes de máxima calidad.
 Genera SIEMPRE un JSON válido:
 {

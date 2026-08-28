@@ -98,7 +98,7 @@ export const ZentryImagineScreen: React.FC<Props> = ({ onBack, onNavigate, isDar
 
     sounds.playTap();
     setIsGenerating(true);
-    setGenerationStep('Gemini refinando detalles...');
+    setGenerationStep('Zentry refinando detalles...');
 
     try {
       const aiResponse = await askZentryAi(
